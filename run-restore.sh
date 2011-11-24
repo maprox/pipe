@@ -1,0 +1,1 @@
+python3.2 storage-restore.py -l conf/log-restore.conf

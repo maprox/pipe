@@ -1,0 +1,20 @@
+#!/bin/sh
+
+cd $2
+
+if [ "$1" = 'tr600' ]; then
+  echo 'Starting TR-600 listener'
+  bash run_tr-600.sh &
+fi
+
+if [ "$1" = 'tr203' ]; then
+  echo 'Starting TR-203 listener'
+  bash run_tr-203.sh &
+fi
+
+if [ "$1" = 'tr206' ]; then
+  echo 'Starting TR-206 listener'
+  bash run_tr-206.sh &
+fi
+
+exit 0

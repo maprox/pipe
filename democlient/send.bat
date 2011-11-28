@@ -1,0 +1,2 @@
+python send.py
+pause

@@ -261,7 +261,7 @@ function serviceStart($input)
 					continue;
 				}
 			}
-			if (!forceOpenPorts())
+			if (!forceOpenPort($port))
 			{
 				print "Failed to free port $port";
 				unset($trackers[$key]);

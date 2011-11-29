@@ -15,7 +15,7 @@
 /**
  * Config
  */
-define('WORKING_DIR', "/var/observer/Server/trunk/");
+define('WORKING_DIR', __DIR__ . '/');
 # Sleep time for checking ports
 define('SLEEP_TIME', 1); // seconds
 define('MAX_WAIT_COUNT', 50); // seconds
@@ -92,7 +92,6 @@ function getAllTrackers()
 function getTrackers($names)
 {
 	$return = array();
-
 	foreach ($names as $name)
 	{
 		$file = WORKING_DIR . "conf/serv-$name.conf";
@@ -322,7 +321,7 @@ function serviceTest($input)
 	}
 }
 
-print "Pipe-server Starter v1.0.2\n";
+print "Pipe-server Starter v1.0.3\n";
 
 // read input arguments
 $command = '';

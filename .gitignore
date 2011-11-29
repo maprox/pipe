@@ -1,4 +1,4 @@
 debug/*
+logs/*
 *__pycache__*
 *.pyc
-*.log

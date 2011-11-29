@@ -393,6 +393,10 @@ if (!empty($params['s']))
 	$params['stop'] = $params['s'];
 }
 
+$params['flag'] = empty($params['flag']) ? DEFAULT_FLAG : $params['flag'];
+$params['port'] = empty($params['port']) ? false : $params['port'];
+$params['stop'] = empty($params['stop']) ? false : $params['stop'];
+
 switch ($command)
 {
 	case 'start':

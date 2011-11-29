@@ -19,13 +19,15 @@ define('WORKING_DIR', __DIR__ . '/');
 # Sleep time for checking ports
 define('SLEEP_TIME', 1); // seconds
 define('MAX_WAIT_COUNT', 50); // seconds
+define('DEFAULT_FLAG', 'default');
 
 /**
  * Arguments parsing
  * @param array $argv
  * @return array
  */
-function arguments($argv) {
+function arguments($argv)
+{
 	$_ARG = array('input' => array());
 	// First param is this scripts name. Not needed.
 	array_shift($argv);
@@ -53,6 +55,7 @@ function arguments($argv) {
 			$_ARG['input'][] = $arg;
 		}
 	}
+
 	return $_ARG;
 }
 
@@ -89,7 +92,7 @@ function getAllTrackers()
  * Parses conf files of given protocols and returns array
  * @return array
  */
-function getTrackers($names)
+function getTrackers($names, $port)
 {
 	$return = array();
 	foreach ($names as $name)
@@ -97,6 +100,12 @@ function getTrackers($names)
 		$file = WORKING_DIR . "conf/serv-$name.conf";
 		if (file_exists($file))
 		{
+			if ($port && count($names) == 1)
+			{
+				$return[$name] = $port;
+				continue;
+			}
+
 			$data = file($file);
 
 			foreach ($data as $line)
@@ -164,13 +173,24 @@ function getUserConfirm($default = true)
 }
 
 /**
+ * Builds process identifier
+ * @param string $key
+ * @param string $flag
+ * @return string
+ */
+function getMask($key, $flag)
+{
+	return md5($key . " " . $flag);
+}
+
+/**
  * Returns true if there is a server instance running
  * @param String $key Tracker key
  * @return Boolean
  */
-function isProcessRunning($key)
+function isProcessRunning($mask)
 {
-	$mask = "[p]ython.*serv-$key";
+	$mask = "[p]ython.*serv-$mask";
 
 	$output = shell_exec("sudo pgrep -f $mask 2>&1");
 
@@ -179,16 +199,35 @@ function isProcessRunning($key)
 
 /**
  * Kills process by mask
- * @param string $key
+ * @param string $mask
  */
-function killProcess($key)
+function killProcess($mask)
 {
-	$mask = "[p]ython.*serv-$key";
+	$mask = "[p]ython.*pipe_server_mask=$mask";
 
 	print "Stopping... ";
 	$command = "sudo pkill -f $mask 2>&1";
 	$output = shell_exec($command);
 	print_r($output);
+	print "[OK]\n";
+}
+
+/**
+ * Kills all processess, regardless of flags
+ */
+function killAll()
+{
+	$mask = "[p]ython.*pipe_server_mask=";
+
+	print "Stopping all processes... ";
+	$command = "sudo pkill -f $mask 2>&1";
+	$output = shell_exec($command);
+	print_r($output);
+
+	// Чтобы остановить то, что уже было запущено в прошлой версии. Убрать.
+	$command = "sudo pkill -f [p]ython.*serv 2>&1";
+	$output = shell_exec($command);
+
 	print "[OK]\n";
 }
 
@@ -204,12 +243,14 @@ function startInBackground($command)
 /**
  * Start process
  */
-function startProcess($trackers)
+function startProcess($trackers, $flag)
 {
 	foreach ($trackers as $key => $port)
 	{
+		$mask = getMask($key, $flag);
+
 		print "Starting process for tracker $key... ";
-		startInBackground(WORKING_DIR . "pipe-start $key " . WORKING_DIR);
+		startInBackground(WORKING_DIR . "pipe-start $key $mask $port " . WORKING_DIR);
 		print "[OK]\n";
 	}
 }
@@ -217,15 +258,15 @@ function startProcess($trackers)
 /**
  * Service start
  */
-function serviceStart($input)
+function serviceStart($params)
 {
-	if (empty($input))
+	if (empty($params['input']))
 	{
 		$trackers = getAllTrackers();
 	}
 	else
 	{
-		$trackers = getTrackers($input);
+		$trackers = getTrackers($params['input'], $params['port']);
 	}
 
 	print "Ports check\n";
@@ -233,19 +274,20 @@ function serviceStart($input)
 
 	foreach ($trackers as $key => $port)
 	{
+		$mask = getMask($key, $params['flag']);
 		// check if process already running
-		if (isProcessRunning($key))
+		if (isProcessRunning($mask))
 		{
 			if (!$silentMode)
 			{
-				print "Pipe-process for protocol $key is already running. Restart? [Y/n]:";
+				print "Pipe-process for protocol $key with $params[flag] flag is already running. Restart? [Y/n]:";
 				if (!getUserConfirm())
 				{
 					unset($trackers[$key]);
 					continue;
 				}
 			}
-			killProcess($key);
+			killProcess($mask);
 		}
 
 		// check for opened ports
@@ -270,26 +312,33 @@ function serviceStart($input)
 		}
 	}
 
-	startProcess($trackers);
+	startProcess($trackers, $params['flag']);
 }
 
 /**
  * Kills pipe-server processes
  */
-function serviceStop($input)
+function serviceStop($params)
 {
-	if (empty($input))
+	if ($params['stop'] == 'all')
+	{
+		killAll();
+		return;
+	}
+
+	if (empty($params['input']))
 	{
 		$trackers = getAllTrackers();
 	}
 	else
 	{
-		$trackers = getTrackers($input);
+		$trackers = getTrackers($params['input'], $params['port']);
 	}
 
-	foreach ($trackers as $key => $port)
+	foreach ($trackers as $key => $devNull)
 	{
-		killProcess($key);
+		$mask = getMask($key, $params['flag']);
+		killProcess($mask);
 	}
 
 }
@@ -297,31 +346,32 @@ function serviceStop($input)
 /**
  * Tests if process already running
  */
-function serviceTest($input)
+function serviceTest($params)
 {
-	if (empty($input))
+	if (empty($params['input']))
 	{
 		$trackers = getAllTrackers();
 	}
 	else
 	{
-		$trackers = getTrackers($input);
+		$trackers = getTrackers($params['input'], $params['port']);
 	}
 
-	foreach ($trackers as $key => $port)
+	foreach ($trackers as $key => $devNull)
 	{
-		if (isProcessRunning($key))
+		$mask = getMask($key, $params['flag']);
+		if (isProcessRunning($mask))
 		{
-			print "Listener for protocol $key is running\n";
+			print "Listener for protocol $key with $params[flag] flag is running\n";
 		}
 		else
 		{
-			print "Listener for protocol $key is down\n";
+			print "Listener for protocol $key with $params[flag] flag is down\n";
 		}
 	}
 }
 
-print "Pipe-server Starter v1.0.3\n";
+print "Pipe-server Starter v1.0.4\n";
 
 // read input arguments
 $command = '';
@@ -330,24 +380,29 @@ if (is_array($params['input']) && !empty($params['input'][0]))
 {
 	$command = array_shift($params['input']);
 }
+$params['flag'] = empty($params['flag']) ? DEFAULT_FLAG : $params['flag'];
+$params['port'] = empty($params['port']) ? false : $params['port'];
+$params['stop'] = empty($params['stop']) ? false : $params['stop'];
 
 switch ($command)
 {
 	case 'start':
-		serviceStart($params['input']);
+		serviceStart($params);
 		break;
 	case 'stop':
-		serviceStop($params['input']);
+		serviceStop($params);
 		break;
 	case 'restart':
 	case 'force-reload':
 	case 'reload':
-		serviceStop($params['input']);
-		serviceStart($params['input']);
+		serviceStop($params);
+		serviceStart($params);
 		break;
 	case 'status':
-		serviceTest($params['input']);
+		serviceTest($params);
 		break;
 	default:
-		print "Usage: $0 {start|stop|restart|reload|force-reload|status}\n";
+		$file = basename(__FILE__, '.php');
+		print "Usage: service $file {start|stop|restart|reload|force-reload|status}".
+			" [--stop=all] [--flag=%FLAG%] [--port=%PORT%] [%TRACKER_1%] [%TRACKER_2%] ... [%TRACKER_N%]\n";
 }

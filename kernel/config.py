@@ -17,7 +17,10 @@ try:
   conf.read(options.servconf);
 
   # общие настройки сервера
-  conf.port = conf.getint("general", "port")
+  if options.port:
+    conf.port = int(options.port)
+  else:
+    conf.port = conf.getint("general", "port")
   conf.socketPacketLength = conf.getint("general", "socketPacketLength")
   conf.socketDataMaxLength = conf.getint("general", "socketDataMaxLength")
   conf.setDaemon = conf.getboolean("general", "setDaemon")

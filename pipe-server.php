@@ -380,9 +380,18 @@ if (is_array($params['input']) && !empty($params['input'][0]))
 {
 	$command = array_shift($params['input']);
 }
-$params['flag'] = empty($params['flag']) ? DEFAULT_FLAG : $params['flag'];
-$params['port'] = empty($params['port']) ? false : $params['port'];
-$params['stop'] = empty($params['stop']) ? false : $params['stop'];
+if (!empty($params['f']))
+{
+	$params['flag'] = $params['f'];
+}
+if (!empty($params['p']))
+{
+	$params['port'] = $params['p'];
+}
+if (!empty($params['s']))
+{
+	$params['stop'] = $params['s'];
+}
 
 switch ($command)
 {
@@ -404,5 +413,5 @@ switch ($command)
 	default:
 		$file = basename(__FILE__, '.php');
 		print "Usage: service $file {start|stop|restart|reload|force-reload|status}".
-			" [--stop=all] [--flag=%FLAG%] [--port=%PORT%] [%TRACKER_1%] [%TRACKER_2%] ... [%TRACKER_N%]\n";
+			" [{--stop|-s}=all] [{--flag|-f}=%FLAG%] [{--port|-p}=%PORT%] [%TRACKER_1%] [%TRACKER_2%] ... [%TRACKER_N%]\n";
 }

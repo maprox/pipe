@@ -3,3 +3,4 @@ conf/pipe-*
 logs/*
 *__pycache__*
 *.pyc
+*.storage

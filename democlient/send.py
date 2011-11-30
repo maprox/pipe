@@ -9,9 +9,21 @@ import socket
 import codecs
 import time
 import threading
+import logging
+import os
 from datetime import datetime
 from random import *
 
+# logger setup
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr = logging.FileHandler(os.getcwd() + '/send.log')
+hdlr.setFormatter(formatter)
+logger = logging.getLogger('democlient')
+logger.addHandler(hdlr)
+logger.setLevel(logging.DEBUG)
+logger.debug('START')
+
+# regexp config
 rc_lat = '^(N\d+ \d+.\d+)'
 rc_lon = '(E(\d+) (\d+.\d+))$'
 rc_packet = '^Trackpoint'
@@ -95,8 +107,7 @@ def sendData(data):
     sock.send(d)
     sock.close()
   except Exception as E:
-    print(E)
-
+    logger.exception(E)
 
 #data for demo cars
 template_str1 = "GSr,457460032240926_888,00,5,e080,e080,3,"
@@ -128,45 +139,45 @@ def movecar(track_files, template_str):
    @return: string
   """
   while (True):
-    for track in track_files:
-      f = codecs.open(track, 'r', 'utf-8')
-      for line in f.readlines():
-        m = re_packet.match(line)
-        if (m):
-          s_parts = line.split(value_sep)
-          if (len(s_parts) >= 10):
-            # get data from file
-            try:
-                lat = getLat(s_parts[1])
-                lon = getLon(s_parts[1])
-                speed = str(int(getInt(s_parts[8])) / 1.852)
-                altitude = getInt(s_parts[3])
-                azimuth = getInt(s_parts[9])
-                odometer = getOdometer(s_parts[6])
-                # random get other data
-                sat_count = str(randint(1, 12))
-                # create result string
-                now = datetime.utcnow()
-                res_str = template_str + now.strftime('%d%m%y') + ','
-                res_str = res_str + now.strftime('%H%M%S') + ','
-                res_str = res_str + lon + ',' + lat + ',' + altitude + ',' + speed + ','
-                res_str = res_str + azimuth + ',' + sat_count
-                res_str = res_str + ',1.1,14600,14470mV,0,0,0,0,0,' + odometer + ',0'
-                #add the checksum
-                checksum = getChecksum(res_str)
-                res_str = res_str + '*' + checksum + '!'
-                sendData(res_str)
-            except:
-                pass
-                #throw
-            #random sleep
-            sleep = randint(10, 20)
-            time.sleep(sleep)
-      f.close()
-      #sleep for 2 hours and not more than 20 minutes between tracks
-      interval = randint(120, 140)
-      time.sleep(interval)
-    #print('restarting tracks...')
+    try:
+      for track in track_files:
+        f = codecs.open(track, 'r', 'utf-8')
+        for line in f.readlines():
+          m = re_packet.match(line)
+          if (m):
+            s_parts = line.split(value_sep)
+            if (len(s_parts) >= 10):
+              # get data from file
+              lat = getLat(s_parts[1])
+              lon = getLon(s_parts[1])
+              speed = str(int(getInt(s_parts[8])) / 1.852)
+              altitude = getInt(s_parts[3])
+              azimuth = getInt(s_parts[9])
+              odometer = getOdometer(s_parts[6])
+              # random get other data
+              sat_count = str(randint(1, 12))
+              # create result string
+              now = datetime.utcnow()
+              res_str = template_str + now.strftime('%d%m%y') + ','
+              res_str = res_str + now.strftime('%H%M%S') + ','
+              res_str = res_str + lon + ',' + lat + ',' + altitude + ',' + speed + ','
+              res_str = res_str + azimuth + ',' + sat_count
+              res_str = res_str + ',1.1,14600,14470mV,0,0,0,0,0,' + odometer + ',0'
+              #add the checksum
+              checksum = getChecksum(res_str)
+              res_str = res_str + '*' + checksum + '!'
+              sendData(res_str)
+
+              #random sleep
+              sleep = randint(10, 20)
+              time.sleep(sleep)
+        f.close()
+        #sleep for 2 hours and not more than 20 minutes between tracks
+        interval = randint(120, 140)
+        time.sleep(interval)
+      #print('restarting tracks...')
+    except Exception as E:
+      logger.exception(E)
 
 threading.Thread(target=movecar, name="thread1", args=[track_files1, template_str1]).start()
 threading.Thread(target=movecar, name="thread2", args=[track_files2, template_str2]).start()

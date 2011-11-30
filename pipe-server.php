@@ -270,7 +270,6 @@ function startProcess($trackers, $flag)
 		$pipeconf = getPipeConf($key);
 
 		print "Starting process for tracker $key... ";
-		print WORKING_DIR . "pipe-start $key $mask $port $pipeconf " . WORKING_DIR;
 		startInBackground(WORKING_DIR . "pipe-start $key $mask $port $pipeconf " . WORKING_DIR);
 		print "[OK]\n";
 	}

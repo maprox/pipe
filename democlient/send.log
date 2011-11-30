@@ -1,0 +1,3295 @@
+2011-11-30 14:26:16,872 DEBUG START
+2011-11-30 14:26:17,059 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:26:17,093 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:26:17,303 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:26:31,072 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:26:34,304 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:26:37,104 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:26:42,084 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:26:47,316 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:26:49,116 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:00,103 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:03,332 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:06,123 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:15,104 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:20,336 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:24,126 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:26,108 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:31,346 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:38,116 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:40,132 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:43,353 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:52,124 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:53,144 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:27:57,368 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:03,148 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:06,133 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:08,370 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:18,146 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:22,152 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:25,372 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:36,164 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:41,168 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:41,388 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:28:55,180 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:01,186 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:01,408 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:11,416 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:14,184 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:18,200 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:24,418 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:34,205 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:37,208 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:42,437 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:52,447 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:53,220 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:29:54,225 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:04,232 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:04,456 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:11,224 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:14,243 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:22,472 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:26,232 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:27,244 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:36,487 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:40,248 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:41,248 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:50,492 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:55,255 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:30:57,256 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:07,260 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:07,262 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:09,499 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:22,276 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:24,280 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:27,518 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:37,280 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:37,294 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:40,532 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:54,296 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:54,536 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:31:56,288 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:07,292 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:08,311 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:10,553 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:22,556 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:26,300 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:28,312 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:40,560 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:41,326 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:43,304 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:51,336 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:51,566 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:32:57,308 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:05,339 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:05,572 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:16,584 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:17,324 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:17,352 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:32,590 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:33,328 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:34,370 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:45,592 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:50,372 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:52,329 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:33:59,606 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:01,379 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:09,342 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:14,622 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:21,400 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:23,357 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:24,624 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:31,408 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:37,638 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:40,364 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:44,410 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:54,656 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:34:59,380 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:03,426 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:09,672 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:13,384 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:20,432 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:29,680 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:33,405 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:38,451 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:44,406 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:45,688 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:35:52,456 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:00,423 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:00,694 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:03,464 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:10,424 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:13,475 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:16,698 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:25,476 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:28,425 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:34,700 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:38,436 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:43,479 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:47,714 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:58,440 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:36:59,489 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:03,718 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:08,444 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:09,500 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:22,720 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:25,454 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:29,504 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:34,733 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:39,508 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:40,456 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:50,743 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:51,511 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:37:52,469 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:03,524 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:04,756 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:12,488 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:18,540 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:24,758 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:30,490 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:30,552 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:35,770 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:45,496 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:49,556 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:38:50,772 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:03,571 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:05,516 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:08,776 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:22,572 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:23,520 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:24,780 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:33,576 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:36,783 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:39,528 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:46,784 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:50,579 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:58,532 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:39:58,796 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:09,584 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:10,535 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:15,812 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:26,602 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:28,553 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:29,826 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:42,612 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:43,839 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:45,570 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:40:59,623 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:00,584 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:01,840 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:10,624 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:11,849 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:18,588 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:20,628 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:25,863 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:32,599 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:40,632 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:42,609 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:45,864 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:58,616 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:41:59,875 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:00,636 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:08,622 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:11,647 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:17,876 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:18,624 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:30,666 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:30,887 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:37,640 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:41,888 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:48,668 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:54,656 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:42:54,894 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:03,677 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:04,895 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:12,673 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:19,688 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:22,896 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:27,689 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:32,694 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:35,902 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:40,703 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:43,706 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:50,704 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:53,920 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:43:58,715 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:07,713 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:09,935 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:11,716 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:22,724 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:26,940 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:30,727 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:32,727 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:43,737 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:45,944 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:44:52,728 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:02,745 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:04,953 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:06,736 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:19,756 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:21,752 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:21,959 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:31,964 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:38,766 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:39,760 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:46,966 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:49,772 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:45:55,768 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:05,972 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:06,784 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:10,776 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:16,788 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:22,990 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:30,797 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:31,803 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:33,001 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:41,808 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:45,812 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:49,008 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:54,822 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:46:58,824 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:04,022 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:05,832 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:18,838 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:19,038 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:19,846 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:29,848 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:32,040 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:38,848 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:40,856 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:51,052 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:53,857 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:47:53,858 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:04,064 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:10,860 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:12,862 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:22,869 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:24,072 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:27,876 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:32,872 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:41,881 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:42,880 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:44,093 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:51,884 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:57,096 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:48:59,896 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:07,900 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:13,900 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:15,114 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:17,908 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:27,116 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:29,910 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:30,913 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:44,926 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:47,120 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:49,931 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:49:56,929 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:03,132 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:04,942 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:15,936 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:23,136 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:24,954 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:28,950 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:39,152 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:40,958 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:46,956 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:52,966 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:50:59,172 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:01,972 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:04,979 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:16,980 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:18,192 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:22,982 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:31,206 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:32,988 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:41,996 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:45,212 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:51,000 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:51:57,010 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:02,004 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:04,220 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:13,012 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:15,232 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:17,012 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:33,016 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:34,240 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:36,021 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:50,024 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:50,248 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:52:54,028 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:04,032 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:09,254 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:14,040 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:24,038 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:28,274 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:30,042 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:38,052 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:40,287 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:42,055 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:55,056 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:53:59,071 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:00,307 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:07,060 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:17,072 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:19,312 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:24,067 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:27,080 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:31,320 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:38,068 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:43,097 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:45,329 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:55,109 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:54:56,087 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:04,341 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:05,112 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:12,104 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:23,116 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:23,131 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:23,361 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:35,128 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:37,146 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:43,368 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:47,156 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:55,149 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:55:58,380 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:02,160 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:10,393 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:13,170 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:14,152 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:21,398 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:25,160 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:27,184 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:39,168 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:40,404 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:46,187 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:50,408 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:56:54,176 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:01,200 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:06,184 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:09,411 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:11,211 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:21,196 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:28,428 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:29,230 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:38,214 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:40,433 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:42,243 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:53,255 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:53,447 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:57:56,233 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:03,448 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:07,245 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:09,256 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:23,469 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:27,248 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:28,268 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:35,474 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:41,263 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:42,272 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:51,274 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:51,490 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:58:55,276 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:06,506 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:07,291 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:09,291 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:21,292 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:22,512 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:27,292 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:34,525 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:37,293 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:45,293 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:53,296 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:54,546 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 14:59:57,304 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:03,304 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:13,560 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:17,324 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:21,323 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:25,562 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:31,339 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:36,569 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:37,340 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:41,340 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:49,583 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:51,344 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:57,357 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:00:59,594 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:10,352 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:12,360 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:17,608 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:27,371 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:30,373 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:35,627 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:41,374 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:43,387 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:53,389 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:01:55,628 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:01,380 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:12,400 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:14,393 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:14,632 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:23,407 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:33,413 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:34,653 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:42,415 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:47,667 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:50,430 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:02:55,416 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:00,441 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:02,683 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:05,420 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:14,695 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:17,433 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:19,450 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:27,709 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:31,463 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:33,450 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:41,474 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:45,720 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:50,464 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:51,484 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:03:56,723 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:00,466 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:01,492 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:11,739 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:17,473 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:19,511 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:24,752 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:36,529 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:37,480 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:41,756 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:54,488 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:54,770 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:04:55,548 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:07,500 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:07,557 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:07,780 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:18,791 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:22,558 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:23,512 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:30,799 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:40,519 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:40,559 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:44,804 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:58,576 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:05:59,820 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:00,526 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:09,584 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:15,528 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:19,587 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:19,833 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:32,537 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:32,589 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:34,836 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:42,544 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:42,590 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:53,852 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:54,545 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:06:55,601 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:07,549 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:09,853 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:11,616 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:22,864 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:23,560 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:27,632 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:35,697 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:40,138 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:45,976 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:48,630 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:07:58,862 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:04,715 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:06,166 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:16,003 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:17,767 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:24,242 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:30,137 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:31,294 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:45,440 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:08:57,529 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:09:00,241 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:09:11,168 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:09:38,972 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:09:39,886 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:09:40,985 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:09:51,997 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:09:57,188 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:09:59,888 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:02,008 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:08,460 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:10,900 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:22,028 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:24,904 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:27,508 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:35,040 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:39,940 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:45,712 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:46,048 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:10:59,026 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:00,732 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:03,064 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:12,736 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:17,040 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:22,088 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:24,748 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:31,046 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:37,121 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:41,755 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:44,060 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:47,132 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:55,072 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:57,765 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:11:58,134 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:14,092 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:15,140 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:17,784 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:24,103 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:29,152 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:34,802 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:40,104 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:44,168 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:51,820 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:12:56,181 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:00,125 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:06,836 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:15,201 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:16,143 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:20,840 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:26,212 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:31,144 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:34,852 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:41,224 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:45,860 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:49,152 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:13:51,225 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:14:03,863 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:14:07,168 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:14:07,240 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:14:16,864 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:14:17,244 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:14:18,172 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:04,160 DEBUG START
+2011-11-30 15:16:04,338 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:04,366 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:04,561 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:15,350 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:18,381 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:23,564 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:28,352 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:30,392 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:39,568 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:43,399 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:48,373 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:16:53,570 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:00,401 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:02,375 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:09,585 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:10,404 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:17,376 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:20,834 DEBUG START
+2011-11-30 15:17:20,976 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:20,982 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:20,983 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:32,996 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:32,996 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:39,000 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:43,000 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:45,004 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:56,007 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:17:59,020 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:18:02,020 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:18:09,020 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:18:12,024 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:18:22,024 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:18:24,036 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:18:29,023 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:08,798 DEBUG START
+2011-11-30 15:19:08,808 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:08,954 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:08,961 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:20,972 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:22,874 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:26,973 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:30,982 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:39,974 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:42,883 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:46,983 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:51,984 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:19:56,898 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:04,989 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:05,997 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:06,909 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:22,004 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:23,001 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:25,917 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:40,020 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:41,932 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:42,008 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:51,933 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:53,018 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:20:59,025 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:03,940 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:09,032 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:16,029 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:21,942 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:24,033 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:31,944 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:34,044 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:39,049 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:47,056 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:50,953 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:21:51,052 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:03,064 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:03,964 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:07,061 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:16,072 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:18,972 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:19,072 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:33,074 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:34,076 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:35,988 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:46,992 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:49,088 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:22:54,088 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:04,089 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:04,092 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:07,012 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:18,900 DEBUG START
+2011-11-30 15:23:19,081 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:19,081 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:19,088 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:32,089 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:33,092 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:23:34,090 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused
+2011-11-30 15:24:59,140 ERROR [Errno 111] Connection refused
+Traceback (most recent call last):
+  File "send.py", line 104, in sendData
+    sock.connect((host, port))
+socket.error: [Errno 111] Connection refused

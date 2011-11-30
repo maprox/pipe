@@ -232,6 +232,24 @@ function killAll()
 }
 
 /**
+ * Finds pipe configuration file
+ */
+function getPipeConf($name)
+{
+	$file = WORKING_DIR . "conf/pipe-$name.conf";
+	if (file_exists($file)) {
+		return "conf/pipe-$name.conf";
+	}
+
+	$file = WORKING_DIR . "conf/pipe-default.conf";
+	if (file_exists($file)) {
+		return "conf/pipe-default.conf";
+	}
+
+	return "conf/pipe.conf";
+}
+
+/**
  * Starts command in background
  * @param string $command
  */
@@ -249,8 +267,11 @@ function startProcess($trackers, $flag)
 	{
 		$mask = getMask($key, $flag);
 
+		$pipeconf = getPipeConf($key);
+
 		print "Starting process for tracker $key... ";
-		startInBackground(WORKING_DIR . "pipe-start $key $mask $port " . WORKING_DIR);
+		print WORKING_DIR . "pipe-start $key $mask $port $pipeconf " . WORKING_DIR;
+		startInBackground(WORKING_DIR . "pipe-start $key $mask $port $pipeconf " . WORKING_DIR);
 		print "[OK]\n";
 	}
 }

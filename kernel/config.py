@@ -25,9 +25,6 @@ try:
   conf.socketDataMaxLength = conf.getint("general", "socketDataMaxLength")
   conf.setDaemon = conf.getboolean("general", "setDaemon")
   conf.pathStorage = conf.get("general", "pathStorage")
-  conf.pipeKey = conf.get("pipe", "key")
-  conf.pipeSetUrl = conf.get("pipe", "urlset")
-  conf.pipeGetUrl = conf.get("pipe", "urlget")
   conf.protocols = []
   for item in conf.items('protocols'):
     conf.protocols.append(item[0])
@@ -35,4 +32,16 @@ try:
 
 except Exception as E:
   log.critical("Error reading " + options.servconf + ": " + E.message)
+  exit(1)
+
+try:
+  conf.read(options.pipeconf);
+
+  # настройки pipe
+  conf.pipeKey = conf.get("pipe", "key")
+  conf.pipeSetUrl = conf.get("pipe", "urlset")
+  conf.pipeGetUrl = conf.get("pipe", "urlget")
+
+except Exception as E:
+  log.critical("Error reading " + options.pipeconf + ": " + E.message)
   exit(1)

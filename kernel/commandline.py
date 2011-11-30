@@ -4,8 +4,6 @@
 @info      Command line reading module
 @copyright 2009-2011, Maprox Ltd.
 @author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/kernel/commandline.py $
-@version   $Id: commandline.py 357 2010-12-17 13:30:30Z sunsay $
 '''
 
 from optparse import OptionParser
@@ -28,6 +26,14 @@ options.add_option(
    default="conf/serv.conf")
 
 options.add_option(
+   "-p",
+   "--pipeconf",
+   dest="pipeconf",
+   help="path to the pipe configuration file",
+   metavar="PathToPipeConf",
+   default="conf/pipe.conf")
+
+options.add_option(
    "--pipe_server_mask",
    dest="pipe_server_mask",
    help="pipe process identifier",
@@ -35,7 +41,6 @@ options.add_option(
    default="000")
 
 options.add_option(
-   "-p",
    "--port",
    dest="port",
    help="pipe process identifier",

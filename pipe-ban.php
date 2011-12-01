@@ -30,25 +30,48 @@ function getBanTrackers($name)
 
 function blockIp($ip, $tracker)
 {
-	$trackers = getBanTrackers($tracker);
-
-	foreach ($trackers as $tracker => $port)
+	if ($tracker == 'all')
 	{
-		print "Blocking $ip from $tracker tracker... ";
-		shell_exec("sudo iptables -t filter --append INPUT -p tcp -s $ip --dport $port -j REJECT > /dev/null 2>&1");
+		print "Blocking $ip from all trackers... ";
+		shell_exec("sudo iptables -t filter --append INPUT -p tcp -s $ip -j REJECT > /dev/null 2>&1");
 		print "[OK]\n";
+	}
+	else
+	{
+		$trackers = getBanTrackers($tracker);
+
+		foreach ($trackers as $tracker => $port)
+		{
+			print "Blocking $ip from $tracker tracker... ";
+			shell_exec("sudo iptables -t filter --append INPUT -p tcp -s $ip --dport $port -j REJECT > /dev/null 2>&1");
+			print "[OK]\n";
+		}
 	}
 }
 
 function unblockIp($ip, $tracker)
 {
-	$trackers = getBanTrackers($tracker);
-
-	foreach ($trackers as $tracker => $port)
+	if ($tracker == 'all')
 	{
-		print "Allowing $ip to $tracker tracker... ";
-		shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip --dport $port -j REJECT > /dev/null 2>&1");
+		print "Allowing $ip to all trackers... ";
+		shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip -j REJECT > /dev/null 2>&1");
+		$singleTrackers = getAllTrackers();
+		foreach ($singleTrackers as $singleTracker => $port)
+		{
+			shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip --dport $port -j REJECT > /dev/null 2>&1");
+		}
 		print "[OK]\n";
+	}
+	else
+	{
+		$trackers = getBanTrackers($tracker);
+
+		foreach ($trackers as $tracker => $port)
+		{
+			print "Allowing $ip to $tracker all tracker.. ";
+			shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip --dport $port -j REJECT > /dev/null 2>&1");
+			print "[OK]\n";
+		}
 	}
 }
 
@@ -61,12 +84,16 @@ function listTrackers($tracker)
 		$data = shell_exec("sudo iptables -t filter --list");
 		print "Blocked IPs for tracker $tracker:\n";
 		$data = explode("\n", $data);
+		$output = array();
 		foreach ($data as $line)
 		{
-			if (preg_match('/REJECT\s+tcp[\s\-]+([\d\.]+).*dpt:' . $port . '/us', $line, $ip)) {
-				print $ip[1] . "\n";
+			if (preg_match('/REJECT\s+tcp[\s\-]+([\d\.]+)(.*dpt:' . $port . '|(?!.*dpt:).*$)/us', $line, $ip)) {
+				$output[ip2long($ip[1])] = $ip[1];
 			}
 		}
+		$output = array_unique($output);
+		ksort($output);
+		print implode("\n", $output) . "\n";
 	}
 }
 

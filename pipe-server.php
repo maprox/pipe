@@ -91,7 +91,7 @@ function getMask($key, $flag)
  */
 function isProcessRunning($mask)
 {
-	$mask = "[p]ython.*serv-$mask";
+	$mask = "[p]ython.*pipe_server_mask=$mask";
 
 	$output = shell_exec("sudo pgrep -f $mask 2>&1");
 
@@ -124,10 +124,6 @@ function killAll()
 	$command = "sudo pkill -f $mask 2>&1";
 	$output = shell_exec($command);
 	print_r($output);
-
-	// Чтобы остановить то, что уже было запущено в прошлой версии. Убрать.
-	$command = "sudo pkill -f [p]ython.*serv 2>&1";
-	$output = shell_exec($command);
 
 	print "[OK]\n";
 }

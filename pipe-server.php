@@ -163,7 +163,6 @@ function doConfigStopAll()
 function buildConfigArray($trackers, $stop = false)
 {
 	$return = array();
-	$host = trim(shell_exec("ifconfig eth0 | grep 'inet addr:' | cut -d: -f2 | awk '{ print $1}'"));
 	foreach ($trackers as $tracker => $data)
 	{
 		$mask = getMask($tracker, 'config');
@@ -171,7 +170,7 @@ function buildConfigArray($trackers, $stop = false)
 
 		if (empty($return[$data['config']]))
 		{
-			$return[$data['config']] = "$data[config]host=$host";
+			$return[$data['config']] = "$data[config]host=$data[host]";
 		}
 
 		$return[$data['config']] .= "&tracker[$mask]=$tracker&port[$mask]=$port";

@@ -84,35 +84,34 @@ function readTrackerConfig($name, $port = false)
 	$return = array(
 		'pipeconf' => getPipeConf($name)
 	);
-	$pipeData = file(WORKING_DIR . $return['pipeconf']);
-
-	foreach ($pipeData as $line)
-	{
-		if (preg_match('/^urlconfig=(.*)/', $line, $config))
-		{
-			$return['config'] = $config[1];
-			break;
-		}
-	}
+	$return['config'] = readIni(WORKING_DIR . $return['pipeconf'], 'urlconfig');
+	$return['host'] = readIni(WORKING_DIR . $return['pipeconf'], 'host');
 
 	if ($port && count($names) == 1)
 	{
 		$return['port'] = $port;
-		return $return;
+	}
+	else
+	{
+		$return['port'] = readIni($file, 'port');
 	}
 
+	return $return['port'] ? $return : false;
+}
+
+function readIni($file, $option)
+{
 	$data = file($file);
 
 	foreach ($data as $line)
 	{
-		if (preg_match('/^port=(\d+)/', $line, $port))
+		if (preg_match('/^' . $option . '=(.*)/', trim($line), $config))
 		{
-			$return['port'] = $port[1];
-			return $return;
+			return $config[1];
 		}
 	}
 
-	return false;
+	return null;
 }
 
 /**

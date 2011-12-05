@@ -9,6 +9,7 @@
 """
 
 import re
+import json
 from datetime import datetime
 
 from kernel.logger import log
@@ -70,14 +71,18 @@ class GlobalsatHandler(AbstractHandler):
       'o': '\d+',
      #'s': ''
     },
-    'search_uid': 'GS\w,(?P<uid>\w+)'
+    'search_uid': 'GS\w,(?P<uid>\w+)',
+    'request': '^OBS,device\((?P<data>[^\)]+)\),options\((?P<options>[^\)]+)\)$'
   }
 
   re_compiled = {
     'service': None,
     'report': None,
-    'search_uid': None
+    'search_uid': None,
+    'request': None
   }
+
+  default_options = {}
 
   re_volts = re.compile('(\d+)mV')
   re_percents = re.compile('(\d+)%')
@@ -91,7 +96,7 @@ class GlobalsatHandler(AbstractHandler):
     """
      Truncates checksum part from value string
      @param value: value string
-     @return: truncated string without checksum part 
+     @return: truncated string without checksum part
     """
     return re.sub('\*(\w{1,4})!', '', value)
 
@@ -113,7 +118,7 @@ class GlobalsatHandler(AbstractHandler):
     """
      Adds checksum to a data string
      @param data: data string
-     @return: data, containing checksum part 
+     @return: data, containing checksum part
     """
     return str.format(fmt, d = data, c = cls.getChecksum(data))
 
@@ -130,6 +135,15 @@ class GlobalsatHandler(AbstractHandler):
       section = conf[self.confSectionName]
       self.reportFormat = self.truncateCheckSum(section.get(
         "defaultReportFormat", self.reportFormat))
+
+  def getRawReportFormat(self):
+    """
+     Gets the format for report message.
+    """
+    if conf.has_section(self.confSectionName):
+      section = conf[self.confSectionName]
+      return section.get("defaultReportFormat", self.reportFormat)
+    return self.reportFormat
 
   def __compileRegularExpressions(self):
     """
@@ -149,9 +163,11 @@ class GlobalsatHandler(AbstractHandler):
       fieldsStr += str.format(p['field'], field = fieldName, value = pattern)
     line = str.format(p['line'], fields = fieldsStr)
     self.re_compiled['report'] = re.compile(line, flags = re.IGNORECASE)
-    # Compiling the pattern for uid searching 
+    # Compiling the pattern for uid searching
     self.re_compiled['search_uid'] = \
       re.compile(p['search_uid'], flags = re.IGNORECASE)
+    self.re_compiled['request'] = \
+      re.compile(p['request'])
     return self
 
   def prepare(self):
@@ -259,32 +275,24 @@ class GlobalsatHandler(AbstractHandler):
     log.debug("Recieving...")
     data_socket = self.recv()
     log.debug("Data recieved:\n%s", data_socket)
+    function_name = self.getFunction(data_socket)
+    function = getattr(self, function_name)
 
     while len(data_socket) > 0:
-      self.processData(data_socket)
+      function(data_socket)
       data_socket = self.recv()
 
-    '''
-    toSend = self.addChecksum("GSC,357460032240926,L1(ALL)")
-    print(toSend)
-    try:
-      self.send(toSend.encode())
-    except:
-      print("on send")
-    try:
-      answer = self.recv()
-      try:
-        print("1 = " + answer)
-      except:
-        print("on print")
-      answer = self.recv()
-      try:
-        print("2 = " + answer)
-      except:
-        print("on print")
-    except:
-      print("on recieve")
-    '''
+  def getFunction(self, data):
+    data_type = data.split(",")[0]
+
+    if data_type == 'OBS':
+      return "processRequest"
+    elif data_type == 'GSs':
+      return "processSettings"
+    elif data_type == 'GSr':
+      return "processData"
+    else:
+      raise NotImplementedError("Unknown data type" + data_type)
 
   def processData(self, data):
     """
@@ -310,7 +318,7 @@ class GlobalsatHandler(AbstractHandler):
         log.error("Unknown data format for %s", mu.group('uid'))
 
     while m:
-      # - OK. we found it, let's see for checksum 
+      # - OK. we found it, let's see for checksum
       log.debug("Raw match found.")
       data_device = m.groupdict()
       cs1 = str.upper(data_device['checksum'])
@@ -324,5 +332,39 @@ class GlobalsatHandler(AbstractHandler):
         log.error("Incorrect checksum: %s against computed %s", cs1, cs2)
       position += len(m.group(0))
       m = rc.search(data, position)
+
+    return self
+
+  def processSettings(self, data):
+    raise NotImplementedError("processSettings must be defined in child class")
+
+  def processRequest(self, data):
+    """
+     Processing of observer request from socket
+     @param data: request
+    """
+    rc = self.re_compiled['request']
+    position = 0
+
+    m = rc.search(data, position)
+    if m:
+      log.debug("Request match found.")
+      data = m.groupdict()['data']
+      data = json.loads(data)
+      options = m.groupdict()['options']
+
+      string = 'GSS,' + data['identifier'] + ',3,0'
+
+      if options == 'DEFAULT':
+        options = self.default_options
+      else:
+        raise NotImplementedError("Custom options not implemented yet")
+
+      string = string + self.parseOptions(options, data)
+      string = self.addChecksum(string)
+      self.send(string.encode())
+
+    else:
+      log.error("Incorrect request format")
 
     return self

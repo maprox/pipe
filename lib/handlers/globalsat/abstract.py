@@ -353,7 +353,7 @@ class GlobalsatHandler(AbstractHandler):
       data = json.loads(data)
       options = m.groupdict()['options']
 
-      string = 'GSS,' + data['identifier'] + ',3,0'
+      string = self.commandStart.format(data['identifier'])
 
       if options == 'DEFAULT':
         options = self.default_options

@@ -20,6 +20,7 @@ class Handler(GlobalsatHandler):
 
   confSectionName = "globalsat.tr-203"
   reportFormat = "SPRAB27GHKLMNO*U!"
+  commandStart = "GSS,{0},3,0"
 
   default_options = {
     # SOS Report count

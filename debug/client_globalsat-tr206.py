@@ -28,7 +28,7 @@ data = data + "*" + getChecksum(data) + "!"
 #SPRXYAB27GHKLMmnaefghio*U!
 
 # Connect to server and send data
-host, port = "trx.maprox.net", 20100
+host, port = "trx.maprox.net", 30203
 
 try:
   # Create a socket (SOCK_STREAM means a TCP socket)

@@ -22,6 +22,20 @@ class GlobalsatHandler(AbstractHandler):
 
   confSectionName = "globalsat.protocolname"
   reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
+  commandStart = "GSS,{0},3,0"
+
+  default_options = {
+    # SOS Report count
+    # 0 = None, 1 = SMS, 2 = TCP, 3 = SMS and TCP, 4 = UDP
+    'H0': '3',
+    # SOS Max number of SMS report for each phone number
+    'H1': '1',
+    # SOS Report interval
+    'H2': '30',
+    # SOS Max number of GPRS report (0=continues until
+    # dismissed via GSC,[IMEI],Na*QQ!)
+    'H3': '1'
+  }
 
   re_patterns = {
     'line': '(?P<line>(?P<head>GS\w){fields})\*(?P<checksum>\w+)!',
@@ -72,7 +86,7 @@ class GlobalsatHandler(AbstractHandler):
      #'s': ''
     },
     'search_uid': 'GS\w,(?P<uid>\w+)',
-    'request': '^OBS,device\((?P<data>[^\)]+)\),options\((?P<options>[^\)]+)\)$'
+    'request': '^OBS,request\((?P<data>.+)\)$'
   }
 
   re_compiled = {
@@ -81,8 +95,6 @@ class GlobalsatHandler(AbstractHandler):
     'search_uid': None,
     'request': None
   }
-
-  default_options = {}
 
   re_volts = re.compile('(\d+)mV')
   re_percents = re.compile('(\d+)%')
@@ -351,20 +363,50 @@ class GlobalsatHandler(AbstractHandler):
       log.debug("Request match found.")
       data = m.groupdict()['data']
       data = json.loads(data)
-      options = m.groupdict()['options']
 
-      string = self.commandStart.format(data['identifier'])
+      for command in data:
+        function_name = 'processCommand' + command['cmd'].capitalize()
+        function = getattr(self, function_name)
+        function(command['data'])
 
-      if options == 'DEFAULT':
-        options = self.default_options
-      else:
-        raise NotImplementedError("Custom options not implemented yet")
-
-      string = string + self.parseOptions(options, data)
-      string = self.addChecksum(string) + self.transmissionEndSymbol
-      self.send(string.encode())
+      self.send(self.transmissionEndSymbol.encode())
 
     else:
       log.error("Incorrect request format")
 
     return self
+
+  def processCommandFormat(self, data):
+    """
+     Processing command to form config string
+     @param data: request
+    """
+    string = self.commandStart.format(data['identifier'])
+
+    if data['options'] == 'DEFAULT':
+      options = self.default_options
+    else:
+      raise NotImplementedError("Custom options not implemented yet")
+
+    string = string + self.parseOptions(options, data)
+    string = self.addChecksum(string)
+    self.send(string.encode())
+
+  def parseOptions(self, options, data):
+    """
+     Converts options to string
+     @param options: options
+     @param data: request data
+    """
+
+    ret = ',O3=' + str(self.getRawReportFormat())
+    for key in options:
+      ret += ',' + key + '=' + options[key]
+
+    ret += ',D1=' + str(data['gprs']['apn'])
+    ret += ',D2=' + str(data['gprs']['username'])
+    ret += ',D3=' + str(data['gprs']['password'])
+    ret += ',E0=' + str(data['host'])
+    ret += ',E1=' + str(data['port'])
+
+    return ret

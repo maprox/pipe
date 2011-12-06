@@ -87,7 +87,7 @@ function readTrackerConfig($name, $port = false)
 	$return['config'] = readIni(WORKING_DIR . $return['pipeconf'], 'urlconfig');
 	$return['host'] = readIni(WORKING_DIR . $return['pipeconf'], 'host');
 
-	if ($port && count($names) == 1)
+	if ($port)
 	{
 		$return['port'] = $port;
 	}

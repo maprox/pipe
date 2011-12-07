@@ -141,6 +141,7 @@ def movecar(track_files, template_str):
   while (True):
     try:
       for track in track_files:
+        logger.debug('OPEN: ' + track)
         f = codecs.open(track, 'r', 'utf-8')
         for line in f.readlines():
           m = re_packet.match(line)
@@ -178,6 +179,7 @@ def movecar(track_files, template_str):
       #print('restarting tracks...')
     except Exception as E:
       logger.exception(E)
+  logger.debug('THREAD EXIT!!!')
 
 threading.Thread(target=movecar, name="thread1", args=[track_files1, template_str1]).start()
 threading.Thread(target=movecar, name="thread2", args=[track_files2, template_str2]).start()

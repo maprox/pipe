@@ -69,7 +69,9 @@ function getUserConfirm($default = true)
 	$handle = fopen("php://stdin", "r");
 	$line = strtolower(trim(fgets($handle)));
 	if (strlen($line) === 0)
+	{
 		return $default;
+	}
 	return ($line === 'y');
 }
 
@@ -128,22 +130,53 @@ function killAll()
 	print "[OK]\n";
 }
 
-/**
- * Finds pipe configuration file
- */
-function getPipeConf($name)
+function doConfigStart($trackers)
 {
-	$file = WORKING_DIR . "conf/pipe-$name.conf";
-	if (file_exists($file)) {
-		return "conf/pipe-$name.conf";
+	$config = buildConfigArray($trackers);
+
+	foreach ($config as $host => $command)
+	{
+		file_get_contents($command);
+	}
+}
+
+function doConfigStop($trackers)
+{
+	$config = buildConfigArray($trackers, true);
+
+	foreach ($config as $host => $command)
+	{
+		file_get_contents($command);
+	}
+}
+
+function doConfigStopAll()
+{
+	$config = buildConfigArray(getAllTrackers(), true);
+
+	foreach ($config as $host => $command)
+	{
+		file_get_contents($command);
+	}
+}
+
+function buildConfigArray($trackers, $stop = false)
+{
+	$return = array();
+	foreach ($trackers as $tracker => $data)
+	{
+		$mask = getMask($tracker, 'config');
+		$port = $stop ? 0 : $data['port'];
+
+		if (empty($return[$data['config']]))
+		{
+			$return[$data['config']] = "$data[config]host=$data[host]";
+		}
+
+		$return[$data['config']] .= "&tracker[$mask]=$tracker&port[$mask]=$port";
 	}
 
-	$file = WORKING_DIR . "conf/pipe-default.conf";
-	if (file_exists($file)) {
-		return "conf/pipe-default.conf";
-	}
-
-	return "conf/pipe.conf";
+	return $return;
 }
 
 /**
@@ -160,14 +193,12 @@ function startInBackground($command)
  */
 function startProcess($trackers, $flag)
 {
-	foreach ($trackers as $key => $port)
+	foreach ($trackers as $key => $config)
 	{
 		$mask = getMask($key, $flag);
 
-		$pipeconf = getPipeConf($key);
-
 		print "Starting process for tracker $key... ";
-		startInBackground(WORKING_DIR . "pipe-start $key $mask $port $pipeconf " . WORKING_DIR);
+		startInBackground(WORKING_DIR . "pipe-start $key $mask $config[port] $config[pipeconf] " . WORKING_DIR);
 		print "[OK]\n";
 	}
 }
@@ -189,7 +220,7 @@ function serviceStart($params)
 	print "Ports check\n";
 	$silentMode = false;
 
-	foreach ($trackers as $key => $port)
+	foreach ($trackers as $key => $config)
 	{
 		$mask = getMask($key, $params['flag']);
 		// check if process already running
@@ -208,21 +239,21 @@ function serviceStart($params)
 		}
 
 		// check for opened ports
-		if (!isPortOpen($port))
+		if (!isPortOpen($config['port']))
 		{
-			print "Port $port are busy by someone else.\n";
+			print "Port $config[port] are busy by someone else.\n";
 			if (!$silentMode)
 			{
-				print "Free port $port forcefully? [Y/n]";
+				print "Free port $config[port] forcefully? [Y/n]";
 				if (!getUserConfirm())
 				{
 					unset($trackers[$key]);
 					continue;
 				}
 			}
-			if (!forceOpenPort($port))
+			if (!forceOpenPort($config['port']))
 			{
-				print "Failed to free port $port";
+				print "Failed to free port $config[port]";
 				unset($trackers[$key]);
 				continue;
 			}
@@ -230,6 +261,8 @@ function serviceStart($params)
 	}
 
 	startProcess($trackers, $params['flag']);
+
+	doConfigStart($trackers);
 }
 
 /**
@@ -240,22 +273,26 @@ function serviceStop($params)
 	if ($params['stop'] == 'all')
 	{
 		killAll();
-		return;
-	}
-
-	if (empty($params['input']))
-	{
-		$trackers = getAllTrackers();
+		doConfigStopAll();
 	}
 	else
 	{
-		$trackers = getTrackers($params['input'], $params['port']);
-	}
+		if (empty($params['input']))
+		{
+			$trackers = getAllTrackers();
+		}
+		else
+		{
+			$trackers = getTrackers($params['input'], $params['port']);
+		}
 
-	foreach ($trackers as $key => $devNull)
-	{
-		$mask = getMask($key, $params['flag']);
-		killProcess($mask);
+		foreach ($trackers as $key => $devNull)
+		{
+			$mask = getMask($key, $params['flag']);
+			killProcess($mask);
+		}
+
+		doConfigStop($trackers);
 	}
 
 }
@@ -288,7 +325,7 @@ function serviceTest($params)
 	}
 }
 
-print "Pipe-server Starter v1.0.4\n";
+print "Pipe-server Starter v1.0.5\n";
 
 // read input arguments
 $command = '';

@@ -40,10 +40,10 @@ function blockIp($ip, $tracker)
 	{
 		$trackers = getBanTrackers($tracker);
 
-		foreach ($trackers as $tracker => $port)
+		foreach ($trackers as $tracker => $config)
 		{
 			print "Blocking $ip from $tracker tracker... ";
-			shell_exec("sudo iptables -t filter --append INPUT -p tcp -s $ip --dport $port -j REJECT > /dev/null 2>&1");
+			shell_exec("sudo iptables -t filter --append INPUT -p tcp -s $ip --dport $config[port] -j REJECT > /dev/null 2>&1");
 			print "[OK]\n";
 		}
 	}
@@ -56,9 +56,9 @@ function unblockIp($ip, $tracker)
 		print "Allowing $ip to all trackers... ";
 		shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip -j REJECT > /dev/null 2>&1");
 		$singleTrackers = getAllTrackers();
-		foreach ($singleTrackers as $singleTracker => $port)
+		foreach ($singleTrackers as $singleTracker => $config)
 		{
-			shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip --dport $port -j REJECT > /dev/null 2>&1");
+			shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip --dport $config[port] -j REJECT > /dev/null 2>&1");
 		}
 		print "[OK]\n";
 	}
@@ -66,10 +66,10 @@ function unblockIp($ip, $tracker)
 	{
 		$trackers = getBanTrackers($tracker);
 
-		foreach ($trackers as $tracker => $port)
+		foreach ($trackers as $tracker => $config)
 		{
 			print "Allowing $ip to $tracker all tracker.. ";
-			shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip --dport $port -j REJECT > /dev/null 2>&1");
+			shell_exec("sudo iptables -t filter --delete INPUT -p tcp -s $ip --dport $config[port] -j REJECT > /dev/null 2>&1");
 			print "[OK]\n";
 		}
 	}
@@ -79,7 +79,7 @@ function listTrackers($tracker)
 {
 	$trackers = getBanTrackers($tracker);
 
-	foreach ($trackers as $tracker => $port)
+	foreach ($trackers as $tracker => $config)
 	{
 		$data = shell_exec("sudo iptables -t filter --list");
 		print "Blocked IPs for tracker $tracker:\n";
@@ -87,7 +87,7 @@ function listTrackers($tracker)
 		$output = array();
 		foreach ($data as $line)
 		{
-			if (preg_match('/REJECT\s+tcp[\s\-]+([\d\.]+)(.*dpt:' . $port . '|(?!.*dpt:).*$)/us', $line, $ip)) {
+			if (preg_match('/REJECT\s+tcp[\s\-]+([\d\.]+)(.*dpt:' . $config['port'] . '|(?!.*dpt:).*$)/us', $line, $ip)) {
 				$output[ip2long($ip[1])] = $ip[1];
 			}
 		}

@@ -15,11 +15,14 @@ from lib.storage import storage
 class AbstractHandler(object):
   """ Abstract class for all implemented protocols """
 
+  transmissionEndSymbol = "\n"
+  """ Symbol which marks end of transmission for PHP """
+
   def __init__(self, store, clientThread):
     """
      Constructor of Listener.
      @param store: kernel.pipe.Manager instance
-     @param clientThread: Instance of kernel.server.ClientThread 
+     @param clientThread: Instance of kernel.server.ClientThread
     """
     log.debug('%s::__init__()', self.__class__)
     self.__store = store
@@ -71,7 +74,7 @@ class AbstractHandler(object):
   def send(self, data):
     """
      Sends data to a socket
-     @param data: data 
+     @param data: data
     """
     self.getThread().request.send(data)
     return self

@@ -9,6 +9,7 @@
 """
 
 import re
+import json
 from datetime import datetime
 
 from kernel.logger import log
@@ -21,6 +22,20 @@ class GlobalsatHandler(AbstractHandler):
 
   confSectionName = "globalsat.protocolname"
   reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
+  commandStart = "GSS,{0},3,0"
+
+  default_options = {
+    # SOS Report count
+    # 0 = None, 1 = SMS, 2 = TCP, 3 = SMS and TCP, 4 = UDP
+    'H0': '3',
+    # SOS Max number of SMS report for each phone number
+    'H1': '1',
+    # SOS Report interval
+    'H2': '30',
+    # SOS Max number of GPRS report (0=continues until
+    # dismissed via GSC,[IMEI],Na*QQ!)
+    'H3': '1'
+  }
 
   re_patterns = {
     'line': '(?P<line>(?P<head>GS\w){fields})\*(?P<checksum>\w+)!',
@@ -70,13 +85,15 @@ class GlobalsatHandler(AbstractHandler):
       'o': '\d+',
      #'s': ''
     },
-    'search_uid': 'GS\w,(?P<uid>\w+)'
+    'search_uid': 'GS\w,(?P<uid>\w+)',
+    'request': '^OBS,request\((?P<data>.+)\)$'
   }
 
   re_compiled = {
     'service': None,
     'report': None,
-    'search_uid': None
+    'search_uid': None,
+    'request': None
   }
 
   re_volts = re.compile('(\d+)mV')
@@ -91,7 +108,7 @@ class GlobalsatHandler(AbstractHandler):
     """
      Truncates checksum part from value string
      @param value: value string
-     @return: truncated string without checksum part 
+     @return: truncated string without checksum part
     """
     return re.sub('\*(\w{1,4})!', '', value)
 
@@ -113,7 +130,7 @@ class GlobalsatHandler(AbstractHandler):
     """
      Adds checksum to a data string
      @param data: data string
-     @return: data, containing checksum part 
+     @return: data, containing checksum part
     """
     return str.format(fmt, d = data, c = cls.getChecksum(data))
 
@@ -130,6 +147,15 @@ class GlobalsatHandler(AbstractHandler):
       section = conf[self.confSectionName]
       self.reportFormat = self.truncateCheckSum(section.get(
         "defaultReportFormat", self.reportFormat))
+
+  def getRawReportFormat(self):
+    """
+     Gets the format for report message.
+    """
+    if conf.has_section(self.confSectionName):
+      section = conf[self.confSectionName]
+      return section.get("defaultReportFormat", self.reportFormat)
+    return self.reportFormat
 
   def __compileRegularExpressions(self):
     """
@@ -149,9 +175,11 @@ class GlobalsatHandler(AbstractHandler):
       fieldsStr += str.format(p['field'], field = fieldName, value = pattern)
     line = str.format(p['line'], fields = fieldsStr)
     self.re_compiled['report'] = re.compile(line, flags = re.IGNORECASE)
-    # Compiling the pattern for uid searching 
+    # Compiling the pattern for uid searching
     self.re_compiled['search_uid'] = \
       re.compile(p['search_uid'], flags = re.IGNORECASE)
+    self.re_compiled['request'] = \
+      re.compile(p['request'])
     return self
 
   def prepare(self):
@@ -259,32 +287,24 @@ class GlobalsatHandler(AbstractHandler):
     log.debug("Recieving...")
     data_socket = self.recv()
     log.debug("Data recieved:\n%s", data_socket)
+    function_name = self.getFunction(data_socket)
+    function = getattr(self, function_name)
 
     while len(data_socket) > 0:
-      self.processData(data_socket)
+      function(data_socket)
       data_socket = self.recv()
 
-    '''
-    toSend = self.addChecksum("GSC,357460032240926,L1(ALL)")
-    print(toSend)
-    try:
-      self.send(toSend.encode())
-    except:
-      print("on send")
-    try:
-      answer = self.recv()
-      try:
-        print("1 = " + answer)
-      except:
-        print("on print")
-      answer = self.recv()
-      try:
-        print("2 = " + answer)
-      except:
-        print("on print")
-    except:
-      print("on recieve")
-    '''
+  def getFunction(self, data):
+    data_type = data.split(",")[0]
+
+    if data_type == 'OBS':
+      return "processRequest"
+    elif data_type == 'GSs':
+      return "processSettings"
+    elif data_type == 'GSr':
+      return "processData"
+    else:
+      raise NotImplementedError("Unknown data type" + data_type)
 
   def processData(self, data):
     """
@@ -310,7 +330,7 @@ class GlobalsatHandler(AbstractHandler):
         log.error("Unknown data format for %s", mu.group('uid'))
 
     while m:
-      # - OK. we found it, let's see for checksum 
+      # - OK. we found it, let's see for checksum
       log.debug("Raw match found.")
       data_device = m.groupdict()
       cs1 = str.upper(data_device['checksum'])
@@ -326,3 +346,67 @@ class GlobalsatHandler(AbstractHandler):
       m = rc.search(data, position)
 
     return self
+
+  def processSettings(self, data):
+    raise NotImplementedError("processSettings must be defined in child class")
+
+  def processRequest(self, data):
+    """
+     Processing of observer request from socket
+     @param data: request
+    """
+    rc = self.re_compiled['request']
+    position = 0
+
+    m = rc.search(data, position)
+    if m:
+      log.debug("Request match found.")
+      data = m.groupdict()['data']
+      data = json.loads(data)
+
+      for command in data:
+        function_name = 'processCommand' + command['cmd'].capitalize()
+        function = getattr(self, function_name)
+        function(command['data'])
+
+      self.send(self.transmissionEndSymbol.encode())
+
+    else:
+      log.error("Incorrect request format")
+
+    return self
+
+  def processCommandFormat(self, data):
+    """
+     Processing command to form config string
+     @param data: request
+    """
+    string = self.commandStart.format(data['identifier'])
+
+    if data['options'] == 'DEFAULT':
+      options = self.default_options
+    else:
+      raise NotImplementedError("Custom options not implemented yet")
+
+    string = string + self.parseOptions(options, data)
+    string = self.addChecksum(string)
+    self.send(string.encode())
+
+  def parseOptions(self, options, data):
+    """
+     Converts options to string
+     @param options: options
+     @param data: request data
+    """
+
+    ret = ',O3=' + str(self.getRawReportFormat())
+    for key in options:
+      ret += ',' + key + '=' + options[key]
+
+    ret += ',D1=' + str(data['gprs']['apn'])
+    ret += ',D2=' + str(data['gprs']['username'])
+    ret += ',D3=' + str(data['gprs']['password'])
+    ret += ',E0=' + str(data['host'])
+    ret += ',E1=' + str(data['port'])
+
+    return ret

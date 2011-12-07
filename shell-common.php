@@ -49,22 +49,13 @@ function getAllTrackers()
 
 	foreach ($files as $file)
 	{
-		$key = array();
 		preg_match('/conf\/serv-(.*)\.conf/ui', $file, $key);
+		$name = $key[1];
 
-		$data = file($file);
-
-		foreach ($data as $line)
-		{
-			if (preg_match('/^port=(\d+)/', $line, $port))
-			{
-				$return[$key[1]] = $port[1];
-				break;
-			}
-		}
+		$return[$name] = readTrackerConfig($name);
 	}
 
-	return $return;
+	return array_filter($return);
 }
 
 /**
@@ -76,27 +67,67 @@ function getTrackers($names, $port = false)
 	$return = array();
 	foreach ($names as $name)
 	{
-		$file = WORKING_DIR . "conf/serv-$name.conf";
-		if (file_exists($file))
+		$return[$name] = readTrackerConfig($name, $port);
+	}
+
+	return array_filter($return);
+}
+
+function readTrackerConfig($name, $port = false)
+{
+	$file = WORKING_DIR . "conf/serv-$name.conf";
+	if (!file_exists($file))
+	{
+		return false;
+	}
+
+	$return = array(
+		'pipeconf' => getPipeConf($name)
+	);
+	$return['config'] = readIni(WORKING_DIR . $return['pipeconf'], 'urlconfig');
+	$return['host'] = readIni(WORKING_DIR . $return['pipeconf'], 'host');
+
+	if ($port)
+	{
+		$return['port'] = $port;
+	}
+	else
+	{
+		$return['port'] = readIni($file, 'port');
+	}
+
+	return $return['port'] ? $return : false;
+}
+
+function readIni($file, $option)
+{
+	$data = file($file);
+
+	foreach ($data as $line)
+	{
+		if (preg_match('/^' . $option . '=(.*)/', trim($line), $config))
 		{
-			if ($port && count($names) == 1)
-			{
-				$return[$name] = $port;
-				continue;
-			}
-
-			$data = file($file);
-
-			foreach ($data as $line)
-			{
-				if (preg_match('/^port=(\d+)/', $line, $port))
-				{
-					$return[$name] = $port[1];
-					break;
-				}
-			}
+			return $config[1];
 		}
 	}
 
-	return $return;
+	return null;
+}
+
+/**
+ * Finds pipe configuration file
+ */
+function getPipeConf($name)
+{
+	$file = WORKING_DIR . "conf/pipe-$name.conf";
+	if (file_exists($file)) {
+		return "conf/pipe-$name.conf";
+	}
+
+	$file = WORKING_DIR . "conf/pipe-default.conf";
+	if (file_exists($file)) {
+		return "conf/pipe-default.conf";
+	}
+
+	return "conf/pipe.conf";
 }

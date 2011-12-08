@@ -86,6 +86,7 @@ class GlobalsatHandler(AbstractHandler):
       'o': '\d+',
      #'s': ''
     },
+    'search_config': 'GSs,(?P<uid>\w+),(?P<status>\d+),(?P<order>\d+),(?P<data>.*)\*[a-f\d]{1,2}\!',
     'search_uid': 'GS\w,(?P<uid>\w+)'
   }
 
@@ -93,7 +94,7 @@ class GlobalsatHandler(AbstractHandler):
     'service': None,
     'report': None,
     'search_uid': None,
-    'request': None
+    'search_config': None
   }
 
   re_volts = re.compile('(\d+)mV')
@@ -178,6 +179,7 @@ class GlobalsatHandler(AbstractHandler):
     # Compiling the pattern for uid searching
     self.re_compiled['search_uid'] = \
       re.compile(p['search_uid'], flags = re.IGNORECASE)
+    self.re_compiled['search_config'] = re.compile(p['search_config'])
     return self
 
   def prepare(self):
@@ -311,21 +313,35 @@ class GlobalsatHandler(AbstractHandler):
     """
     rc = self.re_compiled['report']
     rc_uid = self.re_compiled['search_uid']
+    rc_config = re_compiled['search_config']
     position = 0
 
     m = rc.search(data, position)
     if not m:
-      """
-       OK. Our pattern doesn't match the socket data.
-       The source of the problem can be in wrong report format.
-       Let's try to find UID of device.
-     - Later it would be good to load particular config for device by its uid
-      """
-      mu = rc_uid.search(data, position)
-      if not mu:
-        log.error("Unknown data format...")
-      else:
-        log.error("Unknown data format for %s", mu.group('uid'))
+
+      mc = rc_config.search(data, position)
+
+      if not mc:
+        """
+         OK. Our pattern doesn't match the socket or config data.
+         The source of the problem can be in wrong report format.
+         Let's try to find UID of device.
+       - Later it would be good to load particular config for device by its uid
+        """
+        mu = rc_uid.search(data, position)
+        if not mu:
+          log.error("Unknown data format...")
+        else:
+          log.error("Unknown data format for %s", mu.group('uid'))
+
+      while mc:
+        log.debug("Config match found.")
+        data_settings = mc.groupdict()
+        self.getSettings(data_settings)
+        position += len(mc.group(0))
+        mc = rc_config.search(data, position)
+
+      return self
 
     while m:
       # - OK. we found it, let's see for checksum
@@ -347,6 +363,9 @@ class GlobalsatHandler(AbstractHandler):
     super(GlobalsatHandler, self).processData(data)
 
     return self
+
+  def getSettings(self, data):
+    raise NotImplementedError("getSettings must be defined in child class")
 
   def processSettings(self, data):
     raise NotImplementedError("processSettings must be defined in child class")

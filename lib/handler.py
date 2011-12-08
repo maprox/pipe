@@ -8,6 +8,8 @@
 @version   $Id: listener.py 404 2011-02-24 22:16:22Z sunsay $
 '''
 
+import re
+
 from kernel.logger import log
 from kernel.config import conf
 from lib.storage import storage

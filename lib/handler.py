@@ -9,6 +9,7 @@
 '''
 
 import re
+import json
 
 from kernel.logger import log
 from kernel.config import conf

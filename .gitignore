@@ -5,3 +5,6 @@ logs/*
 *.pyc
 *.storage
 democlient/send.log
+
+db/*
+!db/.gitignore

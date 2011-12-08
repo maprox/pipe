@@ -14,6 +14,7 @@ from datetime import datetime
 
 from kernel.logger import log
 from kernel.config import conf
+from kernel.database import db
 from lib.handler import AbstractHandler
 from lib.geo import Geo
 
@@ -368,10 +369,13 @@ class GlobalsatHandler(AbstractHandler):
 
   def processCommandRead(self, data):
 
-    command = 'GSC,' + self.uid + ',L1(ALL)'
-    command = self.addChecksum(command)
-    log.debug('Command sent: ' + command)
-    self.send(command.encode())
+    db.execute('select * from read where uid = "' + self.uid + '"')
+    if len(db.fetchall()) == 0:
+      command = 'GSC,' + self.uid + ',L1(ALL)'
+      command = self.addChecksum(command)
+      log.debug('Command sent: ' + command)
+      db.insert('insert into read (id, uid, part, message) VALUES(NULL, "' + self.uid + '", 0, "start")')
+      self.send(command.encode())
 
   def parseOptions(self, options, data):
     """

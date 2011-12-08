@@ -85,8 +85,7 @@ class GlobalsatHandler(AbstractHandler):
       'o': '\d+',
      #'s': ''
     },
-    'search_uid': 'GS\w,(?P<uid>\w+)',
-    'request': '^OBS,request\((?P<data>.+)\)$'
+    'search_uid': 'GS\w,(?P<uid>\w+)'
   }
 
   re_compiled = {
@@ -178,8 +177,6 @@ class GlobalsatHandler(AbstractHandler):
     # Compiling the pattern for uid searching
     self.re_compiled['search_uid'] = \
       re.compile(p['search_uid'], flags = re.IGNORECASE)
-    self.re_compiled['request'] = \
-      re.compile(p['request'])
     return self
 
   def prepare(self):
@@ -339,42 +336,19 @@ class GlobalsatHandler(AbstractHandler):
         data_observ = self.translate(data_device)
         data_observ['__rawdata'] = m.group(0)
         log.info(data_observ)
+        self.uid = data_observ['uid']
         store_result = self.store([data_observ])
       else:
         log.error("Incorrect checksum: %s against computed %s", cs1, cs2)
       position += len(m.group(0))
       m = rc.search(data, position)
 
+    super(GlobalsatHandler, self).processData(data)
+
     return self
 
   def processSettings(self, data):
     raise NotImplementedError("processSettings must be defined in child class")
-
-  def processRequest(self, data):
-    """
-     Processing of observer request from socket
-     @param data: request
-    """
-    rc = self.re_compiled['request']
-    position = 0
-
-    m = rc.search(data, position)
-    if m:
-      log.debug("Request match found.")
-      data = m.groupdict()['data']
-      data = json.loads(data)
-
-      for command in data:
-        function_name = 'processCommand' + command['cmd'].capitalize()
-        function = getattr(self, function_name)
-        function(command['data'])
-
-      self.send(self.transmissionEndSymbol.encode())
-
-    else:
-      log.error("Incorrect request format")
-
-    return self
 
   def processCommandFormat(self, data):
     """
@@ -391,6 +365,13 @@ class GlobalsatHandler(AbstractHandler):
     string = string + self.parseOptions(options, data)
     string = self.addChecksum(string)
     self.send(string.encode())
+
+  def processCommandRead(self, data):
+
+    command = 'GSC,' + self.uid + ',L1(ALL)'
+    command = self.addChecksum(command)
+    log.debug('Command sent: ' + command)
+    self.send(command.encode())
 
   def parseOptions(self, options, data):
     """

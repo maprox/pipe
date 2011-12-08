@@ -11,12 +11,18 @@
 from kernel.logger import log
 from kernel.config import conf
 from lib.storage import storage
+from urllib.request import urlopen
 
 class AbstractHandler(object):
   """ Abstract class for all implemented protocols """
 
   transmissionEndSymbol = "\n"
   """ Symbol which marks end of transmission for PHP """
+
+  uid = False
+  """ Uid of currently connected device """
+
+  re_request = re.compile('^OBS,request\((?P<data>.+)\)$')
 
   def __init__(self, store, clientThread):
     """
@@ -51,6 +57,45 @@ class AbstractHandler(object):
      Must be overridden in child classes
      @param data: Data from socket
     """
+
+    if self.uid:
+      commands = self.getCommands()
+      self.processRequest(commands)
+
+    return self
+
+  def getCommands(self):
+    connection = urlopen(conf.pipeGetUrl + 'uid=' + self.uid)
+    answer = connection.read()
+    return answer.decode()
+
+  def processRequest(self, data):
+    """
+     Processing of observer request from socket
+     @param data: request
+    """
+
+    position = 0
+
+    m = self.re_request.search(data, position)
+    if m:
+      log.debug("Request match found.")
+      data = m.groupdict()['data']
+      data = json.loads(data)
+
+      for command in data:
+        function_name = 'processCommand' + command['cmd'].capitalize()
+        function = getattr(self, function_name)
+        if 'data' in command:
+          function(command['data'])
+        else:
+          function(None)
+
+      self.send(self.transmissionEndSymbol.encode())
+
+    else:
+      log.error("Incorrect request format")
+
     return self
 
   def recv(self):

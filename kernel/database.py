@@ -17,7 +17,7 @@ class Database(object):
 
   def __init__(self):
     """ Constructor. Creates local database to be used by protocol handlers """
-    db = sqlite3.connect('db/' + conf.protocols[0])
+    db = sqlite3.connect('db/' + conf.protocols[0], check_same_thread = False)
     cursor = db.cursor()
 
     cursor.execute('create table if not exists read (id INTEGER PRIMARY KEY, uid VARCHAR(60), part INTEGER, message TEXT)')

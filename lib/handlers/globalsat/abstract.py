@@ -374,7 +374,7 @@ class GlobalsatHandler(AbstractHandler):
       command = 'GSC,' + self.uid + ',L1(ALL)'
       command = self.addChecksum(command)
       log.debug('Command sent: ' + command)
-      db.insert('insert into read (id, uid, part, message) VALUES(NULL, "' + self.uid + '", 0, "start")')
+      db.execute('insert into read (id, uid, part, message) VALUES(NULL, "' + self.uid + '", 0, "start")')
       self.send(command.encode())
 
   def parseOptions(self, options, data):

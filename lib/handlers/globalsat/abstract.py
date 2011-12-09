@@ -304,7 +304,7 @@ class GlobalsatHandler(AbstractHandler):
        + ',' + options['G3'] + ',' + options['G4'] + ',' + options['G5']
 
     string = '?'
-    for key in send
+    for key in send:
       string += key + '=' + send[key] + '&'
 
     return urlencode(string.encode('UTF-8'))

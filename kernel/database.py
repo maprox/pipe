@@ -35,7 +35,7 @@ class Database(object):
 
   def getPath(self):
     """ Returns path to working file """
-    return 'db/' + self.uid
+    return 'db/' + self.__uid
 
   def isReading(self):
     """ Tests, if currently in reading state """

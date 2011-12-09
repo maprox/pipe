@@ -11,7 +11,6 @@
 import re
 import json
 from datetime import datetime
-from urllib.parse import urlencode
 
 from kernel.logger import log
 from kernel.config import conf
@@ -304,7 +303,7 @@ class GlobalsatHandler(AbstractHandler):
        + ',' + options['G3'] + ',' + options['G4'] + ',' + options['G5']
     send['uid'] = options['B2']
 
-    return urlencode(send)
+    return send
 
   def dispatch(self):
     """ Dispatching data from socket """

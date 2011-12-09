@@ -10,6 +10,7 @@
 
 import re
 import json
+from urllib.parse import urlencode
 
 from kernel.logger import log
 from kernel.config import conf
@@ -69,9 +70,10 @@ class AbstractHandler(object):
 
       current_db = db.get(self.uid)
       if current_db.isReadReady():
-        send = self.translateConfig(current_db.getRead())
-        connection = urlopen(conf.pipeSetUrl + send)
-        log.debug('Sending config: ' + conf.pipeConfigUrl + send)
+        send = {}
+        send['config'] = self.translateConfig(current_db.getRead())
+        connection = urlopen(conf.pipeSetUrl + urlencode(send))
+        log.debug('Sending config: ' + conf.pipeSetUrl + send)
         answer = connection.read()
         log.debug('Config answered: ' + answer.decode())
         if answer.decode() == 'success':

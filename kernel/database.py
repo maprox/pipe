@@ -48,7 +48,8 @@ class Database(object):
     if not os.path.exists(path):
       return False
 
-    if os.path.getmtime(path) - time.time() > 86400:
+    if os.path.getmtime(path) - time.time() > 7200:
+      os.remove(path)
       return False
 
     return True
@@ -64,7 +65,7 @@ class Database(object):
   def addRead(self, string):
     """ Adds string reading """
     path = self.getPath()
-    file = open(path, 'w')
+    file = open(path, 'a')
     file.write(string + '\n')
     file.close()
 

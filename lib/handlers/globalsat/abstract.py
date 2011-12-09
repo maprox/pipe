@@ -11,7 +11,7 @@
 import re
 import json
 from datetime import datetime
-import urllib
+import urllib.parse
 
 from kernel.logger import log
 from kernel.config import conf
@@ -303,7 +303,7 @@ class GlobalsatHandler(AbstractHandler):
     send['sos_phone'] = options['G0'] + ',' + options['G1'] + ',' + options['G2'] \
        + ',' + options['G3'] + ',' + options['G4'] + ',' + options['G5']
 
-    return urllib.urlencode(send)
+    return urlib.parse.urlencode(send)
 
   def dispatch(self):
     """ Dispatching data from socket """

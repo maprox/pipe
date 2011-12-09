@@ -28,6 +28,7 @@ class AbstractHandler(object):
   """ Uid of currently connected device """
 
   re_request = re.compile('^OBS,request\((?P<data>.+)\)$')
+  re_success = re.compile('^OBS,request\(.*success.*\)$')
 
   def __init__(self, store, clientThread):
     """
@@ -76,7 +77,8 @@ class AbstractHandler(object):
         log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
         answer = connection.read()
         log.debug('Config answered: ' + answer.decode())
-        if answer.decode() == 'success':
+        result = self.re_success.search(answer.decode(), 0)
+        if result:
           current_db.deleteRead()
 
     return self

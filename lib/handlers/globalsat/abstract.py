@@ -293,7 +293,7 @@ class GlobalsatHandler(AbstractHandler):
     options = {}
     for option in tmp_options:
       option = option.split('=')
-      key = option[:1]
+      key = option[:1][0]
       del option[:1]
       value = '='.join(option)
       options[key] = value

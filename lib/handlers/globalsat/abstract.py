@@ -307,7 +307,7 @@ class GlobalsatHandler(AbstractHandler):
     for key in send:
       string += key + '=' + send[key] + '&'
 
-    return urlencode(string.encode('UTF-8'))
+    return urlencode(string)
 
   def dispatch(self):
     """ Dispatching data from socket """

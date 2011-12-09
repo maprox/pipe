@@ -49,7 +49,10 @@ class Database(object):
       return False
 
     if os.path.getmtime(path) - time.time() > 7200:
-      os.remove(path)
+      try:
+        os.remove(self.getPath())
+      except os.error:
+        pass
       return False
 
     return True
@@ -86,8 +89,16 @@ class Database(object):
 
   def deleteRead(self):
     """ Deletes data """
-    os.remove(self.getPath())
-    os.remove(self.getPathReady())
+
+    try:
+      os.remove(self.getPath())
+    except os.error:
+      pass
+
+    try:
+      os.remove(self.getPathReady())
+    except os.error:
+      pass
 
 # let's create instance of global database manager
 db = DatabaseManager()

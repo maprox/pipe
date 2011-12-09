@@ -303,7 +303,9 @@ class GlobalsatHandler(AbstractHandler):
     send['sos_phone'] = options['G0'] + ',' + options['G1'] + ',' + options['G2'] \
        + ',' + options['G3'] + ',' + options['G4'] + ',' + options['G5']
 
-    return urlencode(send.items())
+    string = ''
+
+    return urlencode(string.encode('UTF-8'))
 
   def dispatch(self):
     """ Dispatching data from socket """

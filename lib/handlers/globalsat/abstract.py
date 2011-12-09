@@ -302,6 +302,7 @@ class GlobalsatHandler(AbstractHandler):
     send['freq_idle'] = options['R0']
     send['sos_phone'] = options['G0'] + ',' + options['G1'] + ',' + options['G2'] \
        + ',' + options['G3'] + ',' + options['G4'] + ',' + options['G5']
+    send['uid'] = options['B2']
 
     return urlencode(send)
 

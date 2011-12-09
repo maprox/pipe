@@ -70,7 +70,7 @@ class AbstractHandler(object):
       current_db = db.get(self.uid)
       if current_db.isReadReady():
         send = self.translateConfig(current_db.getRead())
-        connection = urlopen(conf.pipeConfigUrl + send)
+        connection = urlopen(conf.pipeSetUrl + send)
         log.debug('Sending config: ' + conf.pipeConfigUrl + send)
         answer = connection.read()
         log.debug('Config answered: ' + answer.decode())

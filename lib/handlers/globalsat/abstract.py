@@ -11,6 +11,7 @@
 import re
 import json
 from datetime import datetime
+from urllib.parse import urlencode
 
 from kernel.logger import log
 from kernel.config import conf
@@ -280,6 +281,30 @@ class GlobalsatHandler(AbstractHandler):
             packet['battery_level'] = percents
     return packet
 
+  def translateConfig(self, data):
+    """
+     Translate gps-tracker config data to observer format
+     @param data: {string[]} data from gps-tracker
+    """
+    send = {}
+    send['raw'] = ','.join(data)
+
+    tmp_options = send['raw'].split(',')
+    options = {}
+    for option in tmp_options:
+      option = option.split('=')
+      key = option[:1]
+      del option[:1]
+      value = '='.join(option)
+      options[key] = value
+
+    send['freq_mov'] = options['R1']
+    send['freq_idle'] = options['R0']
+    send['sos_phone'] = ','.join([options['G0'], options['G1'], options['G2'], \
+      options['G3'], options['G4'], options['G5']])
+
+    return urlencode(send.items())
+
   def dispatch(self):
     """ Dispatching data from socket """
     AbstractHandler.dispatch(self)
@@ -339,14 +364,6 @@ class GlobalsatHandler(AbstractHandler):
 
     return self
 
-  def getSettings(self, data):
-    current_db = db.get(data['uid'])
-
-    current_db.addRead(data['data'])
-    log.debug('Transmission status: ' + data['status'])
-    if data['status'] == '2':
-      current_db.endRead()
-
   def processSettings(self, data):
     rc = self.re_compiled['search_config']
     position = 0
@@ -363,6 +380,14 @@ class GlobalsatHandler(AbstractHandler):
       m = rc.search(data, position)
 
     return self
+
+  def getSettings(self, data):
+    current_db = db.get(data['uid'])
+
+    current_db.addRead(data['data'])
+    log.debug('Transmission status: ' + data['status'])
+    if data['status'] == '2':
+      current_db.endRead()
 
   def processError(self, data):
     """
@@ -399,7 +424,7 @@ class GlobalsatHandler(AbstractHandler):
 
     current_db = db.get(self.uid)
 
-    if not current_db.isReading() or current_db.isReadReady():
+    if not current_db.isReading() and not current_db.isReadReady():
       command = 'GSC,' + self.uid + ',L1(ALL)'
       command = self.addChecksum(command)
       log.debug('Command sent: ' + command)

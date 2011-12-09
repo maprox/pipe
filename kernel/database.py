@@ -82,7 +82,7 @@ class Database(object):
 
     log.info('Reading settings from ' + self.__uid + ': ' + text)
 
-    return text
+    return text.split('\n')
 
   def deleteRead(self):
     """ Deletes data """

@@ -71,7 +71,9 @@ class AbstractHandler(object):
       if current_db.isReadReady():
         send = self.translateConfig(current_db.getRead())
         connection = urlopen(conf.pipeConfigUrl + send)
+        log.debug('Sending config: ' + conf.pipeConfigUrl + send)
         answer = connection.read()
+        log.debug('Config answered: ' + answer.decode())
         if answer.decode() == 'success':
           current_db.deleteRead()
 
@@ -170,6 +172,6 @@ class AbstractHandler(object):
   def translateConfig(self, data):
     """
      Translate gps-tracker config data to observer format
-     @param data: {text} data from gps-tracker
+     @param data: {string[]} data from gps-tracker
     """
     raise NotImplementedError("Not implemented Handler::translateConfig() method")

@@ -313,35 +313,11 @@ class GlobalsatHandler(AbstractHandler):
     """
     rc = self.re_compiled['report']
     rc_uid = self.re_compiled['search_uid']
-    rc_config = self.re_compiled['search_config']
     position = 0
 
     m = rc.search(data, position)
     if not m:
-
-      mc = rc_config.search(data, position)
-
-      if not mc:
-        """
-         OK. Our pattern doesn't match the socket or config data.
-         The source of the problem can be in wrong report format.
-         Let's try to find UID of device.
-       - Later it would be good to load particular config for device by its uid
-        """
-        mu = rc_uid.search(data, position)
-        if not mu:
-          log.error("Unknown data format...")
-        else:
-          log.error("Unknown data format for %s", mu.group('uid'))
-
-      while mc:
-        log.debug("Config match found.")
-        data_settings = mc.groupdict()
-        self.getSettings(data_settings)
-        position += len(mc.group(0))
-        mc = rc_config.search(data, position)
-
-      return self
+      self.processError(data)
 
     while m:
       # - OK. we found it, let's see for checksum
@@ -372,7 +348,34 @@ class GlobalsatHandler(AbstractHandler):
       current_db.endRead
 
   def processSettings(self, data):
-    raise NotImplementedError("processSettings must be defined in child class")
+    rc = self.re_compiled['search_config']
+    position = 0
+    m = rc.search(data, position)
+
+    if not m:
+      self.processError(data)
+
+    while m:
+      log.debug("Config match found.")
+      data_settings = m.groupdict()
+      self.getSettings(data_settings)
+      position += len(m.group(0))
+      m = rc.search(data, position)
+
+    return self
+
+  def processError(self, data):
+    """
+     OK. Our pattern doesn't match the socket or config data.
+     The source of the problem can be in wrong report format.
+     Let's try to find UID of device.
+   - Later it would be good to load particular config for device by its uid
+    """
+    mu = rc_uid.search(data)
+    if not mu:
+      log.error("Unknown data format...")
+    else:
+      log.error("Unknown data format for %s", mu.group('uid'))
 
   def processCommandFormat(self, data):
     """

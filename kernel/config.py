@@ -41,6 +41,7 @@ try:
   conf.pipeKey = conf.get("pipe", "key")
   conf.pipeSetUrl = conf.get("pipe", "urlset")
   conf.pipeGetUrl = conf.get("pipe", "urlget")
+  conf.pipeConfigUrl = conf.get("pipe", "urlconfig")
 
 except Exception as E:
   log.critical("Error reading " + options.pipeconf + ": " + E.message)

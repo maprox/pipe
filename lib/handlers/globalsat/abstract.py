@@ -371,7 +371,7 @@ class GlobalsatHandler(AbstractHandler):
     current_db = db.get(data['uid'])
 
     current_db.addRead(data['data'])
-    if data['status'] == '2'
+    if data['status'] == '2':
       current_db.endRead
 
   def processCommandFormat(self, data):

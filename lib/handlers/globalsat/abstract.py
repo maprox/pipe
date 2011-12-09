@@ -312,7 +312,6 @@ class GlobalsatHandler(AbstractHandler):
      @param data: Data from socket
     """
     rc = self.re_compiled['report']
-    rc_uid = self.re_compiled['search_uid']
     position = 0
 
     m = rc.search(data, position)
@@ -344,8 +343,9 @@ class GlobalsatHandler(AbstractHandler):
     current_db = db.get(data['uid'])
 
     current_db.addRead(data['data'])
+    log.debug('Transmission status: ' + data['status'])
     if data['status'] == '2':
-      current_db.endRead
+      current_db.endRead()
 
   def processSettings(self, data):
     rc = self.re_compiled['search_config']
@@ -369,9 +369,11 @@ class GlobalsatHandler(AbstractHandler):
      OK. Our pattern doesn't match the socket or config data.
      The source of the problem can be in wrong report format.
      Let's try to find UID of device.
-   - Later it would be good to load particular config for device by its uid
+     Later it would be good to load particular config for device by its uid
     """
-    mu = rc_uid.search(data)
+
+    rc = self.re_compiled['search_uid']
+    mu = rc.search(data)
     if not mu:
       log.error("Unknown data format...")
     else:

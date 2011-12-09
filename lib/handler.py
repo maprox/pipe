@@ -102,13 +102,14 @@ class AbstractHandler(object):
       data = m.groupdict()['data']
       data = json.loads(data)
 
-      for command in data:
-        function_name = 'processCommand' + command['cmd'].capitalize()
-        function = getattr(self, function_name)
-        if 'data' in command:
-          function(command['data'])
-        else:
-          function(None)
+      if data:
+        for command in data:
+          function_name = 'processCommand' + command['cmd'].capitalize()
+          function = getattr(self, function_name)
+          if 'data' in command:
+            function(command['data'])
+          else:
+            function(None)
 
       self.send(self.transmissionEndSymbol.encode())
 

@@ -13,6 +13,7 @@ import json
 
 from kernel.logger import log
 from kernel.config import conf
+from kernel.database import db
 from lib.storage import storage
 from urllib.request import urlopen
 
@@ -65,6 +66,14 @@ class AbstractHandler(object):
 
       commands = self.getCommands()
       self.processRequest(commands)
+
+      current_db = db.get(self.uid)
+      if current_db.isReadReady()
+        send = self.formatConfig(current_db.getRead())
+        connection = urlopen(conf.pipeConfigUrl + send)
+        answer = connection.read()
+        if answer.decode() == 'success'
+          current_db.deleteRead()
 
     return self
 

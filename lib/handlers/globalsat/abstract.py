@@ -368,7 +368,11 @@ class GlobalsatHandler(AbstractHandler):
     raise NotImplementedError("getSettings must be defined in child class")
 
   def processSettings(self, data):
-    raise NotImplementedError("processSettings must be defined in child class")
+    current_db = db.get(data['uid'])
+
+    current_db.addRead(data['data'])
+    if data['status'] == '2'
+      current_db.endRead
 
   def processCommandFormat(self, data):
     """
@@ -390,7 +394,7 @@ class GlobalsatHandler(AbstractHandler):
 
     current_db = db.get(self.uid)
 
-    if not current_db.isReading():
+    if not current_db.isReading() or current_db.isReadReady():
       command = 'GSC,' + self.uid + ',L1(ALL)'
       command = self.addChecksum(command)
       log.debug('Command sent: ' + command)

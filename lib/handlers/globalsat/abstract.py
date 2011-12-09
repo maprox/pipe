@@ -313,7 +313,7 @@ class GlobalsatHandler(AbstractHandler):
     """
     rc = self.re_compiled['report']
     rc_uid = self.re_compiled['search_uid']
-    rc_config = re_compiled['search_config']
+    rc_config = self.re_compiled['search_config']
     position = 0
 
     m = rc.search(data, position)

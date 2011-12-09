@@ -62,6 +62,7 @@ class AbstractHandler(object):
     """
 
     if self.uid:
+
       commands = self.getCommands()
       self.processRequest(commands)
 

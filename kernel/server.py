@@ -16,6 +16,7 @@ from socketserver import BaseRequestHandler
 from kernel.logger import log
 from kernel.config import conf
 from kernel.dispatcher import disp
+from kernel.database import Database
 
 
 # ===========================================================================

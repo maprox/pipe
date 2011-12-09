@@ -388,12 +388,13 @@ class GlobalsatHandler(AbstractHandler):
 
   def processCommandRead(self, data):
 
-    db.execute('select * from read where uid = "' + self.uid + '"')
-    if len(db.fetchall()) == 0:
+    current_db = db.get(self.uid)
+
+    if not current_db.isReading():
       command = 'GSC,' + self.uid + ',L1(ALL)'
       command = self.addChecksum(command)
       log.debug('Command sent: ' + command)
-      db.execute('insert into read (id, uid, part, message) VALUES(NULL, "' + self.uid + '", 0, "start")')
+      current_db.startReading()
       self.send(command.encode())
 
   def parseOptions(self, options, data):

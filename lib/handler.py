@@ -73,7 +73,7 @@ class AbstractHandler(object):
         send = {}
         send['config'] = self.translateConfig(current_db.getRead())
         connection = urlopen(conf.pipeSetUrl + urlencode(send))
-        log.debug('Sending config: ' + conf.pipeSetUrl + send)
+        log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
         answer = connection.read()
         log.debug('Config answered: ' + answer.decode())
         if answer.decode() == 'success':

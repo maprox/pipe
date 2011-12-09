@@ -365,14 +365,14 @@ class GlobalsatHandler(AbstractHandler):
     return self
 
   def getSettings(self, data):
-    raise NotImplementedError("getSettings must be defined in child class")
-
-  def processSettings(self, data):
     current_db = db.get(data['uid'])
 
     current_db.addRead(data['data'])
     if data['status'] == '2':
       current_db.endRead
+
+  def processSettings(self, data):
+    raise NotImplementedError("processSettings must be defined in child class")
 
   def processCommandFormat(self, data):
     """

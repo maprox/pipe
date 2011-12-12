@@ -433,7 +433,7 @@ class GlobalsatHandler(AbstractHandler):
 
   def processCommandSet(self, data):
 
-    command = 'GSC,' + self.uid + ',3,0,'
+    command = 'GSC,' + self.uid + ','
     for option, value in data.items():
       if option == 'freq_mov':
         command += 'M4(R1'

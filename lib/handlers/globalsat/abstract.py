@@ -433,18 +433,18 @@ class GlobalsatHandler(AbstractHandler):
 
   def processCommandSet(self, data):
 
-    command = 'GSS,' + self.uid + ',3,0,'
+    command = 'GSC,' + self.uid + ',3,0,'
     for option, value in data.items():
       if option == 'freq_mov':
-        command += 'R1'
+        command += 'M4(R1'
       elif option == 'freq_idle':
-        command += 'R0'
+        command += 'M4(R0'
       elif option == 'sos_phone':
-        command += 'G0'
+        command += 'G0(H1'
       else:
         log.error('Unknown option: ' + data.option)
 
-      command += '=' + value
+      command += '=' + value + ')'
 
     command = self.addChecksum(command)
     log.debug('Command sent: ' + command)

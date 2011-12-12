@@ -434,7 +434,7 @@ class GlobalsatHandler(AbstractHandler):
   def processCommandSet(self, data):
 
     command = 'GSS,' + self.uid + ',3,0,'
-    for option, value in data.iteritems():
+    for option, value in data.items():
       if data.option == 'freq_mov':
         command += 'R1'
       elif data.option == 'freq_idle':

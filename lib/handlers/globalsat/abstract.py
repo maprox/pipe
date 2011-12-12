@@ -435,16 +435,16 @@ class GlobalsatHandler(AbstractHandler):
 
     command = 'GSS,' + self.uid + ',3,0,'
     for option, value in data.items():
-      if data.option == 'freq_mov':
+      if option == 'freq_mov':
         command += 'R1'
-      elif data.option == 'freq_idle':
+      elif option == 'freq_idle':
         command += 'R0'
-      elif data.option == 'sos_phone':
+      elif option == 'sos_phone':
         command += 'G0'
       else:
         log.error('Unknown option: ' + data.option)
 
-      command += '=' + data.value
+      command += '=' + value
 
     command = self.addChecksum(command)
     log.debug('Command sent: ' + command)

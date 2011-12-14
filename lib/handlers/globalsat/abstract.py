@@ -35,7 +35,10 @@ class GlobalsatHandler(AbstractHandler):
     'H2': '30',
     # SOS Max number of GPRS report (0=continues until
     # dismissed via GSC,[IMEI],Na*QQ!)
-    'H3': '1'
+    'H3': '1',
+    # Don't wait acknowledgement from server, dont't send one
+    'A0': '0',
+    'A1': '0'
   }
 
   re_patterns = {

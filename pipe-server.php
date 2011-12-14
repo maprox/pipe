@@ -180,15 +180,6 @@ function buildConfigArray($trackers, $stop = false)
 }
 
 /**
- * Starts command in background
- * @param string $command
- */
-function startInBackground($command)
-{
-	shell_exec("nohup $command > /dev/null 2>&1");
-}
-
-/**
  * Start process
  */
 function startProcess($trackers, $flag)

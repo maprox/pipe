@@ -131,3 +131,12 @@ function getPipeConf($name)
 
 	return "conf/pipe.conf";
 }
+
+/**
+ * Starts command in background
+ * @param string $command
+ */
+function startInBackground($command)
+{
+	shell_exec("nohup $command > /dev/null 2>&1");
+}

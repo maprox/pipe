@@ -10,6 +10,7 @@
 
 import re
 import socket
+import time
 
 from kernel.logger import log
 from kernel.config import conf
@@ -19,6 +20,7 @@ try:
   for record in storage.load():
     host, port = "localhost", int(record['port'])
     for item in record['data']:
+      time.sleep(1)
       try:
         # Connect to server and send data
         # Create a socket (SOCK_STREAM means a TCP socket)

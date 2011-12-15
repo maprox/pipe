@@ -12,6 +12,7 @@ import re
 import os
 import base64
 import shutil
+import time
 import glob
 import copy
 
@@ -36,7 +37,10 @@ class Storage(object):
      Storage constructor
     """
     log.debug('%s::__init__()', self.__class__)
-    os.makedirs(self.__path, 0o777, True)
+    try:
+      os.makedirs(self.__path, 0o777, True)
+    except:
+      pass
 
   def getStorageFileName(self, uid):
     """
@@ -110,6 +114,26 @@ class Storage(object):
             record['data'].append(filedata)
         list.append(record)
     return list
+
+  def delete(self, item, port, timestamp):
+    """
+     Removes item from storage, puts in trash
+     @param item: Item we want to remove
+     @param port: Device port
+     @param timestamp: Start timestamp
+    """
+    try:
+      filename = os.path.join(conf.pathStorage, port, item['name'][0])
+      newname = os.path.join(conf.pathTrash, timestamp, port, item['name'][0])
+      newdir = os.path.dirname(newname)
+
+      log.debug(newdir)
+
+      if not os.path.exists(newdir):
+        os.makedirs(newdir)
+      os.rename(filename, newname)
+    except Exception as E:
+      log.error(E)
 
   def loadByUid(self, uid):
     """

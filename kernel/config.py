@@ -4,8 +4,6 @@
 @info      Модуль конфигурации сервера
 @copyright 2009-2011 © Maprox Ltd.
 @author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/kernel/config.py $
-@version   $Id: config.py 406 2011-02-28 14:24:53Z sunsay $
 '''
 
 import configparser
@@ -25,6 +23,7 @@ try:
   conf.socketDataMaxLength = conf.getint("general", "socketDataMaxLength")
   conf.setDaemon = conf.getboolean("general", "setDaemon")
   conf.pathStorage = conf.get("general", "pathStorage")
+  conf.pathTrash = conf.get("general", "pathTrash")
   conf.protocols = []
   for item in conf.items('protocols'):
     conf.protocols.append(item[0])

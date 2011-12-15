@@ -1,10 +1,16 @@
-debug/*
 conf/pipe-*
-logs/*
+democlient/send.log
 *__pycache__*
 *.pyc
-*.storage
-democlient/send.log
 
 db/*
 !db/.gitignore
+
+logs/*
+!logs/.gitignore
+
+storage/*
+!storage/.gitignore
+
+trash/*
+!trash/.gitignore

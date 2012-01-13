@@ -2,10 +2,8 @@
 """
 @project   Maprox Observer <http://maprox.net/observer>
 @info      Globalsat base class for other Globalsat protocols
-@copyright 2009-2011, Maprox Ltd.
+@copyright 2009-2012, Maprox Ltd.
 @author    sunsay <box@sunsay.ru>
-@link      $HeadURL$
-@version   $Id$
 """
 
 import re

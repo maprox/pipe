@@ -189,7 +189,7 @@ function startProcess($trackers, $flag)
 		$mask = getMask($key, $flag);
 
 		print "Starting process for tracker $key... ";
-		startInBackground(WORKING_DIR . "pipe-start $key $mask $config[port] $config[pipeconf] " . WORKING_DIR);
+		startInBackground("sudo -u pipe " . WORKING_DIR . "pipe-start $key $mask $config[port] $config[pipeconf] " . WORKING_DIR);
 		print "[OK]\n";
 	}
 }

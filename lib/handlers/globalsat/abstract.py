@@ -356,6 +356,8 @@ class GlobalsatHandler(AbstractHandler):
         log.info(data_observ)
         self.uid = data_observ['uid']
         store_result = self.store([data_observ])
+        if data_observ['sensors']['sos'] == 1:
+          self.stopSosSignal()
       else:
         log.error("Incorrect checksum: %s against computed %s", cs1, cs2)
       position += len(m.group(0))
@@ -364,6 +366,12 @@ class GlobalsatHandler(AbstractHandler):
     super(GlobalsatHandler, self).processData(data)
 
     return self
+
+  def stopSosSignal(self):
+    command = 'GSC,' + self.uid + ',Na'
+    command = self.addChecksum(command)
+    log.debug('Command sent: ' + command)
+    self.send(command.encode())
 
   def processSettings(self, data):
     rc = self.re_compiled['search_config']

@@ -31,7 +31,13 @@ try:
           contents = item['contents'].split('\n')
           for line in contents:
             time.sleep(1)
-            sock.send(bytes(line, 'UTF-8'))
+            # В случае внезапного обрыва связи переподключаемся, и пытаемся еще раз послать пакет
+            try:
+              sock.send(bytes(line, 'UTF-8'))
+            except Exception as E:
+              sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+              sock.connect((host, port))
+              sock.send(bytes(line, 'UTF-8'))
 
           storage.delete(item, record['port'], timestamp)
         except Exception as E:

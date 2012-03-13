@@ -28,7 +28,7 @@ try:
         try:
           sock.connect((host, port))
 
-          contents = item['contents'].split(',')
+          contents = item['contents'].split('\n')
           for line in contents:
             time.sleep(1)
             sock.send(bytes(line, 'UTF-8'))

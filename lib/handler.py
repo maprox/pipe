@@ -126,7 +126,11 @@ class AbstractHandler(object):
     """
     total_data = []
     while True:
-      data = self.getThread().request.recv(conf.socketPacketLength)
+      self.getThread().request.settimeout(conf.socketTimeout)
+      try:
+        data = self.getThread().request.recv(conf.socketPacketLength)
+      except socket.timeout as E:
+        log.error(E)
       log.debug('Data chunk = %s', data)
       if not data: break
       total_data.append(data.decode())

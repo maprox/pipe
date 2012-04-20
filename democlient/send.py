@@ -29,6 +29,7 @@ rc_lon = '(E(\d+) (\d+.\d+))$'
 rc_packet = '^Trackpoint'
 rc_int = '^(\d+)'
 rc_odometer = '^(\d+[.]{0,1}[\d+]{0,5}) (.+)'
+rc_hdop = '([\d]+(?:\.\d)?)'
 value_sep = '	'
 
 re_packet = re.compile(rc_packet)
@@ -36,6 +37,7 @@ re_lat = re.compile(rc_lat)
 re_lon = re.compile(rc_lon)
 re_int = re.compile(rc_int)
 re_odometer = re.compile(rc_odometer)
+re_hdop = re.compile(rc_hdop)
 
 host, port = "localhost", 20100
 
@@ -80,6 +82,16 @@ def getOdometer(s):
   if (g[1] == 'km'):
     val = val * 1000
   return str(int(round(val)))
+
+def getHdop(s):
+  """
+   Parsing odometer value
+   @param data: data string
+   @return: string
+  """
+  g = re_hdop.search(s).groups()
+  val = float(g[0])
+  return str(round(val, 1))
 
 def getChecksum(data):
   """
@@ -130,6 +142,10 @@ track_files3 = [
   'tracks/car3/4.txt',
   'tracks/car3/5.txt',
   'tracks/car3/6.txt']
+template_str4 = "GSr,757460032240926_888,00,5,e080,e080,3,"
+track_files4 = [
+  'tracks/car4/1.txt',
+  'tracks/car4/2.txt']
 
 def movecar(track_files, template_str):
   """
@@ -155,15 +171,24 @@ def movecar(track_files, template_str):
               altitude = getInt(s_parts[3])
               azimuth = getInt(s_parts[9])
               odometer = getOdometer(s_parts[6])
+              if (len(s_parts) >= 11):
+                sat_count = getInt(s_parts[10])
+              else:
+                sat_count = str(randint(8, 12))
+              if (len(s_parts) >= 12):
+                hdop = getHdop(s_parts[11])
+              else:
+                hdop = '1.0'
               # random get other data
-              sat_count = str(randint(1, 12))
+
               # create result string
               now = datetime.utcnow()
               res_str = template_str + now.strftime('%d%m%y') + ','
               res_str = res_str + now.strftime('%H%M%S') + ','
               res_str = res_str + lon + ',' + lat + ',' + altitude + ',' + speed + ','
-              res_str = res_str + azimuth + ',' + sat_count
-              res_str = res_str + ',1.1,14600,14470mV,0,0,0,0,0,' + odometer + ',0'
+              res_str = res_str + azimuth + ',' + sat_count + ','
+              res_str = res_str + hdop + ','
+              res_str = res_str + '14600,14470mV,0,0,0,0,0,' + odometer + ',0'
               #add the checksum
               checksum = getChecksum(res_str)
               res_str = res_str + '*' + checksum + '!'
@@ -184,3 +209,4 @@ def movecar(track_files, template_str):
 threading.Thread(target=movecar, name="thread1", args=[track_files1, template_str1]).start()
 threading.Thread(target=movecar, name="thread2", args=[track_files2, template_str2]).start()
 threading.Thread(target=movecar, name="thread3", args=[track_files3, template_str3]).start()
+threading.Thread(target=movecar, name="thread4", args=[track_files4, template_str4]).start()

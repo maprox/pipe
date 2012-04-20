@@ -195,7 +195,7 @@ def movecar(track_files, template_str):
               sendData(res_str)
 
               #random sleep
-              sleep = randint(4, 6)
+              sleep = randint(10, 20)
               time.sleep(sleep)
         f.close()
         #sleep for 2 hours and not more than 20 minutes between tracks

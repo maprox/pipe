@@ -237,6 +237,10 @@ class GlobalsatHandler(AbstractHandler):
       # HDOP (Horizontal Dilution of Precision)
       elif char == "M":
         packet['hdop'] = float(value)
+      # Extracting movement sensor from report type. Have lower priority than actual movement sensor
+      elif char == "R":
+        if not 'movementsensor' in packet:
+          packet['movementsensor'] = int(value != '4' and value != 'F' and value != 'E')
       # Extracting movement sensor value and ACC
       elif char == "Y":
         # Tracker sends value as HEX string

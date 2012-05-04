@@ -13,7 +13,6 @@ import logging
 import os
 from datetime import datetime
 from random import *
-from guppy import hpy
 
 # logger setup
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')

@@ -13,6 +13,7 @@ import logging
 import os
 from datetime import datetime
 from random import *
+from guppy import hpy
 
 # logger setup
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
@@ -159,7 +160,7 @@ def movecar(track_files, template_str):
       for track in track_files:
         logger.debug('OPEN: ' + track)
         f = codecs.open(track, 'r', 'utf-8')
-        for line in f.readlines():
+        for line in f.xreadlines():
           m = re_packet.match(line)
           if (m):
             s_parts = line.split(value_sep)

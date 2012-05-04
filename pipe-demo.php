@@ -26,7 +26,7 @@ function serviceStart()
 {
 		print "Starting demo-server... ";
 		$dir = WORKING_DIR . 'democlient/';
-		exec("cd $dir && sudo -u pipe python3.2 send.py >/dev/null &");
+		exec("cd $dir && sudo -u pipe python send.py >/dev/null &");
 		print "[OK]\n";
 }
 
@@ -35,7 +35,7 @@ function serviceStart()
  */
 function serviceStop()
 {
-	$mask = "[p]ython3\.2.*send\.py";
+	$mask = "[p]ython.*send\.py";
 
 	print "Stopping... ";
 	$command = "sudo pkill -f $mask 2>&1";
@@ -49,7 +49,7 @@ function serviceStop()
  */
 function serviceTest()
 {
-	$mask = "[p]ython3\.2.*send\.py";
+	$mask = "[p]ython.*send\.py";
 
 	$output = shell_exec("sudo pgrep -f $mask 2>&1");
 

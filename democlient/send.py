@@ -210,4 +210,4 @@ def movecar(track_files, template_str):
 threading.Thread(target=movecar, name="thread1", args=[track_files1, template_str1]).start()
 threading.Thread(target=movecar, name="thread2", args=[track_files2, template_str2]).start()
 threading.Thread(target=movecar, name="thread3", args=[track_files3, template_str3]).start()
-threading.Thread(target=movecar, name="thread4", args=[track_files4, template_str4]).start()
+#threading.Thread(target=movecar, name="thread4", args=[track_files4, template_str4]).start()

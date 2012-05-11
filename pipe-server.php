@@ -130,6 +130,10 @@ function killAll()
 	print "[OK]\n";
 }
 
+/**
+ * Sends to Observer information about location of tracker servers
+ * @param Array[] $trackers
+ */
 function doConfigStart($trackers)
 {
 	$config = buildConfigArray($trackers);
@@ -140,6 +144,10 @@ function doConfigStart($trackers)
 	}
 }
 
+/**
+ * Sends to Observer information about which trackers have stopped
+ * @param Array[] $trackers
+ */
 function doConfigStop($trackers)
 {
 	$config = buildConfigArray($trackers, true);
@@ -150,6 +158,9 @@ function doConfigStop($trackers)
 	}
 }
 
+/**
+ * Sends to Observer information that all trackers have stopped
+ */
 function doConfigStopAll()
 {
 	$config = buildConfigArray(getAllTrackers(), true);
@@ -160,6 +171,12 @@ function doConfigStopAll()
 	}
 }
 
+/**
+ * Builds urls which would notufy Observer about trackers status
+ * @param Array[] $trackers
+ * @param Boolean $stop build stop command instead
+ * @return String[]
+ */
 function buildConfigArray($trackers, $stop = false)
 {
 	$return = array();

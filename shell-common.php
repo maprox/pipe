@@ -73,6 +73,10 @@ function getTrackers($names, $port = false)
 	return array_filter($return);
 }
 
+/**
+ * Processes conf file of given protocol
+ * @return array
+ */
 function readTrackerConfig($name, $port = false)
 {
 	$file = WORKING_DIR . "conf/serv-$name.conf";
@@ -99,6 +103,11 @@ function readTrackerConfig($name, $port = false)
 	return $return['port'] ? $return : false;
 }
 
+/**
+ * Reads option from ini file
+ * There was a problem with parse_ini function
+ * @return string
+ */
 function readIni($file, $option)
 {
 	$data = file($file);

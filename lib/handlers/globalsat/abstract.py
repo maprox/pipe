@@ -36,7 +36,9 @@ class GlobalsatHandler(AbstractHandler):
     'H3': '1',
     # Don't wait acknowledgement from server, dont't send one
     'A0': '0',
-    'A1': '0'
+    'A1': '0',
+    # Turn off voice monitoring
+    'V0': '0'
   }
 
   re_patterns = {
@@ -237,6 +239,10 @@ class GlobalsatHandler(AbstractHandler):
       # HDOP (Horizontal Dilution of Precision)
       elif char == "M":
         packet['hdop'] = float(value)
+      # Extracting movement sensor from report type. Have lower priority than actual movement sensor
+      elif char == "R":
+        if not 'movementsensor' in packet:
+          packet['movementsensor'] = int(value != '4' and value != 'F' and value != 'E')
       # Extracting movement sensor value and ACC
       elif char == "Y":
         # Tracker sends value as HEX string
@@ -356,6 +362,8 @@ class GlobalsatHandler(AbstractHandler):
         log.info(data_observ)
         self.uid = data_observ['uid']
         store_result = self.store([data_observ])
+        if data_observ['sensors']['sos'] == 1:
+          self.stopSosSignal()
       else:
         log.error("Incorrect checksum: %s against computed %s", cs1, cs2)
       position += len(m.group(0))
@@ -364,6 +372,12 @@ class GlobalsatHandler(AbstractHandler):
     super(GlobalsatHandler, self).processData(data)
 
     return self
+
+  def stopSosSignal(self):
+    command = 'GSC,' + self.uid + ',Na'
+    command = self.addChecksum(command)
+    log.debug('Command sent: ' + command)
+    self.send(command.encode())
 
   def processSettings(self, data):
     rc = self.re_compiled['search_config']

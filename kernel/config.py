@@ -1,24 +1,30 @@
 # -*- coding: utf8 -*-
 '''
 @project   Maprox Observer <http://maprox.net/observer>
-@info      Модуль конфигурации сервера
-@copyright 2009-2011 © Maprox Ltd.
+@info      Server configuration module
+@copyright 2009-2012, Maprox Ltd.
 @author    sunsay <box@sunsay.ru>
 '''
 
-import configparser
+import sys
+if sys.version_info < (3, 0):
+  from ConfigParser import ConfigParser
+else:
+  from configparser import ConfigParser
+
 from kernel.logger import log
 from kernel.commandline import options
 
-conf = configparser.ConfigParser()
+conf = ConfigParser()
 try:
   conf.read(options.servconf);
 
-  # общие настройки сервера
+  # server's base settings
   if options.port:
     conf.port = int(options.port)
   else:
     conf.port = conf.getint("general", "port")
+  conf.socketTimeout = conf.getint("general", "socketTimeout")
   conf.socketPacketLength = conf.getint("general", "socketPacketLength")
   conf.socketDataMaxLength = conf.getint("general", "socketDataMaxLength")
   conf.setDaemon = conf.getboolean("general", "setDaemon")
@@ -36,7 +42,7 @@ except Exception as E:
 try:
   conf.read(options.pipeconf);
 
-  # настройки pipe
+  # pipe settings
   conf.pipeKey = conf.get("pipe", "key")
   conf.pipeSetUrl = conf.get("pipe", "urlset")
   conf.pipeGetUrl = conf.get("pipe", "urlget")

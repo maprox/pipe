@@ -36,7 +36,9 @@ class GlobalsatHandler(AbstractHandler):
     'H3': '1',
     # Don't wait acknowledgement from server, dont't send one
     'A0': '0',
-    'A1': '0'
+    'A1': '0',
+    # Turn off voice monitoring
+    'V0': '0'
   }
 
   re_patterns = {

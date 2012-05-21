@@ -279,7 +279,6 @@ class GlobalsatHandler(AbstractHandler):
       elif char == "a":
         packet['sensors']['analog_input0'] = float(value)
       elif char == "n" or char == "N":
-        packet['batterylevel'] = value
         if (self.re_volts.match(value)):
           packet['batterylevel'] = 1
         elif (self.re_percents.match(value)):

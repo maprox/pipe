@@ -102,6 +102,7 @@ class GlobalsatHandler(AbstractHandler):
 
   re_volts = re.compile('(\d+)mV')
   re_percents = re.compile('(\d+)%')
+  re_number = re.compile('(\d+)')
 
   def __init__(self, store, thread):
     """ Constructor """
@@ -277,14 +278,16 @@ class GlobalsatHandler(AbstractHandler):
       # Analog input 0
       elif char == "a":
         packet['sensors']['analog_input0'] = float(value)
-      elif char == "n":
+      elif char == "n" or char == "N":
         packet['battery_level'] = value
         if (self.re_volts.match(value)):
           packet['battery_level'] = 1
-        else:
-          if (self.re_percents.match(value)):
-            percents = float(self.re_percents.search(value).group(1)) / 100
-            packet['battery_level'] = percents
+        elif (self.re_percents.match(value)):
+          percents = float(self.re_percents.search(value).group(1)) / 100
+          packet['battery_level'] = percents
+        elif (self.re_number.match(value)):
+          percents = int(value) / 100
+          packet['battery_level'] = percents
     return packet
 
   def translateConfig(self, data):

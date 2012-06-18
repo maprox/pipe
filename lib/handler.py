@@ -21,6 +21,8 @@ from urllib.request import urlopen
 class AbstractHandler(object):
   """ Abstract class for all implemented protocols """
 
+  default_options = {}
+
   transmissionEndSymbol = "\n"
   """ Symbol which marks end of transmission for PHP """
 

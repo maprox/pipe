@@ -23,24 +23,6 @@ class GlobalsatHandler(AbstractHandler):
   reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
   commandStart = "GSS,{0},3,0"
 
-  default_options = {
-    # SOS Report count
-    # 0 = None, 1 = SMS, 2 = TCP, 3 = SMS and TCP, 4 = UDP
-    'H0': '3',
-    # SOS Max number of SMS report for each phone number
-    'H1': '1',
-    # SOS Report interval
-    'H2': '30',
-    # SOS Max number of GPRS report (0=continues until
-    # dismissed via GSC,[IMEI],Na*QQ!)
-    'H3': '1',
-    # Don't wait acknowledgement from server, dont't send one
-    'A0': '0',
-    'A1': '0',
-    # Turn off voice monitoring
-    'V0': '0'
-  }
-
   re_patterns = {
     'line': '(?P<line>(?P<head>GS\w){fields})\*(?P<checksum>\w+)!',
     'field': ',(?P<{field}>{value})',
@@ -107,6 +89,25 @@ class GlobalsatHandler(AbstractHandler):
   def __init__(self, store, thread):
     """ Constructor """
     AbstractHandler.__init__(self, store, thread)
+
+    """ Options for Globalsat """
+    self.default_options.update({
+      # SOS Report count
+      # 0 = None, 1 = SMS, 2 = TCP, 3 = SMS and TCP, 4 = UDP
+      'H0': '3',
+      # SOS Max number of SMS report for each phone number
+      'H1': '1',
+      # SOS Report interval
+      'H2': '30',
+      # SOS Max number of GPRS report (0=continues until
+      # dismissed via GSC,[IMEI],Na*QQ!)
+      'H3': '1',
+      # Don't wait acknowledgement from server, dont't send one
+      'A0': '0',
+      'A1': '0',
+      # Turn off voice monitoring
+      'V0': '0'
+    })
 
   @classmethod
   def truncateCheckSum(cls, value):

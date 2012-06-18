@@ -19,20 +19,16 @@ class Handler(GlobalsatHandler):
   confSectionName = "globalsat.tr-203"
   reportFormat = "SPRAB27GHKLMNO*U!"
 
-  default_options = {
-    # SOS Report count
-    # 0 = None, 1 = SMS, 2 = TCP, 3 = SMS and TCP, 4 = UDP
-    'H0': '3',
-    # 0~65535
-    # SMS  0 or 1  = 1 SOS alarm report;
-    #      2~65535 = 2~65535 SOS alarm report
-    # GPRS 0       = 1 SOS alarm report;
-    #      1~65535 = continue send SOS alarm report till receive stop command
-    'H1': '0',
-    # Don't wait acknowledgement from server, dont't send one
-    'A0': '0',
-    'A1': '0',
-    # Turn off voice monitoring
-    'V0': '0'
-  }
+  def __init__(self, store, thread):
+    """ Constructor """
+    GlobalsatHandler.__init__(self, store, thread)
 
+    """ Options for Globalsat TR-203 """
+    self.default_options.update({
+      # 0~65535
+      # SMS  0 or 1  = 1 SOS alarm report;
+      #      2~65535 = 2~65535 SOS alarm report
+      # GPRS 0       = 1 SOS alarm report;
+      #      1~65535 = continue send SOS alarm report till receive stop command
+      'H1': '0'
+    })

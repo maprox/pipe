@@ -1,11 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
+@project   Maprox Observer <http://maprox.net>
 @info      Restoring from storage
-@copyright 2009-2011, Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/kernel/dispatcher.py $
-@version   $Id: dispatcher.py 406 2011-02-28 14:24:53Z sunsay $
+@copyright 2009-2012, Maprox Ltd.
 '''
 
 import re

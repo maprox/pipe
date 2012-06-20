@@ -16,7 +16,9 @@ from lib.handler import AbstractHandler
 from lib.geo import Geo
 
 class GlobalsatHandler(AbstractHandler):
-  """ Base handler for Globalsat protocol """
+  """
+   Base handler for Globalsat protocol
+  """
 
   confSectionName = "globalsat.protocolname"
   reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
@@ -109,7 +111,7 @@ class GlobalsatHandler(AbstractHandler):
     })
 
   @classmethod
-  def truncateCheckSum(cls, value):
+  def truncateChecksum(cls, value):
     """
      Truncates checksum part from value string
      @param value: value string
@@ -150,7 +152,7 @@ class GlobalsatHandler(AbstractHandler):
     """
     if conf.has_section(self.confSectionName):
       section = conf[self.confSectionName]
-      self.reportFormat = self.truncateCheckSum(section.get(
+      self.reportFormat = self.truncateChecksum(section.get(
         "defaultReportFormat", self.reportFormat))
 
   def getRawReportFormat(self):
@@ -187,7 +189,9 @@ class GlobalsatHandler(AbstractHandler):
     return self
 
   def prepare(self):
-    """ Preparing for data transfer """
+    """
+     Preparing for data transfer
+    """
     self.__getReportFormat()
     self.__compileRegularExpressions()
     return self
@@ -315,7 +319,9 @@ class GlobalsatHandler(AbstractHandler):
     return send
 
   def dispatch(self):
-    """ Dispatching data from socket """
+    """
+     Dispatching data from socket
+    """
     AbstractHandler.dispatch(self)
 
     log.debug("Recieving...")
@@ -329,6 +335,11 @@ class GlobalsatHandler(AbstractHandler):
       data_socket = self.recv()
 
   def getFunction(self, data):
+    """
+     Returns a function name according to supplied data
+     @param data: data string
+     @return: function name
+    """
     data_type = data.split(",")[0]
 
     if data_type == 'OBS':
@@ -371,17 +382,24 @@ class GlobalsatHandler(AbstractHandler):
       position += len(m.group(0))
       m = rc.search(data, position)
 
-    super(GlobalsatHandler, self).processData(data)
-
-    return self
+    return super(GlobalsatHandler, self).processData(data)
 
   def stopSosSignal(self):
+    """
+     Send command to stop sos signal
+    """
     command = 'GSC,' + self.uid + ',Na'
     command = self.addChecksum(command)
     log.debug('Command sent: ' + command)
     self.send(command.encode())
+    return self
 
   def processSettings(self, data):
+    """
+     Reading of device settings
+     @param data: data string with device settings
+     @return: self
+    """
     rc = self.re_compiled['search_config']
     position = 0
     m = rc.search(data, position)
@@ -392,15 +410,18 @@ class GlobalsatHandler(AbstractHandler):
     while m:
       log.debug("Config match found.")
       data_settings = m.groupdict()
-      self.getSettings(data_settings)
+      self.saveSettings(data_settings)
       position += len(m.group(0))
       m = rc.search(data, position)
 
     return self
 
-  def getSettings(self, data):
+  def saveSettings(self, data):
+    """
+     Save device setting
+     @param data: device setting
+    """
     current_db = db.get(data['uid'])
-
     current_db.addRead(data['data'])
     log.debug('Transmission status: ' + data['status'])
     if data['status'] == '2':
@@ -413,7 +434,6 @@ class GlobalsatHandler(AbstractHandler):
      Let's try to find UID of device.
      Later it would be good to load particular config for device by its uid
     """
-
     rc = self.re_compiled['search_uid']
     mu = rc.search(data)
     if not mu:
@@ -438,9 +458,11 @@ class GlobalsatHandler(AbstractHandler):
     self.send(string.encode())
 
   def processCommandRead(self, data):
-
+    """
+     Sending command to read all of device configuration
+     @param data: data string
+    """
     current_db = db.get(self.uid)
-
     if not current_db.isReading() and not current_db.isReadReady():
       command = 'GSC,' + self.uid + ',L1(ALL)'
       command = self.addChecksum(command)
@@ -449,7 +471,10 @@ class GlobalsatHandler(AbstractHandler):
       self.send(command.encode())
 
   def processCommandSet(self, data):
-
+    """
+     Set device configuration
+     @param data: data dict()
+    """
     command = 'GSS,' + self.uid + ',3,0,'
     for option, value in data.items():
       if option == 'freq_mov':
@@ -470,8 +495,8 @@ class GlobalsatHandler(AbstractHandler):
      Converts options to string
      @param options: options
      @param data: request data
+     @return: string
     """
-
     ret = ',O3=' + str(self.getRawReportFormat())
     for key in options:
       ret += ',' + key + '=' + options[key]

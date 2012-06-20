@@ -17,4 +17,9 @@ if [ "$1" = 'tr206' ]; then
   ./run_tr-206.sh $2 $3 $4 &
 fi
 
+if [ "$1" = 'galileo' ]; then
+  echo 'Starting Galileo listener'
+  ./run_galileo.sh $2 $3 $4 &
+fi
+
 exit 0

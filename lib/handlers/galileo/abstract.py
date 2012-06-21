@@ -21,66 +21,22 @@ class GalileoHandler(AbstractHandler):
    Base handler for Galileo protocol
   """
 
-  def __init__(self, store, thread):
+  def getAckPack(crc):
     """
-     Constructor
+      Returns buffer value for acknowledgement
     """
-    AbstractHandler.__init__(self, store, thread)
+    return pack('<BH', 2, crc)
 
-    """ Options for Galileo """
-    self.default_options.update({
-      # ...
-    })
-
-  @classmethod
-  def truncateCheckSum(cls, value):
+  def isCorrectCrc(buffer, crc):
     """
-     Truncates checksum part from value string
-     @param value: value byte string
-     @return: truncated byte string without checksum part
+     Checks buffer CRC (CRC-16 Modbus)
+     @param buffer: binary string
+     @param crc: binary string
+     @return: True if buffer crc equals to supplied crc value, else False
     """
-    return value
-
-  @classmethod
-  def getChecksum(cls, data):
-    """
-     Returns the data checksum
-     @param data: data byte string
-     @return: byte string checksum
-    """
-    return Crc16.calcByte(data, INITIAL_MODBUS)
-
-  @classmethod
-  def addChecksum(cls, data, fmt = "{d}*{c}!"):
-    """
-     Adds checksum to a data string
-     @param data: data string
-     @return: data, containing checksum part
-    """
-    return str.format(fmt, d = data, c = cls.getChecksum(data))
-
-  def prepare(self):
-    """ Preparing for data transfer """
-    return self
-
-  def translate(self, data):
-    """
-     Translate gps-tracker data to observer pipe format
-     @param data: dict() data from gps-tracker
-    """
-    packet = {}
-    packet['sensors'] = {}
-    # TODO
-    return packet
-
-  def translateConfig(self, data):
-    """
-     Translate gps-tracker config data to observer format
-     @param data: {string[]} data from gps-tracker
-    """
-    send = {}
-    # TODO
-    return send
+    crc_calculated = crc16.Crc16.calcBinaryString(
+      buffer, crc16.INITIAL_MODBUS)
+    return crc == crc_calculated
 
   def dispatch(self):
     """
@@ -93,23 +49,12 @@ class GalileoHandler(AbstractHandler):
     log.debug("Data recieved:\n%s", data_socket)
 
     while len(data_socket) > 0:
-      function_name = self.getFunction(data_socket)
-      function = getattr(self, function_name)
-      function(data_socket)
+      self.processData(data_socket)
+#      output_data = self.getAckPacket(self.__crc)
+#      self.send(output_data)
       data_socket = self.recv()
 
     return super(GalileoHandler, self).processData(data)
-
-  def getFunction(self, data):
-    """
-     Returns a function name according to supplied data
-     @param data: data byte string
-     @return: string (function name)
-    """
-    if true:
-      return "processData"
-    else:
-      raise NotImplementedError("Unknown data type" + data_type)
 
   def processData(self, data):
     """
@@ -117,4 +62,59 @@ class GalileoHandler(AbstractHandler):
      @param data: Data from socket
      @return: self
     """
-    return self
+    # Parse data assuming that it is a galileo Packet
+    # first of all check crc of supplied data
+    buffer = data
+    crc = unpack("<H", buffer[-2:])[0]
+    crc_data = buffer[:-2]
+    if not isCorrectCrc(crc_data, crc):
+       raise Exception('Crc Is incorrect!');
+
+    # read header and length
+    header, length = unpack("<BH", buffer[:3])
+    hasArchive = bits.bitTest(length, 15)
+    length = bits.bitClear(length, 15)
+
+    data_device = {}
+    data_device['header'] = header
+    data_device['length'] = length
+    data_device['hasarchive'] = hasArchive
+
+    # now let's read packet tags
+    # but before this, check tagsdata length
+    tagsdata = buffer[3:-2]
+    if len(tagsdata) != length:
+      raise Exception('Data length Is incorrect!');
+
+    tagslist = {}
+    tail = 1
+    try:
+      while tail < length:
+        tagnum = tagsdata[tail - 1]
+        taglen = tags.getLengthOfTag(tagnum)
+        tagdata = tagsdata[tail : tail + taglen]
+        tagslist[tagnum] = tags.Tag.getInstance(tagnum, tagdata)
+        tail += taglen + 1
+    except:
+      raise Exception('Incorrect tag?')
+    data_device['tags'] = tagslist
+
+    data_observ = self.translate(data_device)
+    log.info(data_observ)
+    #self.uid = data_observ['uid']
+    store_result = self.store([data_observ])
+    #if data_observ['sensors']['sos'] == 1:
+    #  self.stopSosSignal()
+
+    return super(GalileoHandler, self).processData(data)
+
+  def translate(self, data):
+    """
+     Translate gps-tracker data to observer pipe format
+     @param data: dict() data from gps-tracker
+    """
+    packet = {}
+    packet['sensors'] = {}
+    # TODO
+    return packet
+

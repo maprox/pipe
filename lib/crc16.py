@@ -75,9 +75,16 @@ class Crc16(object):
 
   @classmethod
   def calcString(cls, st, crc):
-    """Given a binary string and starting CRC, Calc a final CRC-16 """
+    """Given a string and starting CRC, Calc a final CRC-16 """
     for ch in st:
       crc = (crc >> 8) ^ cls.__table[(crc ^ ord(ch)) & 0xFF]
+    return crc
+
+  @classmethod
+  def calcBinaryString(cls, st, crc):
+    """Given a binary string and starting CRC, Calc a final CRC-16 """
+    for ch in st:
+      crc = (crc >> 8) ^ cls.__table[(crc ^ ch) & 0xFF]
     return crc
 
 if __name__ == '__main__':

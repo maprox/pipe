@@ -12,9 +12,12 @@ from datetime import datetime
 from kernel.logger import log
 from kernel.config import conf
 from kernel.database import db
+from struct import unpack, pack, calcsize
 from lib.handler import AbstractHandler
 from lib.geo import Geo
-from lib.crc16 import Crc16
+import lib.crc16 as crc16
+import lib.bits as bits
+
 
 class GalileoHandler(AbstractHandler):
   """
@@ -52,7 +55,7 @@ class GalileoHandler(AbstractHandler):
     buffer = data
     crc = unpack("<H", buffer[-2:])[0]
     crc_data = buffer[:-2]
-    if not isCorrectCrc(crc_data, crc):
+    if not self.isCorrectCrc(crc_data, crc):
        raise Exception('Crc Is incorrect!');
 
     # read header and length

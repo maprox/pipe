@@ -325,14 +325,14 @@ class GlobalsatHandler(AbstractHandler):
     AbstractHandler.dispatch(self)
 
     log.debug("Recieving...")
-    data_socket = self.recv()
+    data_socket = self.recv().decode()
     log.debug("Data recieved:\n%s", data_socket)
 
     while len(data_socket) > 0:
       function_name = self.getFunction(data_socket)
       function = getattr(self, function_name)
       function(data_socket)
-      data_socket = self.recv()
+      data_socket = self.recv().decode()
 
   def getFunction(self, data):
     """

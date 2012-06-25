@@ -222,15 +222,12 @@ class GlobalsatHandler(AbstractHandler):
       # SPEED (knots)
       elif char == "H":
         packet['speed'] = 1.852 * float(value)
-        packet['sensors']['speed'] = packet['speed']
       # SPEED (km/hr)
       elif char == "I":
         packet['speed'] = value
-        packet['sensors']['speed'] = packet['speed']
       # SPEED (mile/hr)
       elif char == "J":
         packet['speed'] = 1.609344 * float(value)
-        packet['sensors']['speed'] = packet['speed']
       # Satellites count
       elif char == "L":
         packet['satellitescount'] = int(value)
@@ -267,7 +264,7 @@ class GlobalsatHandler(AbstractHandler):
       elif char == "P":
         dec = int(value, 16)
         packet['sensors']['sos'] = dec % 2
-        packet['sensors']['gps_antenna_fail'] = (dec >> 2) % 2
+        packet['sensors']['nogpsantenna'] = (dec >> 2) % 2
         packet['sensors']['battery_disconnect'] = (dec >> 6) % 2
         packet['sensors']['battery_discharge'] = (dec >> 7) % 2
       # Counters

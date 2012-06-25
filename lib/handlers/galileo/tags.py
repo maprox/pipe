@@ -340,20 +340,20 @@ class Tag64(TagNumberShort):
     if (rawdata == None): return None
     r = super(Tag64, self).getValueFromRawData(rawdata)
     return {
-      'movementsensor': bits.bitValue(r, 0),
-      'criticalangle':  bits.bitValue(r, 1),
-      'nosimcard':      bits.bitValue(r, 3),
-      'ingeofence':     bits.bitValue(r, 4),
-      'lowvoltage':     bits.bitValue(r, 5),
-      'nogpsantenna':   bits.bitValue(r, 6),
-      'badbusvoltage':  bits.bitValue(r, 7),
-      'badextvoltage':  bits.bitValue(r, 8),
-      'acc':            bits.bitValue(r, 9),
-      'crashvibration': bits.bitValue(r, 10),
-      'glonass':        bits.bitValue(r, 11),
-      'signalquality':  bits.bitValue(r, 12) + (2 * bits.bitValue(r, 13)),
-      'alarmmodeon':    bits.bitValue(r, 14),
-      'sos':            bits.bitValue(r, 15)
+      'movementsensor':    bits.bitValue(r, 0),
+      'criticalangle':     bits.bitValue(r, 1),
+      'nosimcard':         bits.bitValue(r, 3),
+      'ingeofence':        bits.bitValue(r, 4),
+      'battery_discharge': bits.bitValue(r, 5),
+      'nogpsantenna':      bits.bitValue(r, 6),
+      'badbusvoltage':     bits.bitValue(r, 7),
+      'badextvoltage':     bits.bitValue(r, 8),
+      'acc':               bits.bitValue(r, 9),
+      'crashvibration':    bits.bitValue(r, 10),
+      'glonass':           bits.bitValue(r, 11),
+      'signalquality':     bits.bitValue(r, 12) + (2 * bits.bitValue(r, 13)),
+      'alarmmodeon':       bits.bitValue(r, 14),
+      'sos':               bits.bitValue(r, 15)
     }
 
   @classmethod
@@ -374,7 +374,7 @@ class Tag64(TagNumberShort):
     r = self.bitSet(r, 1, value, 'criticalangle')
     r = self.bitSet(r, 3, value, 'nosimcard')
     r = self.bitSet(r, 4, value, 'ingeofence')
-    r = self.bitSet(r, 5, value, 'lowvoltage')
+    r = self.bitSet(r, 5, value, 'battery_discharge')
     r = self.bitSet(r, 6, value, 'nogpsantenna')
     r = self.bitSet(r, 7, value, 'badbusvoltage')
     r = self.bitSet(r, 8, value, 'badextvoltage')

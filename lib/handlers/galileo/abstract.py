@@ -38,17 +38,20 @@ class GalileoHandler(AbstractHandler):
     data_socket = self.recv()
     log.debug("Data recieved:\n%s", data_socket)
 
+    packnum = 0
     while len(data_socket) > 0:
-      self.processData(data_socket)
+      self.processData(data_socket, packnum)
       self.sendAcknowledgement()
       data_socket = self.recv()
+      packnum += 1
 
     return super(GalileoHandler, self).dispatch()
 
-  def processData(self, data):
+  def processData(self, data, packnum):
     """
      Processing of data from socket / storage.
      @param data: Data from socket
+     @param packnum: Number of socket packet
      @return: self
     """
     # Parse data assuming that it is a galileo Packet
@@ -91,13 +94,15 @@ class GalileoHandler(AbstractHandler):
       raise Exception('Incorrect tag?')
     data_device['tags'] = tagslist
 
-    data_observ = self.translate(data_device)
-    if (data_observ == None): return
-    log.info(data_observ)
-    #self.uid = data_observ['uid']
-    store_result = self.store([data_observ])
-    #if data_observ['sensors']['sos'] == 1:
-    #  self.stopSosSignal()
+    packet = self.translate(data_device)
+    if (packnum == 0):
+      # HeadPack
+      self.headpack = packet
+      return
+    # MainPack
+    packet.update(self.headpack)
+    log.info(packet)
+    store_result = self.store([packet])
     return super(GalileoHandler, self).processData(data)
 
   def translate(self, data):
@@ -112,28 +117,35 @@ class GalileoHandler(AbstractHandler):
     for tag in data['tags']:
       num = tag.getNumber()
       value = tag.getValue()
-      if (num == 3): # IMEI
+      #print(num, value)
+      if (num == '3'): # IMEI
         packet['uid'] = value
-      elif (num == 4): # CODE
+      elif (num == '4'): # CODE
         packet['uid2'] = value
-      elif (num == 32): # Timestamp
-        packet['time'] = value
-      elif (num == 48): # Satellites count, Correctness, Latitude, Longitude
+      elif (num == '32'): # Timestamp
+        packet['time'] = value.strftime('%Y-%m-%dT%H:%M:%S.%f')
+      elif (num == '48'): # Satellites count, Correctness, Latitude, Longitude
         packet.update(value)
-      elif (num == 51): # Speed, Azimuth
+      elif (num == '51'): # Speed, Azimuth
         packet.update(value)
-      elif (num == 52): # Altitude
+      elif (num == '52'): # Altitude
         packet['altitude'] = value
-      elif (num == 53): # HDOP
+      elif (num == '53'): # HDOP
         packet['hdop'] = value
-      elif (num == 64): # Status
+      elif (num == '64'): # Status
         packet.update(value)
+        packet['sensors']['acc'] = value['acc']
+        packet['sensors']['sos'] = value['sos']
+        packet['sensors']['battery_discharge'] = value['battery_discharge']
+      elif (num == '80'): # Analog input 0
+        packet['sensors']['analog_input0'] = value
+      elif (num == '81'): # Analog input 1
+        packet['sensors']['analog_input1'] = value
+      elif (num == '82'): # Analog input 2
+        packet['sensors']['analog_input2'] = value
+      elif (num == '83'): # Analog input 3
+        packet['sensors']['analog_input3'] = value
 
-    if (data['header'] == 1): # HeadPack
-      self.headpack = packet
-      return None
-    else: # MainPack
-      packet.update(self.headpack)
     return packet
 
   def sendAcknowledgement(self):
@@ -162,3 +174,14 @@ class GalileoHandler(AbstractHandler):
     crc_calculated = crc16.Crc16.calcBinaryString(
       buffer, crc16.INITIAL_MODBUS)
     return crc == crc_calculated
+
+
+# ===========================================================================
+# TESTS
+# ===========================================================================
+
+import unittest
+class TestCase(unittest.TestCase):
+
+  def setUp(self):
+    pass

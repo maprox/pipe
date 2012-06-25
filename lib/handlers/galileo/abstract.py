@@ -21,22 +21,8 @@ class GalileoHandler(AbstractHandler):
    Base handler for Galileo protocol
   """
 
-  def getAckPack(crc):
-    """
-      Returns buffer value for acknowledgement
-    """
-    return pack('<BH', 2, crc)
-
-  def isCorrectCrc(buffer, crc):
-    """
-     Checks buffer CRC (CRC-16 Modbus)
-     @param buffer: binary string
-     @param crc: binary string
-     @return: True if buffer crc equals to supplied crc value, else False
-    """
-    crc_calculated = crc16.Crc16.calcBinaryString(
-      buffer, crc16.INITIAL_MODBUS)
-    return crc == crc_calculated
+  # last parsed data from tracker
+  __lastdata = None
 
   def dispatch(self):
     """
@@ -50,8 +36,7 @@ class GalileoHandler(AbstractHandler):
 
     while len(data_socket) > 0:
       self.processData(data_socket)
-#      output_data = self.getAckPacket(self.__crc)
-#      self.send(output_data)
+      self.sendAcknowledgement()
       data_socket = self.recv()
 
     return super(GalileoHandler, self).processData(data)
@@ -79,6 +64,7 @@ class GalileoHandler(AbstractHandler):
     data_device['header'] = header
     data_device['length'] = length
     data_device['hasarchive'] = hasArchive
+    data_device['crc'] = crc
 
     # now let's read packet tags
     # but before this, check tagsdata length
@@ -105,7 +91,7 @@ class GalileoHandler(AbstractHandler):
     store_result = self.store([data_observ])
     #if data_observ['sensors']['sos'] == 1:
     #  self.stopSosSignal()
-
+    self.__lastdata = data_device
     return super(GalileoHandler, self).processData(data)
 
   def translate(self, data):
@@ -118,3 +104,27 @@ class GalileoHandler(AbstractHandler):
     # TODO
     return packet
 
+  def sendAcknowledgement()
+    """
+     Sends acknowledgement to the socket
+    """
+    crc = self.__lastdata['crc']
+    buf = self.getAckPacket(crc)
+    return self.send(buf)
+
+  def getAckPack(crc):
+    """
+      Returns acknowledgement buffer value
+    """
+    return pack('<BH', 2, crc)
+
+  def isCorrectCrc(buffer, crc):
+    """
+     Checks buffer CRC (CRC-16 Modbus)
+     @param buffer: binary string
+     @param crc: binary string
+     @return: True if buffer crc equals to supplied crc value, else False
+    """
+    crc_calculated = crc16.Crc16.calcBinaryString(
+      buffer, crc16.INITIAL_MODBUS)
+    return crc == crc_calculated

@@ -8,7 +8,7 @@
 import time
 from datetime import datetime
 from struct import unpack, pack, calcsize
-import bits
+import lib.bits as bits
 
 class Tag(object):
   """
@@ -48,7 +48,7 @@ class Tag(object):
     return globals()[clsname]
 
   @classmethod
-  def getInstance(cls, number, data):
+  def getInstance(cls, number, data = None):
     """
       Returns a tag instance by its number
     """
@@ -57,7 +57,7 @@ class Tag(object):
       raise Exception('Tag %s is not found' % number)
     return CLASS(data)
 
-  def __init__(self, data):
+  def __init__(self, data = None):
     """
      Constructor
     """
@@ -130,12 +130,14 @@ class TagNumber(Tag):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     return unpack(self._packfmt, rawdata)[0]
 
   def getRawDataFromValue(self, value):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     return pack(self._packfmt, value)
 
 # ---------------------------------------------------------------------------
@@ -173,6 +175,7 @@ class TagDateTime(TagNumberLong):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     timestamp = super(TagDateTime, self).getValueFromRawData(rawdata)
     return datetime.fromtimestamp(timestamp)
 
@@ -180,6 +183,7 @@ class TagDateTime(TagNumberLong):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     timestamp = time.mktime(value.timetuple())
     return super(TagDateTime, self).getRawDataFromValue(timestamp)
 
@@ -197,12 +201,14 @@ class TagString(Tag):
     """
      Converts data to raw data
     """
+    if (rawdata == None): return None
     return rawdata.decode(self._encoding)
 
   def getRawDataFromValue(self, value):
     """
      Converts data to raw data
     """
+    if (value == None): return None
     return value.encode(self._encoding)
 
 # ---------------------------------------------------------------------------
@@ -246,6 +252,7 @@ class Tag48(TagNumber):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     (satcor, latitude, longitude) = unpack(self._packfmt, rawdata)
     correctness = satcor >> 4
     satellitescount = satcor % 128
@@ -260,6 +267,7 @@ class Tag48(TagNumber):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     lat = value['latitude'] if 'latitude' in value else 0
     lon = value['longitude'] if 'longitude' in value else 0
     cor = value['correctness'] if 'correctness' in value else 0
@@ -278,6 +286,7 @@ class Tag51(TagNumber):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     (speed, azimuth) = unpack(self._packfmt, rawdata)
     return {
       'speed': speed / 10,
@@ -288,6 +297,7 @@ class Tag51(TagNumber):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     speed = value['speed'] if 'speed' in value else 0
     azimuth = value['azimuth'] if 'azimuth' in value else 0
     return pack(self._packfmt, int(speed * 10), int(azimuth * 10))
@@ -306,6 +316,7 @@ class Tag53(TagNumberByte):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     result = super(Tag53, self).getValueFromRawData(rawdata)
     return result / 10
 
@@ -313,6 +324,7 @@ class Tag53(TagNumberByte):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     result = int(value * 10)
     return super(Tag53, self).getRawDataFromValue(result)
 
@@ -325,6 +337,7 @@ class Tag64(TagNumberShort):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     r = super(Tag64, self).getValueFromRawData(rawdata)
     return {
       'movementsensor': bits.bitValue(r, 0),
@@ -355,6 +368,7 @@ class Tag64(TagNumberShort):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     r = 0
     r = self.bitSet(r, 0, value, 'movementsensor')
     r = self.bitSet(r, 1, value, 'criticalangle')
@@ -399,6 +413,7 @@ class Tag68(TagNumberLong):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     r = super(Tag68, self).getValueFromRawData(rawdata)
     return {
       'X': r % 1024,
@@ -410,6 +425,7 @@ class Tag68(TagNumberLong):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     r = value['Z'] if 'Z' in value else 0
     r <<= 10
     r += value['Y'] if 'Y' in value else 0
@@ -426,6 +442,7 @@ class Tag69(TagNumberShort):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     r = super(Tag69, self).getValueFromRawData(rawdata)
     res = {}
     for idx in range(16):
@@ -437,6 +454,7 @@ class Tag69(TagNumberShort):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     r = 0
     for idx in range(16):
       varname = 'do' + str(idx)
@@ -452,7 +470,8 @@ class Tag70(TagNumberShort):
     """
      Converts raw data to value
     """
-    r = super(Tag69, self).getValueFromRawData(rawdata)
+    if (rawdata == None): return None
+    r = super(Tag70, self).getValueFromRawData(rawdata)
     res = {}
     for idx in range(16):
       varname = 'di' + str(idx)
@@ -463,11 +482,12 @@ class Tag70(TagNumberShort):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     r = 0
     for idx in range(16):
       varname = 'di' + str(idx)
       bits.bitSetValue(r, idx, value[varname] if varname in value else 0)
-    return super(Tag69, self).getRawDataFromValue(r)
+    return super(Tag70, self).getRawDataFromValue(r)
 
 # ---------------------------------------------------------------------------
 
@@ -509,6 +529,7 @@ class TagThermometer(TagNumberShort):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     (identifier, temperature) = unpack(self._packfmt, rawdata)
     return {
       'identifier': identifier,
@@ -519,6 +540,7 @@ class TagThermometer(TagNumberShort):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     identifier = value['identifier'] if 'identifier' in value else 0
     temperature = value['temperature'] if 'temperature' in value else 0
     return pack(self._packfmt, identifier, temperature)
@@ -577,12 +599,14 @@ class Tag192(TagNumberLong):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     return super(Tag192, self).getValueFromRawData(rawdata) / 2
 
   def getRawDataFromValue(self, value):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     return super(Tag192, self).getRawDataFromValue(int(value * 2))
 
 # ---------------------------------------------------------------------------
@@ -596,6 +620,7 @@ class Tag193(TagNumberLong):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     (fuelpercent, temperature, rpm) = unpack(self._packfmt, rawdata)
     return {
       'fuelpercent': int(fuelpercent * 0.4),
@@ -607,6 +632,7 @@ class Tag193(TagNumberLong):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     fuelpercent = value['fuelpercent'] if 'fuelpercent' in value else 0
     temperature = value['temperature'] if 'temperature' in value else 0
     rpm = value['rpm'] if 'rpm' in value else 0
@@ -624,12 +650,14 @@ class Tag194(TagNumberLong):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     return super(Tag194, self).getValueFromRawData(rawdata) * 5
 
   def getRawDataFromValue(self, value):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     return super(Tag194, self).getRawDataFromValue(int(value / 5))
 
 # ---------------------------------------------------------------------------
@@ -731,6 +759,7 @@ class Tag213(TagNumberByte):
     """
      Converts raw data to value
     """
+    if (rawdata == None): return None
     r = super(Tag213, self).getValueFromRawData(rawdata)
     res = {}
     for idx in range(8):
@@ -742,6 +771,7 @@ class Tag213(TagNumberByte):
     """
      Converts value to raw data
     """
+    if (value == None): return None
     r = 0
     for idx in range(8):
       varname = 'ibutton' + str(idx + 1)
@@ -814,68 +844,101 @@ def getLengthOfTag(number):
 # TESTS
 # ===========================================================================
 
-if __name__ == '__main__':
-  tag = Tag.getInstance('Number', b'\x34')
-  print(tag) # 52
-  tag.setValue(65)
-  print(tag.getRawData()) # b'A'
+import unittest
+class TestCase(unittest.TestCase):
 
-  tag = Tag.getInstance(3, b'093983472983742934')
-  print(tag) # 093983472983742934
+  def setUp(self):
+    pass
 
-  tag = Tag.getInstance(4, b'\x03\x04')
-  print(tag) # 1027
+  def test_tagNumber(self):
+    tag = Tag.getInstance('Number', b'\x34')
+    tag.setValue(65)
+    self.assertEqual(tag.getRawData(), b'A')
 
-  tag = Tag.getInstance(32, b'\x13\x04\xAF\x4F')
-  print(tag) # 2012-05-13 04:45:07
+  def test_tag3(self):
+    tag = Tag.getInstance(3, b'093983472983742934')
+    self.assertEqual(tag.getValue(), '093983472983742934')
 
-  tag = Tag.getInstance(48, b'\x07\xC0\x0E\x32\x03\xB8\xD7\x2D\x05')
-  print(tag) # {'satellitescount': 7, 'correctness': 0,
-             #  'latitude': 53,612224, 'longitude': 86,890424}
-  tag.setValue({
-    'satellitescount': 8,
-    'correctness': 1,
-    'latitude': 53.612224,
-    'longitude': 86.890424
-  })
-  print(tag.getRawData()) # b'\x18\xc0\x0e2\x03\xb8\xd7-\x05'
+  def test_tag4(self):
+    tag = Tag.getInstance(4, b'\x03\x04')
+    self.assertEqual(tag.getValue(), 1027)
 
-  tag = Tag.getInstance(51, b'\x5C\x00\x48\x08')
-  print(tag) # {'azimuth': 212.0, 'speed': 9.2}
+  def test_tag32(self):
+    tag = Tag.getInstance(32, b'\x13\x04\xAF\x4F') # 2012-05-13 04:45:07
+    self.assertEqual(tag.getValue(), datetime(2012, 5, 13, 4, 45, 7))
 
-  tag = Tag.getInstance(53, b'\x5C')
-  tag.setValue(0.2)
-  print(tag.getRawData()) # b'\x02'
+  def test_tag48(self):
+    tag = Tag.getInstance(48, b'\x07\xC0\x0E\x32\x03\xB8\xD7\x2D\x05')
+    # {'satellitescount': 7, 'correctness': 0,
+    #  'latitude': 53,612224, 'longitude': 86,890424}
+    tag.setValue({
+      'satellitescount': 8,
+      'correctness': 1,
+      'latitude': 53.612224,
+      'longitude': 86.890424
+    })
+    self.assertEqual(tag.getRawData(), b'\x18\xc0\x0e2\x03\xb8\xd7-\x05')
 
-  tag = Tag.getInstance(64, b'\xAA\xAA')
-  value = tag.getValue()
-  print(tag) # {'crashvibration': 0, 'nogpsantenna': 0, 'sos': 1,
-             #  'lowvoltage': 1, 'alarmmodeon': 0, 'acc': 1,
-             #  'ingeofence': 0, 'badbusvoltage': 1, 'glonass': 1,
-             #  'movementsensor': 0, 'nosimcard': 1, 'badextvoltage': 0,
-             #  'criticalangle': 1, 'signalquality': 2}
-  tag.setValue({'crashvibration': 1})
-  print(tag.getRawData()) # b'\x00\x04'
+  def test_tag51(self):
+    tag = Tag.getInstance(51)
+    tag.setValue({
+      'azimuth': 212.0,
+      'speed': 9.2
+    })
+    self.assertEqual(tag.getRawData(), b'\x5C\x00\x48\x08')
 
-  tag = Tag.getInstance(67, b'\xF5')
-  print(tag) # -11
+  def test_tag53(self):
+    tag = Tag.getInstance(53, b'\x5C')
+    tag.setValue(0.2)
+    self.assertEqual(tag.getRawData(), b'\x02')
 
-  tag = Tag.getInstance(68, b'\xAF\x21\x98\x15')
-  print(tag) # {'X': 431, 'Y': 520, 'Z': 345}
-  tag.setValue({'X': 431, 'Y': 220, 'Z': 345})
-  print(tag.getRawData()) # b'\xafq\x93\x15'
+  def test_tag64(self):
+    tag = Tag.getInstance(64, b'\xAA\xAA')
+    value = tag.getValue()
+    self.assertEqual(value['crashvibration'], 0)
+    self.assertEqual(value['badbusvoltage'], 1)
+    self.assertEqual(value['nosimcard'], 1)
+    self.assertEqual(value['signalquality'], 2)
+    tag.setValue({'crashvibration': 1})
+    self.assertEqual(tag.getRawData(), b'\x00\x04')
 
-  tag = Tag.getInstance(69, b'\xAF\x21')
-  print(tag) # {'X': 431, 'Y': 520, 'Z': 345}
+  def test_tag67(self):
+    tag = Tag.getInstance(67, b'\xF5')
+    self.assertEqual(tag.getValue(), -11)
 
-  tag = Tag.getInstance(118, b'\x06\x10')
-  print(tag) # {'identifier': 6, 'temperature': 16}
+  def test_tag68(self):
+    tag = Tag.getInstance(68, b'\xAF\x21\x98\x15')
+    value = tag.getValue()
+    self.assertEqual(value['X'], 431)
+    self.assertEqual(value['Y'], 520)
+    self.assertEqual(value['Z'], 345)
+    tag.setValue({'X': 431, 'Y': 220, 'Z': 345})
+    self.assertEqual(tag.getRawData(), b'\xafq\x93\x15')
 
-  tag = Tag.getInstance(193, b'\xFA\x72\x50\x25')
-  print(tag) # {'rpm': 1194, 'fuelpercent': 100, 'temperature': 74}
+  def test_tag69(self):
+    tag = Tag.getInstance(69, b'\xAF\x21')
+    value = tag.getValue()
+    self.assertEqual(value['do2'], 1)
+    self.assertEqual(value['do11'], 0)
+    self.assertEqual(value['do13'], 1)
 
-  tag = Tag.getInstance(213, b'\x05')
-  print(tag) # {'ibutton8': 0, 'ibutton3': 1, 'ibutton2': 0, 'ibutton1': 1,
-             #  'ibutton7': 0, 'ibutton6': 0, 'ibutton5': 0, 'ibutton4': 0}
+  def test_tag118(self):
+    tag = Tag.getInstance(118, b'\x06\x10')
+    value = tag.getValue()
+    self.assertEqual(value['identifier'], 6)
+    self.assertEqual(value['temperature'], 16)
 
+  def test_tag193(self):
+    tag = Tag.getInstance(193, b'\xFA\x72\x50\x25')
+    value = tag.getValue()
+    self.assertEqual(value['rpm'], 1194)
+    self.assertEqual(value['fuelpercent'], 100)
+    self.assertEqual(value['temperature'], 74)
 
+  def test_tag213(self):
+    tag = Tag.getInstance(213, b'\x05')
+    value = tag.getValue()
+    self.assertEqual(value['ibutton1'], 1)
+    self.assertEqual(value['ibutton2'], 0)
+    self.assertEqual(value['ibutton3'], 1)
+    self.assertEqual(value['ibutton8'], 0)

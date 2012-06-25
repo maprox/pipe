@@ -2,10 +2,7 @@
 '''
 @project   Maprox Observer <http://maprox.net/observer>
 @info      Falcon answer class from Observer
-@copyright 2009-2011 © Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL$
-@version   $Id$
+@copyright 2009-2012, Maprox Ltd.
 '''
 
 # -----------------------------------------------------

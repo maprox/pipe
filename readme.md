@@ -6,3 +6,4 @@ Support for protocols:
 * Globalsat TR-600
 * Globalsat TR-203
 * Globalsat TR-206
+* Galileo

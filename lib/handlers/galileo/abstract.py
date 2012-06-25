@@ -17,6 +17,7 @@ from lib.handler import AbstractHandler
 from lib.geo import Geo
 import lib.crc16 as crc16
 import lib.bits as bits
+import lib.handlers.galileo.tags as tags
 
 
 class GalileoHandler(AbstractHandler):
@@ -42,7 +43,7 @@ class GalileoHandler(AbstractHandler):
       self.sendAcknowledgement()
       data_socket = self.recv()
 
-    return super(GalileoHandler, self).processData(data)
+    return super(GalileoHandler, self).dispatch()
 
   def processData(self, data):
     """
@@ -68,6 +69,7 @@ class GalileoHandler(AbstractHandler):
     data_device['length'] = length
     data_device['hasarchive'] = hasArchive
     data_device['crc'] = crc
+    self.__lastdata = data_device
 
     # now let's read packet tags
     # but before this, check tagsdata length
@@ -75,26 +77,27 @@ class GalileoHandler(AbstractHandler):
     if len(tagsdata) != length:
       raise Exception('Data length Is incorrect!');
 
-    tagslist = {}
+    tagslist = []
     tail = 1
     try:
       while tail < length:
         tagnum = tagsdata[tail - 1]
         taglen = tags.getLengthOfTag(tagnum)
         tagdata = tagsdata[tail : tail + taglen]
-        tagslist[tagnum] = tags.Tag.getInstance(tagnum, tagdata)
+        tagslist.append(tags.Tag.getInstance(tagnum, tagdata))
         tail += taglen + 1
     except:
+      log.error("Incorrect tag: %s", traceback.format_exc())
       raise Exception('Incorrect tag?')
     data_device['tags'] = tagslist
 
     data_observ = self.translate(data_device)
+    if (data_observ == None): return
     log.info(data_observ)
     #self.uid = data_observ['uid']
     store_result = self.store([data_observ])
     #if data_observ['sensors']['sos'] == 1:
     #  self.stopSosSignal()
-    self.__lastdata = data_device
     return super(GalileoHandler, self).processData(data)
 
   def translate(self, data):
@@ -102,9 +105,35 @@ class GalileoHandler(AbstractHandler):
      Translate gps-tracker data to observer pipe format
      @param data: dict() data from gps-tracker
     """
+    if (data == None): return None
+
     packet = {}
     packet['sensors'] = {}
-    # TODO
+    for tag in data['tags']:
+      num = tag.getNumber()
+      value = tag.getValue()
+      if (num == 3): # IMEI
+        packet['uid'] = value
+      elif (num == 4): # CODE
+        packet['uid2'] = value
+      elif (num == 32): # Timestamp
+        packet['time'] = value
+      elif (num == 48): # Satellites count, Correctness, Latitude, Longitude
+        packet.update(value)
+      elif (num == 51): # Speed, Azimuth
+        packet.update(value)
+      elif (num == 52): # Altitude
+        packet['altitude'] = value
+      elif (num == 53): # HDOP
+        packet['hdop'] = value
+      elif (num == 64): # Status
+        packet.update(value)
+
+    if (data['header'] == 1): # HeadPack
+      self.headpack = packet
+      return None
+    else: # MainPack
+      packet.update(self.headpack)
     return packet
 
   def sendAcknowledgement(self):
@@ -116,7 +145,7 @@ class GalileoHandler(AbstractHandler):
     return self.send(buf)
 
   @classmethod
-  def getAckPack(cls, crc):
+  def getAckPacket(cls, crc):
     """
       Returns acknowledgement buffer value
     """

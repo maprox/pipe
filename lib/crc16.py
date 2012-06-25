@@ -87,54 +87,38 @@ class Crc16(object):
       crc = (crc >> 8) ^ cls.__table[(crc ^ ch) & 0xFF]
     return crc
 
-if __name__ == '__main__':
-  """
-    The "__name__ == __main__" self-test portion
-    of the module for examples of Modbus/RTU and DF1 usage.
-  """
 
-  # test Modbus
-  print("testing Modbus messages with crc16.py")
-  print("test case #1:")
-  crc = INITIAL_MODBUS
-  st = "\xEA\x03\x00\x00\x00\x64"
-  for ch in st:
-    crc = Crc16.calcByte(ch, crc)
-  if crc != 0x3A53:
-    print("BAD - ERROR - FAILED!")
-    print("expect:0x3A53 but saw 0x%x" % crc)
-  else:
-    print("Ok")
+# ===========================================================================
+# TESTS
+# ===========================================================================
 
-  print("test case #2:")
-  st = "\x4b\x03\x00\x2c\x00\x37"
-  crc = Crc16.calcString(st, INITIAL_MODBUS)
-  if crc != 0xbfcb:
-    print("BAD - ERROR - FAILED! ")
-    print("expect:0xBFCB but saw 0x%x" % crc)
-  else:
-    print("Ok")
+import unittest
+class TestCase(unittest.TestCase):
 
-  print("test case #3:")
-  st = "\x0d\x01\x00\x62\x00\x33"
-  crc = Crc16.calcString(st, INITIAL_MODBUS)
-  if crc != 0x0ddd:
-    print("BAD - ERROR - FAILED!")
-    print("expect:0x0DDD but saw 0x%x" % crc)
-  else:
-    print("Ok")
+  def setUp(self):
+    pass
 
-  print()
-  print("testing DF1 messages with crc16.py")
+  def test_modbus1(self):
+    crc = INITIAL_MODBUS
+    st = "\xEA\x03\x00\x00\x00\x64"
+    for ch in st:
+      crc = Crc16.calcByte(ch, crc)
+    self.assertEqual(crc, 0x3A53)
 
-  print("test case #1:")
-  st = "\x07\x11\x41\x00\x53\xB9\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-  # DF1 uses same algorithm - just starts with CRC=0x0000 instead of 0xFFFF
-  # note: <DLE><STX> and the <DLE> of the <DLE><ETX> pair NOT to be included
-  crc = Crc16.calcString(st, INITIAL_DF1)
-  crc = Crc16.calcByte("\x03", crc) # final ETX added
-  if crc != 0x4C6B:
-    print("BAD - ERROR - FAILED!")
-    print("expect:0x4C6B but saw 0x%x" % crc)
-  else:
-   print("Ok")
+  def test_modbus2(self):
+    st = "\x4b\x03\x00\x2c\x00\x37"
+    crc = Crc16.calcString(st, INITIAL_MODBUS)
+    self.assertEqual(crc, 0xbfcb)
+
+  def test_modbus3(self):
+    st = "\x0d\x01\x00\x62\x00\x33"
+    crc = Crc16.calcString(st, INITIAL_MODBUS)
+    self.assertEqual(crc, 0x0ddd)
+
+  def test_df1(self):
+    st = "\x07\x11\x41\x00\x53\xB9\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    # DF1 uses same algorithm - just starts with CRC=0x0000 instead of 0xFFFF
+    # note: <DLE><STX> and the <DLE> of the <DLE><ETX> pair NOT to be included
+    crc = Crc16.calcString(st, INITIAL_DF1)
+    crc = Crc16.calcByte("\x03", crc) # final ETX added
+    self.assertEqual(crc, 0x4C6B)

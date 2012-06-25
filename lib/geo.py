@@ -2,10 +2,7 @@
 '''
 @project   Maprox Observer <http://maprox.net/observer>
 @info      Abstract class for working with Geo coordinates
-@copyright 2009-2011 © Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/lib/geofunc.py $
-@version   $Id: geofunc.py 408 2011-03-01 14:28:28Z sunsay $
+@copyright 2009-2012, Maprox Ltd.
 
 Some links for smoking:
   http://www.earthpoint.us/Convert.aspx
@@ -275,3 +272,5 @@ class Geo(object):
 
   def format(cls, latitude, longitude, fmt):
     raise NotImplementedError("Not implemented yet")
+
+# ! TODO WRITE TEST CASE

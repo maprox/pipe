@@ -131,8 +131,8 @@ class AbstractHandler(object):
       self.getThread().request.settimeout(conf.socketTimeout)
       try:
         data = self.getThread().request.recv(conf.socketPacketLength)
-      except socket.timeout as E:
-        log.error(E)
+      except Exception as E:
+        break
       log.debug('Data chunk = %s', data)
       if not data: break
       total_data.append(data)

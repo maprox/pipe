@@ -8,6 +8,7 @@
 @version   $Id: server.py 411 2011-03-01 23:54:15Z sunsay $
 '''
 
+import traceback
 from threading import Thread
 from socketserver import TCPServer
 from socketserver import ThreadingMixIn
@@ -34,7 +35,7 @@ class ClientThread(BaseRequestHandler):
     try:
       disp.dispatch(self)
     except Exception as E:
-      log.error("Dispatch error: %s", E)
+      log.error("Dispatch error: %s", traceback.format_exc())
 
   def finish(self):
     pass

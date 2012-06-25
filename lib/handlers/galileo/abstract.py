@@ -104,7 +104,7 @@ class GalileoHandler(AbstractHandler):
     # TODO
     return packet
 
-  def sendAcknowledgement()
+  def sendAcknowledgement(self):
     """
      Sends acknowledgement to the socket
     """
@@ -112,13 +112,15 @@ class GalileoHandler(AbstractHandler):
     buf = self.getAckPacket(crc)
     return self.send(buf)
 
-  def getAckPack(crc):
+  @classmethod
+  def getAckPack(cls, crc):
     """
       Returns acknowledgement buffer value
     """
     return pack('<BH', 2, crc)
 
-  def isCorrectCrc(buffer, crc):
+  @classmethod
+  def isCorrectCrc(cls, buffer, crc):
     """
      Checks buffer CRC (CRC-16 Modbus)
      @param buffer: binary string

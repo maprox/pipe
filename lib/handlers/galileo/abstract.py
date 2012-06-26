@@ -46,11 +46,11 @@ class GalileoHandler(AbstractHandler):
 
     return super(GalileoHandler, self).dispatch()
 
-  def processData(self, data, packnum):
+  def processData(self, data, packnum = 0):
     """
      Processing of data from socket / storage.
      @param data: Data from socket
-     @param packnum: Number of socket packet
+     @param packnum: Number of socket packet (defaults to 0)
      @return: self
     """
     # Parse data assuming that it is a galileo Packet
@@ -95,11 +95,14 @@ class GalileoHandler(AbstractHandler):
       raise Exception('Incorrect tag?')
     data_device['tags'] = tagslist
 
-    '''
-    f = open('D:\photo.jpg', 'wb')
-    f.write(tagslist[0].getRawData())
-    f.close()
-    '''
+    log.info(data_device)
+    if (header == 4):
+      log.info('HEADER 4 !!!')
+      with open("photo.jpg", "ab") as photo:
+        photo.write(tagslist[0].getRawData())
+      self.sendAcknowledgement()
+      self.processData(self.recv())
+      return
 
     packet = self.translate(data_device)
     if (packnum == 0):
@@ -108,6 +111,8 @@ class GalileoHandler(AbstractHandler):
       return
     # MainPack
     packet.update(self.headpack)
+    packet['_packnum'] = packnum
+    packet['_rawdata'] = buffer
     log.info(packet)
     store_result = self.store([packet])
     return super(GalileoHandler, self).processData(data)

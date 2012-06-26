@@ -126,20 +126,21 @@ class AbstractHandler(object):
      @param the_socket: Instance of a socket object
      @return: String representation of data
     """
+    sock = self.getThread().request
+    sock.settimeout(conf.socketTimeout)
     total_data = []
     while True:
-      self.getThread().request.settimeout(conf.socketTimeout)
       try:
-        data = self.getThread().request.recv(conf.socketPacketLength)
+        data = sock.recv(conf.socketPacketLength)
       except Exception as E:
         break
       log.debug('Data chunk = %s', data)
       if not data: break
       total_data.append(data)
-      log.debug('Total data = %s', total_data)
       ''' I don't know why [if not data: break] is not working, so
           let's do break here '''
-      break
+      if len(data) < conf.socketPacketLength: break
+    log.debug('Total data = %s', total_data)
     return b''.join(total_data)
 
   def send(self, data):

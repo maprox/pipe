@@ -1,11 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
-@info      TCP-сервер
-@copyright 2009-2011 © Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/kernel/server.py $
-@version   $Id: server.py 411 2011-03-01 23:54:15Z sunsay $
+@project   Maprox Observer <http://maprox.net>
+@info      TCP-server
+@copyright 2009-2012, Maprox LLC
 '''
 
 import traceback
@@ -48,11 +45,14 @@ class ThreadingServer(ThreadingMixIn, TCPServer):
 
 # ===========================================================================
 class Server():
-  'А вот и наш собственный многопоточный TCP-сервер'
+  """ Multithreaded TCP-server """
 
   # -----------------------------
   def __init__(self, port = 30003):
-    'Конструктор класса. По умолчанию порт = 30003'
+    """
+     Server class constructor
+     @param port: Listening port. Optional, default is 30003.
+    """
     log.debug("Server::__init__(%s)", port)
     self.host = ""
     self.port = port
@@ -60,7 +60,7 @@ class Server():
 
   # -----------------------------
   def run(self):
-    'Метод, запускающий TCP-сервер'
+    """ Method wich starts TCP-server """
     log.debug("Server::run()")
     # Запускаем нить сервера - эта нить затем будет создавать
     # остальные нити для каждого подключения

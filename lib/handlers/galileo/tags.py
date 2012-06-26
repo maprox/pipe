@@ -213,6 +213,11 @@ class TagString(Tag):
 
 # ---------------------------------------------------------------------------
 
+class Tag0(Tag):
+  """ 0x00: ByteString (for example JPG photo from camera)"""
+
+# ---------------------------------------------------------------------------
+
 class Tag1(TagNumberByte):
   """ 0x01: Firmware """
 

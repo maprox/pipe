@@ -5,6 +5,7 @@
 @copyright 2012, Maprox LLC
 """
 
+import traceback
 import re
 import json
 from datetime import datetime
@@ -36,8 +37,6 @@ class GalileoHandler(AbstractHandler):
 
     log.debug("Recieving...")
     data_socket = self.recv()
-    log.debug("Data recieved:\n%s", data_socket)
-
     packnum = 0
     while len(data_socket) > 0:
       self.processData(data_socket, packnum)
@@ -86,6 +85,8 @@ class GalileoHandler(AbstractHandler):
       while tail < length:
         tagnum = tagsdata[tail - 1]
         taglen = tags.getLengthOfTag(tagnum)
+        if (taglen == 0):
+          taglen = length - tail
         tagdata = tagsdata[tail : tail + taglen]
         tagslist.append(tags.Tag.getInstance(tagnum, tagdata))
         tail += taglen + 1
@@ -93,6 +94,12 @@ class GalileoHandler(AbstractHandler):
       log.error("Incorrect tag: %s", traceback.format_exc())
       raise Exception('Incorrect tag?')
     data_device['tags'] = tagslist
+
+    '''
+    f = open('D:\photo.jpg', 'wb')
+    f.write(tagslist[0].getRawData())
+    f.close()
+    '''
 
     packet = self.translate(data_device)
     if (packnum == 0):

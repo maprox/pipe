@@ -98,10 +98,10 @@ class GalileoHandler(AbstractHandler):
     log.info(data_device)
     if (header == 4):
       log.info('HEADER 4 !!!')
-      with open("photo.jpg", "ab") as photo:
+      with open("/tmp/photo.jpg", "ab") as photo:
         photo.write(tagslist[0].getRawData())
-      self.sendAcknowledgement()
-      self.processData(self.recv())
+      #self.sendAcknowledgement()
+      #self.processData(self.recv())
       return
 
     packet = self.translate(data_device)
@@ -111,8 +111,8 @@ class GalileoHandler(AbstractHandler):
       return
     # MainPack
     packet.update(self.headpack)
-    packet['_packnum'] = packnum
-    packet['_rawdata'] = buffer
+    #packet['__packnum'] = packnum
+    #packet['__rawdata'] = buffer
     log.info(packet)
     store_result = self.store([packet])
     return super(GalileoHandler, self).processData(data)
@@ -166,6 +166,7 @@ class GalileoHandler(AbstractHandler):
     """
     crc = self.__lastdata['crc']
     buf = self.getAckPacket(crc)
+    log.info("Send acknoledgement, crc = %d" % crc)
     return self.send(buf)
 
   @classmethod

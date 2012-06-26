@@ -62,7 +62,6 @@ class Tag(object):
      Constructor
     """
     self.setRawData(data)
-    pass
 
   def getRawData(self):
     """

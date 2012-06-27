@@ -71,7 +71,10 @@ class Tag(object):
     """
      Constructor
     """
-    self.setRawData(data)
+    if isinstance(data, bytes):
+      self.setRawData(data)
+    else:
+      self.setValue(data)
 
   def getRawData(self):
     """
@@ -1021,3 +1024,10 @@ class TestCase(unittest.TestCase):
     self.assertEqual(tag.getRawDataLength(), -1)
     self.assertEqual(tag.getRawTag(), b'\xe1\x0bSMSMSLEEEEE')
     self.assertEqual(tag.lengthfmt, '<B')
+
+  def test_tagValues(self):
+    tag = Tag.getInstance(225, 'SMSMSLEEEEE')
+    self.assertEqual(tag.getRawTag(), b'\xe1\x0bSMSMSLEEEEE')
+
+    tag = Tag.getInstance(0xE0, 1)
+    self.assertEqual(tag.getRawTag(), b'\xe0\x01\x00\x00\x00')

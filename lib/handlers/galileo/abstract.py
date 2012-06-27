@@ -43,10 +43,24 @@ class GalileoHandler(AbstractHandler):
     while len(buffer) > 0:
       self.processData(buffer, packnum)
       self.sendAcknowledgement()
+      if packnum = 1:
+        self.sendCommand()
       buffer = self.recv()
       packnum += 1
 
     return super(GalileoHandler, self).dispatch()
+
+  def sendCommand(self):
+    log.info('Sending command...')
+    packet = Packet()
+    packet.header = 1
+    tagslist = []
+    tagslist.append(tags.Tag.getInstance(0x03, self.headpack['uid']))
+    tagslist.append(tags.Tag.getInstance(0x04, self.headpack['uid2']))
+    tagslist.append(tags.Tag.getInstance(0xE0, 1)
+    tagslist.append(tags.Tag.getInstance(0xE1, 'Makephoto 1'))
+    packet.tags = tagslist
+    self.send(packet.rawdata)
 
   def processData(self, data, packnum = 0):
     """
@@ -136,19 +150,6 @@ class GalileoHandler(AbstractHandler):
       Returns acknowledgement buffer value
     """
     return pack('<BH', 2, crc)
-
-  @classmethod
-  def isCorrectCrc(cls, buffer, crc):
-    """
-     Checks buffer CRC (CRC-16 Modbus)
-     @param buffer: binary string
-     @param crc: binary string
-     @return: True if buffer crc equals to supplied crc value, else False
-    """
-    crc_calculated = crc16.Crc16.calcBinaryString(
-      buffer, crc16.INITIAL_MODBUS)
-    return crc == crc_calculated
-
 
 # ===========================================================================
 # TESTS

@@ -107,6 +107,7 @@ class BasePacket(object):
      Parses rawdata
     """
     buffer = self.__rawdata
+    if buffer == None: return
     crc = unpack("<H", buffer[-2:])[0]
     crc_data = buffer[:-2]
     if not self.isCorrectCrc(crc_data, crc):
@@ -139,6 +140,7 @@ class BasePacket(object):
      Builds rawdata from object variables
      @protected
     """
+    self.__body = self._buildBody()
     self.__convert = False
     self.__header = self.__header
     self.__length = len(self.__body)
@@ -148,7 +150,7 @@ class BasePacket(object):
         length = bits.bitSet(self.__length, 15)
 
     self.__rawdata = pack("<BH", self.__header, length)
-    self.__rawdata += self._buildBody()
+    self.__rawdata += self.__body
     self.__crc = crc16.Crc16.calcBinaryString(
       self.__rawdata,
       crc16.INITIAL_MODBUS
@@ -242,11 +244,12 @@ class Packet(BasePacket):
      Builds rawdata from object variables
      @protected
     """
-    result = super(Packet, self)._buildBody()
     if self.tags and (len(self.tags) > 0):
       result = b''
       for tag in self.tags:
         result += tag.getRawTag()
+    else:
+      return super(Packet, self)._buildBody()
     return result
 
 # ===========================================================================
@@ -276,3 +279,14 @@ class TestCase(unittest.TestCase):
     self.assertEqual(packet.length, 2)
     self.assertEqual(packet.body, b'\x00\x00')
     self.assertEqual(packet.crc, 47473)
+
+  def test_commandPacket(self):
+    packet = Packet()
+    packet.header = 1
+    tagslist = []
+    tagslist.append(tags.Tag.getInstance(3, b'2345545456444445'))
+    tagslist.append(tags.Tag.getInstance(4, b'\x03\x04'))
+    tagslist.append(tags.Tag.getInstance(0xE0, b'\xFA\x72\x50\x25'))
+    tagslist.append(tags.Tag.getInstance(0xE1, b'Makephoto 1'))
+    packet.tags = tagslist
+    self.assertEqual(packet.rawdata, b'\x01&\x00\x032345545456444445\x04\x03\x04\xe0\xfarP%\xe1\x0bMakephoto 1\xbc\xb5')

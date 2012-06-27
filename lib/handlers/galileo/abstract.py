@@ -43,7 +43,7 @@ class GalileoHandler(AbstractHandler):
     while len(buffer) > 0:
       self.processData(buffer, packnum)
       self.sendAcknowledgement()
-      if packnum = 1:
+      if packnum == 1:
         self.sendCommand()
       buffer = self.recv()
       packnum += 1
@@ -52,12 +52,13 @@ class GalileoHandler(AbstractHandler):
 
   def sendCommand(self):
     log.info('Sending command...')
-    packet = Packet()
+    log.info(self.headpack)
+    packet = packets.Packet()
     packet.header = 1
     tagslist = []
     tagslist.append(tags.Tag.getInstance(0x03, self.headpack['uid']))
     tagslist.append(tags.Tag.getInstance(0x04, self.headpack['uid2']))
-    tagslist.append(tags.Tag.getInstance(0xE0, 1)
+    tagslist.append(tags.Tag.getInstance(0xE0, 1))
     tagslist.append(tags.Tag.getInstance(0xE1, 'Makephoto 1'))
     packet.tags = tagslist
     self.send(packet.rawdata)

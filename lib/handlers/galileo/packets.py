@@ -228,7 +228,7 @@ class Packet(BasePacket):
         if (taglen == 0):
           taglen = length - tail
         elif (taglen < 0):
-          lengthfmt = tags.Tag.getClass(number).lengthfmt
+          lengthfmt = tags.Tag.getClass(tagnum).lengthfmt
           taglen = unpack(lengthfmt, tagdata[tail : tail - taglen])
           tail += 1
         tagdata = tagsdata[tail : tail + taglen]
@@ -288,5 +288,16 @@ class TestCase(unittest.TestCase):
     tagslist.append(tags.Tag.getInstance(4, b'\x03\x04'))
     tagslist.append(tags.Tag.getInstance(0xE0, b'\xFA\x72\x50\x25'))
     tagslist.append(tags.Tag.getInstance(0xE1, b'Makephoto 1'))
+    packet.tags = tagslist
+    self.assertEqual(packet.rawdata, b'\x01&\x00\x032345545456444445\x04\x03\x04\xe0\xfarP%\xe1\x0bMakephoto 1\xbc\xb5')
+
+  def test_commandPacketValue(self):
+    packet = Packet()
+    packet.header = 1
+    tagslist = []
+    tagslist.append(tags.Tag.getInstance(0x03, '123456789012345'))
+    tagslist.append(tags.Tag.getInstance(0x04, '22'))
+    tagslist.append(tags.Tag.getInstance(0xE0, 1))
+    tagslist.append(tags.Tag.getInstance(0xE1, 'Makephoto 1'))
     packet.tags = tagslist
     self.assertEqual(packet.rawdata, b'\x01&\x00\x032345545456444445\x04\x03\x04\xe0\xfarP%\xe1\x0bMakephoto 1\xbc\xb5')

@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-"""
+'''
 @project   Maprox Observer <http://maprox.net>
 @info      Galileo base class for other Galileo firmware
 @copyright 2012, Maprox LLC
-"""
+'''
 
 import traceback
 import re
@@ -19,15 +19,17 @@ from lib.geo import Geo
 import lib.crc16 as crc16
 import lib.bits as bits
 import lib.handlers.galileo.tags as tags
+import lib.handlers.galileo.packets as packets
 
+# ---------------------------------------------------------------------------
 
 class GalileoHandler(AbstractHandler):
   """
    Base handler for Galileo protocol
   """
 
-  # last parsed data from tracker
-  __lastdata = None
+  # last parsed packet from tracker
+  __lastDataPacket = None
 
   def dispatch(self):
     """
@@ -36,12 +38,12 @@ class GalileoHandler(AbstractHandler):
     AbstractHandler.dispatch(self)
 
     log.debug("Recieving...")
-    data_socket = self.recv()
     packnum = 0
-    while len(data_socket) > 0:
-      self.processData(data_socket, packnum)
+    buffer = self.recv()
+    while len(buffer) > 0:
+      self.processData(buffer, packnum)
       self.sendAcknowledgement()
-      data_socket = self.recv()
+      buffer = self.recv()
       packnum += 1
 
     return super(GalileoHandler, self).dispatch()
@@ -53,62 +55,21 @@ class GalileoHandler(AbstractHandler):
      @param packnum: Number of socket packet (defaults to 0)
      @return: self
     """
-    # Parse data assuming that it is a galileo Packet
-    # first of all check crc of supplied data
-    buffer = data
-    crc = unpack("<H", buffer[-2:])[0]
-    crc_data = buffer[:-2]
-    if not self.isCorrectCrc(crc_data, crc):
-       raise Exception('Crc Is incorrect!');
+    galileoPacket = packets.Packet(data)
+    self.__lastDataPacket = galileoPacket
 
-    # read header and length
-    header, length = unpack("<BH", buffer[:3])
-    hasArchive = bits.bitTest(length, 15)
-    length = bits.bitClear(length, 15)
-
-    data_device = {}
-    data_device['header'] = header
-    data_device['length'] = length
-    data_device['hasarchive'] = hasArchive
-    data_device['crc'] = crc
-    self.__lastdata = data_device
-
-    # now let's read packet tags
-    # but before this, check tagsdata length
-    tagsdata = buffer[3:-2]
-    if len(tagsdata) != length:
-      raise Exception('Data length Is incorrect!');
-
-    tagslist = []
-    tail = 1
-    try:
-      while tail < length:
-        tagnum = tagsdata[tail - 1]
-        taglen = tags.getLengthOfTag(tagnum)
-        if (taglen == 0):
-          taglen = length - tail
-        tagdata = tagsdata[tail : tail + taglen]
-        tagslist.append(tags.Tag.getInstance(tagnum, tagdata))
-        tail += taglen + 1
-    except:
-      log.error("Incorrect tag: %s", traceback.format_exc())
-      raise Exception('Incorrect tag?')
-    data_device['tags'] = tagslist
-
-    log.info(data_device)
-    if (header == 4):
+    if (galileoPacket.header == 4):
       log.info('HEADER 4 !!!')
       with open("/tmp/photo.jpg", "ab") as photo:
-        photo.write(tagslist[0].getRawData())
-      #self.sendAcknowledgement()
-      #self.processData(self.recv())
+        photo.write(galileoPacket.body)
       return
 
-    packet = self.translate(data_device)
+    packet = self.translate(galileoPacket)
     if (packnum == 0):
       # HeadPack
       self.headpack = packet
       return
+
     # MainPack
     packet.update(self.headpack)
     #packet['__packnum'] = packnum
@@ -126,36 +87,36 @@ class GalileoHandler(AbstractHandler):
 
     packet = {}
     packet['sensors'] = {}
-    for tag in data['tags']:
+    for tag in data.tags:
       num = tag.getNumber()
       value = tag.getValue()
       #print(num, value)
-      if (num == '3'): # IMEI
+      if (num == 3): # IMEI
         packet['uid'] = value
-      elif (num == '4'): # CODE
+      elif (num == 4): # CODE
         packet['uid2'] = value
-      elif (num == '32'): # Timestamp
+      elif (num == 32): # Timestamp
         packet['time'] = value.strftime('%Y-%m-%dT%H:%M:%S.%f')
-      elif (num == '48'): # Satellites count, Correctness, Latitude, Longitude
+      elif (num == 48): # Satellites count, Correctness, Latitude, Longitude
         packet.update(value)
-      elif (num == '51'): # Speed, Azimuth
+      elif (num == 51): # Speed, Azimuth
         packet.update(value)
-      elif (num == '52'): # Altitude
+      elif (num == 52): # Altitude
         packet['altitude'] = value
-      elif (num == '53'): # HDOP
+      elif (num == 53): # HDOP
         packet['hdop'] = value
-      elif (num == '64'): # Status
+      elif (num == 64): # Status
         packet.update(value)
         packet['sensors']['acc'] = value['acc']
         packet['sensors']['sos'] = value['sos']
         packet['sensors']['battery_discharge'] = value['battery_discharge']
-      elif (num == '80'): # Analog input 0
+      elif (num == 80): # Analog input 0
         packet['sensors']['analog_input0'] = value
-      elif (num == '81'): # Analog input 1
+      elif (num == 81): # Analog input 1
         packet['sensors']['analog_input1'] = value
-      elif (num == '82'): # Analog input 2
+      elif (num == 82): # Analog input 2
         packet['sensors']['analog_input2'] = value
-      elif (num == '83'): # Analog input 3
+      elif (num == 83): # Analog input 3
         packet['sensors']['analog_input3'] = value
 
     return packet
@@ -164,7 +125,7 @@ class GalileoHandler(AbstractHandler):
     """
      Sends acknowledgement to the socket
     """
-    crc = self.__lastdata['crc']
+    crc = self.__lastDataPacket.crc
     buf = self.getAckPacket(crc)
     log.info("Send acknoledgement, crc = %d" % crc)
     return self.send(buf)

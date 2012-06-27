@@ -1,11 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
+@project   Maprox Observer <http://maprox.net>
 @info      Class of storage for protocol handlers (Files I/O)
-@copyright 2011, Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL$
-@version   $Id$
+@copyright 2012, Maprox Ltd.
 '''
 
 import re
@@ -61,7 +58,11 @@ class Storage(object):
      @param packets: list of packets to save into storage
     """
     for packet in packets:
-      self.saveByUid(packet['uid'], packet['__rawdata'])
+      if '__rawdata' in packet:
+        self.saveByUid(packet['uid'], packet['__rawdata'])
+      else:
+        log.info('Unable to save packet into storage: ' +
+          'Property "__rawdata" is not found.')
 
   def saveByUid(self, uid, data):
     """

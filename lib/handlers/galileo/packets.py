@@ -10,8 +10,11 @@ from datetime import datetime
 from struct import unpack, pack, calcsize
 import lib.bits as bits
 import lib.crc16 as crc16
+import lib.handlers.galileo.tags as tags
 
-class Packet(object):
+# ---------------------------------------------------------------------------
+
+class BasePacket(object):
   """
    Default galileo protocol packet
   """
@@ -35,12 +38,19 @@ class Packet(object):
     self.__halvedPacket = halved
     self.rawdata = data
 
-  def isHalved(self):
+  def isHalved(self, header):
     """
      Returns True if length of the packet is in 15 bits
      Returns False if length of the packet is in 16 bits
+     @param header: int number of packet header
     """
     return self.__halvedPacket
+
+  def rebuild(self):
+    """
+     Mark packet to rebuilt later
+    """
+    self.__convert = True
 
   @property
   def header(self):
@@ -49,8 +59,8 @@ class Packet(object):
 
   @header.setter
   def header(self, value):
-    self.__convert = True
     self.__header = value
+    self.rebuild()
 
   @property
   def archive(self):
@@ -59,8 +69,8 @@ class Packet(object):
 
   @archive.setter
   def archive(self, value):
-    self.__convert = True
     self.__archive = value
+    self.rebuild()
 
   @property
   def rawdata(self):
@@ -88,8 +98,9 @@ class Packet(object):
 
   @body.setter
   def body(self, value):
-    self.__convert = True
     self.__body = value
+    self._parseBody(value)
+    self.rebuild()
 
   def __parse(self):
     """
@@ -104,7 +115,7 @@ class Packet(object):
     # read header and length
     archive = False
     header, length = unpack("<BH", buffer[:3])
-    if self.__halvedPacket:
+    if self.isHalved(header):
       archive = bits.bitTest(length, 15)
       length = bits.bitClear(length, 15)
 
@@ -114,16 +125,21 @@ class Packet(object):
     if len(body) != length:
       raise Exception('Body length Is incorrect!');
 
+    # apply new data
     self.__archive = archive
     self.__header = header
     self.__length = length
     self.__body = body
     self.__crc = crc
+    # parse packet body
+    self._parseBody(body)
 
   def __build(self):
     """
      Builds rawdata from object variables
+     @protected
     """
+    self.__convert = False
     self.__header = self.__header
     self.__length = len(self.__body)
     length = self.__length
@@ -132,12 +148,24 @@ class Packet(object):
         length = bits.bitSet(self.__length, 15)
 
     self.__rawdata = pack("<BH", self.__header, length)
-    self.__rawdata += self.__body
+    self.__rawdata += self._buildBody()
     self.__crc = crc16.Crc16.calcBinaryString(
       self.__rawdata,
       crc16.INITIAL_MODBUS
     )
     self.__rawdata += pack("<H", self.__crc)
+
+  def _parseBody(self, data):
+    """
+     Parses body of the packet
+    """
+    pass
+
+  def _buildBody(self):
+    """
+     Parses body of the packet
+    """
+    return self.__body
 
   @classmethod
   def isCorrectCrc(cls, buffer, crc):
@@ -154,6 +182,72 @@ class Packet(object):
   def __str__(self):
     return str(self.getValue())
 
+# ---------------------------------------------------------------------------
+
+class Packet(BasePacket):
+
+  _tags = None
+
+  @property
+  def tags(self):
+    return self._tags
+
+  @tags.setter
+  def tags(self, value):
+    self._tags = value
+    self.rebuild()
+
+  """
+   Default galileo protocol packet
+  """
+  def isHalved(self, header):
+    """
+     Returns True if length of the packet is in 15 bits
+     Returns False if length of the packet is in 16 bits
+     @param header: int number of packet header
+    """
+    return (header == 1)
+
+  def _parseBody(self, body):
+    """
+     Parses body of the packet
+     @param body: Body bytes
+     @protected
+    """
+    self._tags = None
+    if (self.header == 1):
+      tagsdata = body
+      tagslist = []
+      tail = 1
+      length = len(body)
+      while tail < length:
+        tagnum = tagsdata[tail - 1]
+        taglen = tags.getLengthOfTag(tagnum)
+        if (taglen == 0):
+          taglen = length - tail
+        elif (taglen < 0):
+          lengthfmt = tags.Tag.getClass(number).lengthfmt
+          taglen = unpack(lengthfmt, tagdata[tail : tail - taglen])
+          tail += 1
+        tagdata = tagsdata[tail : tail + taglen]
+        tagslist.append(tags.Tag.getInstance(tagnum, tagdata))
+        tail += taglen + 1
+
+      self._tags = tagslist
+
+    super(Packet, self)._parseBody(body)
+
+  def _buildBody(self):
+    """
+     Builds rawdata from object variables
+     @protected
+    """
+    result = super(Packet, self)._buildBody()
+    if self.tags and (len(self.tags) > 0):
+      result = b''
+      for tag in self.tags:
+        result += tag.getRawTag()
+    return result
 
 # ===========================================================================
 # TESTS

@@ -10,6 +10,8 @@ from datetime import datetime
 from struct import unpack, pack, calcsize
 import lib.bits as bits
 
+# ---------------------------------------------------------------------------
+
 class Tag(object):
   """
    Default galileo protocol tag
@@ -28,12 +30,20 @@ class Tag(object):
     """
      Returns this tag number
     """
-    return cls.__name__[3:]
+    result = cls.__name__[3:]
+    try:
+      result = int(result)
+    except:
+      pass
+    return result
 
   @classmethod
   def getRawDataLength(cls):
     """
-     Returns this tag number
+     Returns this tag length.
+     If this method returns negative number (for example -2),
+     it means that for calculating the length of data of this tag we need
+     to retrieve next 2 bytes.
     """
     return cls._rawdatalength
 
@@ -105,6 +115,12 @@ class Tag(object):
     """
     return value
 
+  def getRawTag(self):
+    """
+     Returns raw tag value for appending to stream
+    """
+    return pack('<B', self.getNumber()) + self.getRawData()
+
   def __str__(self):
     return str(self.getValue())
 
@@ -121,7 +137,10 @@ class TagNumber(Tag):
   @classmethod
   def getRawDataLength(cls):
     """
-     Returns this tag number
+     Returns this tag length.
+     If this method returns negative number (for example -2),
+     it means that for calculating the length of data of this tag we need
+     to retrieve next 2 bytes.
     """
     return calcsize(cls._packfmt)
 
@@ -834,6 +853,53 @@ class Tag223(TagNumberLong):
 
 # ---------------------------------------------------------------------------
 
+class Tag224(TagNumberLong):
+  """ 0xE0: Server command number """
+
+# ---------------------------------------------------------------------------
+
+class TagCompound(Tag):
+  """
+   Compound tag class.
+   It is the tag wich raw data can be described as:
+   (tag | length of data | data)
+  """
+  _lengthfmt = '<B'
+
+  @property
+  def lengthfmt(cls):
+    return cls._lengthfmt
+
+  @classmethod
+  def getRawDataLength(cls):
+    """
+     Returns this tag length.
+     If this method returns negative number (for example -2),
+     it means that for calculating the length of data of this tag we need
+     to retrieve next 2 bytes.
+    """
+    return -calcsize(cls._lengthfmt)
+
+  def getRawTag(self):
+    """
+     Returns raw tag value for appending to stream
+    """
+    num = self.getNumber()
+    data = self.getRawData()
+    return pack('<B', num) + pack(self._lengthfmt, len(data)) + data
+
+# ---------------------------------------------------------------------------
+
+class TagCompoundString(TagCompound, TagString):
+  pass
+
+# ---------------------------------------------------------------------------
+
+class Tag225(TagCompoundString):
+  """ 0xE1: Server command """
+
+# ---------------------------------------------------------------------------
+
 def getLengthOfTag(number):
   """
    Returns the length of tag
@@ -858,6 +924,7 @@ class TestCase(unittest.TestCase):
     tag = Tag.getInstance('Number', b'\x34')
     tag.setValue(65)
     self.assertEqual(tag.getRawData(), b'A')
+    self.assertEqual(tag.getNumber(), 'Number')
 
   def test_tag3(self):
     tag = Tag.getInstance(3, b'093983472983742934')
@@ -925,6 +992,7 @@ class TestCase(unittest.TestCase):
     self.assertEqual(value['do2'], 1)
     self.assertEqual(value['do11'], 0)
     self.assertEqual(value['do13'], 1)
+    self.assertEqual(tag.getRawTag(), b'\x45\xAF\x21')
 
   def test_tag118(self):
     tag = Tag.getInstance(118, b'\x06\x10')
@@ -946,3 +1014,10 @@ class TestCase(unittest.TestCase):
     self.assertEqual(value['ibutton2'], 0)
     self.assertEqual(value['ibutton3'], 1)
     self.assertEqual(value['ibutton8'], 0)
+
+  def test_tag225(self):
+    tag = Tag.getInstance(225, b'SMSMSLEEEEE')
+    self.assertEqual(tag.getValue(), 'SMSMSLEEEEE')
+    self.assertEqual(tag.getRawDataLength(), -1)
+    self.assertEqual(tag.getRawTag(), b'\xe1\x0bSMSMSLEEEEE')
+    self.assertEqual(tag.lengthfmt, '<B')

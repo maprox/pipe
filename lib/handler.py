@@ -148,7 +148,8 @@ class AbstractHandler(object):
      Sends data to a socket
      @param data: data
     """
-    self.getThread().request.send(data)
+    sock = self.getThread().request
+    sock.send(data)
     return self
 
   def store(self, packets):

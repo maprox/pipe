@@ -5,17 +5,9 @@
 @copyright 2012, Maprox LLC
 '''
 
-import traceback
-import re
-import json
-from datetime import datetime
-
 from kernel.logger import log
-from kernel.config import conf
-from kernel.database import db
 from struct import unpack, pack, calcsize
 from lib.handler import AbstractHandler
-from lib.geo import Geo
 import lib.crc16 as crc16
 import lib.bits as bits
 import lib.handlers.galileo.tags as tags
@@ -54,12 +46,10 @@ class GalileoHandler(AbstractHandler):
     log.info('Sending command...')
     packet = packets.Packet()
     packet.header = 1
-    tagslist = []
-    tagslist.append(tags.Tag.getInstance(0x03, self.headpack['uid']))
-    tagslist.append(tags.Tag.getInstance(0x04, self.headpack['uid2']))
-    tagslist.append(tags.Tag.getInstance(0xE0, 1))
-    tagslist.append(tags.Tag.getInstance(0xE1, 'Makephoto 1'))
-    packet.tags = tagslist
+    packet.addTag(0x03, self.headpack['uid'])
+    packet.addTag(0x04, self.headpack['uid2'])
+    packet.addTag(0xE0, 1)
+    packet.addTag(0xE1, 'Makephoto 1')
     self.send(packet.rawdata)
 
   def processData(self, data, packnum = 0):
@@ -76,6 +66,8 @@ class GalileoHandler(AbstractHandler):
       log.info('HEADER 4 !!!')
       with open("/tmp/photo.jpg", "ab") as photo:
         photo.write(galileoPacket.body)
+      with open("/tmp/photo-chunk-" + packnum + ".dat", "wb") as photochunk:
+        photochunk.write(galileoPacket.body)
       return
 
     packet = self.translate(galileoPacket)
@@ -156,6 +148,7 @@ class GalileoHandler(AbstractHandler):
 # ===========================================================================
 
 import unittest
+#import time
 class TestCase(unittest.TestCase):
 
   def setUp(self):

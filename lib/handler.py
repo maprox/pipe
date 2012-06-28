@@ -2,16 +2,14 @@
 '''
 @project   Maprox Observer <http://maprox.net/observer>
 @info      Abstract class for all implemented protocols
-@copyright 2009-2011 © Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/lib/listener.py $
-@version   $Id: listener.py 404 2011-02-24 22:16:22Z sunsay $
+@copyright 2009-2012, Maprox LLC
 '''
 
+from datetime import datetime
 import re
 import json
+import base64
 from urllib.parse import urlencode
-
 from kernel.logger import log
 from kernel.config import conf
 from kernel.database import db
@@ -57,6 +55,13 @@ class AbstractHandler(object):
     """
     log.debug('%s::dispatch()', self.__class__)
     self.prepare()
+    return self
+
+  def prepare(self):
+    """
+     Preparing for data transfer.
+     Can be overridden in child classes
+    """
     return self
 
   def processData(self, data):
@@ -137,8 +142,8 @@ class AbstractHandler(object):
       log.debug('Data chunk = %s', data)
       if not data: break
       total_data.append(data)
-      ''' I don't know why [if not data: break] is not working, so
-          let's do break here '''
+      """ I don't know why [if not data: break] is not working, so
+          let's do break here """
       if len(data) < conf.socketPacketLength: break
     log.debug('Total data = %s', total_data)
     return b''.join(total_data)
@@ -168,13 +173,6 @@ class AbstractHandler(object):
       storage.save(packets)
     return result
 
-  def prepare(self):
-    """
-     Preparing for data transfer.
-     Can be overridden in child classes
-    """
-    return self
-
   def translate(self, data):
     """
      Translate gps-tracker data to observer pipe format
@@ -188,3 +186,30 @@ class AbstractHandler(object):
      @param data: {string[]} data from gps-tracker
     """
     raise NotImplementedError("Not implemented Handler::translateConfig() method")
+
+  def sendImages(self, images):
+    """
+     Sends image to the observer
+     @param images: dict() of binary data like {'camera1': b'....'}
+    """
+    if not self.uid:
+      log.error('Cant send an image - self.uid is not defined!')
+      return
+    imageslist = []
+    for image in images:
+      image['content'] = base64.b64encode(image['content']).decode()
+      imageslist.append(image)
+    observerPacket = {
+      'uid': self.uid,
+      'time': datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f'),
+      'images': imageslist
+    }
+    result = self.store(observerPacket)
+    if (result.isSuccess()):
+      log.info('%s::sendImages(): Images have been sent.', self.__class__)
+    else:
+      print(result.getErrorsList())
+      # ? Error messages should be converted into readable format
+      log.error('%s::sendImages():\n %s',
+        self.__class__, result.getErrorsList())
+

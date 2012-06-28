@@ -274,7 +274,7 @@ class Packet(BasePacket):
     """
     return self._tagsMap[num]
 
-  def addTag(self, tag):
+  def addTagInstance(self, tag):
     """
      Adds a tag to the packet
      @param tag: tags.Tag instance
@@ -290,7 +290,7 @@ class Packet(BasePacket):
      @param num: Number of tag
      @param value: Value of tag
     """
-    self.addTag(tags.Tag.getInstance(num, value))
+    self.addTagInstance(tags.Tag.getInstance(num, value))
     return self
 
 # ===========================================================================

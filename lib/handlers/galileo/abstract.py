@@ -79,7 +79,7 @@ class GalileoHandler(AbstractHandler):
      Sends command to the tracker
      @param command: Command string
     """
-    log.info('Sending...')
+    log.info('Sending "' + command + '"...')
     packet = packets.Packet()
     packet.header = 1
     packet.addTag(0x03, self.headpack['uid'])
@@ -187,16 +187,14 @@ class GalileoHandler(AbstractHandler):
     """
     return pack('<BH', 2, crc)
 
-  def processCommandSet(self, data):
+  def processCommandExecute(self, data):
     """
-     Set device configuration
+     Execute command for the device
      @param data: data dict()
     """
-    #command = 'GSS,' + self.uid + ',3,0,'
-    log.info('Observer is sending a command')
+    log.info('Observer is sending a command:')
     log.info(data)
-    #for option, value in data.items():
-    #  log.debug(
+    self.sendCommand(data['command'])
 
 # ===========================================================================
 # TESTS

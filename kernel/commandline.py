@@ -2,12 +2,10 @@
 '''
 @project   Maprox Observer <http://maprox.net/observer>
 @info      Command line reading module
-@copyright 2009-2011, Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
+@copyright 2009-2012, Maprox LLC
 '''
 
 from optparse import OptionParser
-
 options = OptionParser()
 options.add_option(
    "-l",

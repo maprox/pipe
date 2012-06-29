@@ -2,10 +2,7 @@
 '''
 @project   Maprox Observer <http://maprox.net/observer>
 @info      Class implements communication with pipe-controller
-@copyright 2009-2011, Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL$
-@version   $Id$
+@copyright 2009-2011, Maprox LLC
 '''
 
 from kernel.logger import log
@@ -13,8 +10,8 @@ from kernel.config import conf
 from kernel.store import Store
 
 import json
-from urllib.parse import urlencode
-from urllib.request import urlopen
+import urllib.parse
+import urllib.request
 
 import lib.falcon
 
@@ -40,7 +37,11 @@ class Manager(Store):
         'packets': packets
       })}
       # Connecting with the server and getting data
-      connection = urlopen(conf.pipeSetUrl + urlencode(url_data))
+      params = urllib.parse.urlencode(url_data).encode('utf-8')
+      request = urllib.request.Request(conf.pipeSetUrl)
+      request.add_header("Content-Type",
+        "application/x-www-form-urlencoded;charset=utf-8")
+      connection = urllib.request.urlopen(request, params)
       answer_str = connection.read()
       log.debug(answer_str)
       answer_dec = json.loads(answer_str.decode())

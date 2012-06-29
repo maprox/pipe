@@ -2,10 +2,7 @@
 '''
 @project   Maprox Observer <http://maprox.net/observer>
 @info      Logger
-@copyright 2009-2011, Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/kernel/logger.py $
-@version   $Id: logger.py 400 2011-02-20 22:06:46Z sunsay $
+@copyright 2009-2012, Maprox LLC
 '''
 
 import time

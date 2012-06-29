@@ -867,11 +867,7 @@ class TagCompound(Tag):
    It is the tag wich raw data can be described as:
    (tag | length of data | data)
   """
-  _lengthfmt = '<B'
-
-  @property
-  def lengthfmt(cls):
-    return cls._lengthfmt
+  lengthfmt = '<B'
 
   @classmethod
   def getRawDataLength(cls):
@@ -881,7 +877,7 @@ class TagCompound(Tag):
      it means that for calculating the length of data of this tag we need
      to retrieve next 2 bytes.
     """
-    return -calcsize(cls._lengthfmt)
+    return -calcsize(cls.lengthfmt)
 
   def getRawTag(self):
     """
@@ -889,7 +885,7 @@ class TagCompound(Tag):
     """
     num = self.getNumber()
     data = self.getRawData()
-    return pack('<B', num) + pack(self._lengthfmt, len(data)) + data
+    return pack('<B', num) + pack(self.lengthfmt, len(data)) + data
 
 # ---------------------------------------------------------------------------
 

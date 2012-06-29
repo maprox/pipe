@@ -189,6 +189,7 @@ class BasePacket(object):
 class Packet(BasePacket):
 
   _tags = None
+  _tagsMap = None
 
   @property
   def tags(self):
@@ -198,6 +199,10 @@ class Packet(BasePacket):
   def tags(self, value):
     self._tags = value
     self.rebuild()
+
+  @property
+  def tagsMap(self):
+    return self._tagsMap
 
   """
    Default galileo protocol packet
@@ -217,6 +222,7 @@ class Packet(BasePacket):
      @protected
     """
     self._tags = None
+    self._tagsMap = {}
     if (self.header == 1):
       tagsdata = body
       tagslist = []
@@ -228,11 +234,13 @@ class Packet(BasePacket):
         if (taglen == 0):
           taglen = length - tail
         elif (taglen < 0):
-          lengthfmt = tags.Tag.getClass(tagnum).lengthfmt
-          taglen = unpack(lengthfmt, tagdata[tail : tail - taglen])
+          fmt = tags.Tag.getClass(tagnum).lengthfmt
+          taglen = unpack(fmt, tagsdata[tail : tail - taglen])[0]
           tail += 1
         tagdata = tagsdata[tail : tail + taglen]
-        tagslist.append(tags.Tag.getInstance(tagnum, tagdata))
+        tag = tags.Tag.getInstance(tagnum, tagdata)
+        tagslist.append(tag)
+        self._tagsMap[tagnum] = tag
         tail += taglen + 1
 
       self._tags = tagslist
@@ -251,6 +259,39 @@ class Packet(BasePacket):
     else:
       return super(Packet, self)._buildBody()
     return result
+
+  def hasTag(self, num):
+    """
+     Returns True if packet has tag with number 'num'
+     @param num: Number of packet tag
+    """
+    return num in self._tagsMap
+
+  def getTag(self, num):
+    """
+     Returns packet tag with number 'num'
+     @param num: Number of packet tag
+    """
+    return self._tagsMap[num]
+
+  def addTagInstance(self, tag):
+    """
+     Adds a tag to the packet
+     @param tag: tags.Tag instance
+    """
+    if (self._tags == None): self._tags = []
+    self._tags.append(tag)
+    self.rebuild()
+    return self
+
+  def addTag(self, num, value):
+    """
+     Adds a tag to the packet
+     @param num: Number of tag
+     @param value: Value of tag
+    """
+    self.addTagInstance(tags.Tag.getInstance(num, value))
+    return self
 
 # ===========================================================================
 # TESTS
@@ -291,13 +332,10 @@ class TestCase(unittest.TestCase):
     packet.tags = tagslist
     self.assertEqual(packet.rawdata, b'\x01&\x00\x032345545456444445\x04\x03\x04\xe0\xfarP%\xe1\x0bMakephoto 1\xbc\xb5')
 
-  def test_commandPacketValue(self):
-    packet = Packet()
-    packet.header = 1
-    tagslist = []
-    tagslist.append(tags.Tag.getInstance(0x03, '123456789012345'))
-    tagslist.append(tags.Tag.getInstance(0x04, '22'))
-    tagslist.append(tags.Tag.getInstance(0xE0, 1))
-    tagslist.append(tags.Tag.getInstance(0xE1, 'Makephoto 1'))
-    packet.tags = tagslist
-    self.assertEqual(packet.rawdata, b'\x01&\x00\x032345545456444445\x04\x03\x04\xe0\xfarP%\xe1\x0bMakephoto 1\xbc\xb5')
+  def test_answerPacketPhoto(self):
+    packet = Packet(b'\x01"\x00\x03868204000728070\x042\x00\xe0\x01\x00\x00\x00\xe1\x08Photo ok\x13\xf6')
+    self.assertEqual(packet.header, 1)
+    self.assertEqual(packet.length, 34)
+    self.assertEqual(packet.hasTag(0x03), True)
+    self.assertEqual(packet.hasTag(0xe2), False)
+    self.assertEqual(packet.getTag(0xe1).getValue(), 'Photo ok')

@@ -61,7 +61,7 @@ class GalileoHandler(AbstractHandler):
     """
     observerPackets = self.translate(protocolPacket)
     self.sendAcknowledgement(protocolPacket)
-    if len(observerPackets) > 0:
+    if (len(observerPackets) > 0):
       if 'uid' in observerPackets[0]:
         self.headpack = observerPackets[0]
         self.uid = self.headpack['uid']
@@ -69,6 +69,10 @@ class GalileoHandler(AbstractHandler):
 
     if (protocolPacket.header == 4):
       return self.recieveImage(protocolPacket)
+
+    if (protocolPacket.hasTag(0xE1)):
+      log.info('Device answer is "' +
+        protocolPacket.getTag(0xE1).getValue() + '".')
 
     if len(observerPackets) == 0: return
 

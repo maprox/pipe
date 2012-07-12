@@ -52,7 +52,9 @@ class GalileoHandler(AbstractHandler):
     protocolPackets = packets.Packet.getPacketsFromBuffer(data)
     for protocolPacket in protocolPackets:
       self.processProtocolPacket(protocolPacket)
-    return super(GalileoHandler, self).processData(data)
+
+    if self.__imageRecievingConfig is None:
+      return super(GalileoHandler, self).processData(data)
 
   def processProtocolPacket(self, protocolPacket):
     """
@@ -61,19 +63,22 @@ class GalileoHandler(AbstractHandler):
     """
     observerPackets = self.translate(protocolPacket)
     self.sendAcknowledgement(protocolPacket)
-    if (len(observerPackets) > 0):
-      if 'uid' in observerPackets[0]:
-        self.headpack = observerPackets[0]
-        self.uid = self.headpack['uid']
-        return
-
-    if (protocolPacket.header == 4):
-      return self.recieveImage(protocolPacket)
 
     if (protocolPacket.hasTag(0xE1)):
       log.info('Device answer is "' +
         protocolPacket.getTag(0xE1).getValue() + '".')
 
+    if (len(observerPackets) > 0):
+      if 'uid' in observerPackets[0]:
+        self.headpack = observerPackets[0]
+        self.uid = self.headpack['uid']
+        log.info('HeadPack is stored.')
+        return
+
+    if (protocolPacket.header == 4):
+      return self.recieveImage(protocolPacket)
+
+    log.info('Location packet not found. Exiting...')
     if len(observerPackets) == 0: return
 
     # MainPack

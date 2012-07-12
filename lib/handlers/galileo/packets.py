@@ -23,19 +23,32 @@ class BasePacket(object):
   __header = 0
   __length = 0
   __rawdata = None
+  __rawdatatail = None
   __body = None
   __crc = 0
   __convert = True
   __archive = False
-  __halvedPacket = True
 
-  def __init__(self, data = None, halved = True):
+  @classmethod
+  def getPacketsFromBuffer(cls, data = None):
+    """
+     Returns an array of BasePacket instances from data
+     @param data: Input binary data
+     @return array of BasePacket instances (empty array if no packet found)
+    """
+    packets = []
+    while True:
+      packet = cls(data)
+      data = packet.rawdatatail
+      packets.append(packet)
+      if (len(data) == 0): break
+    return packets
+
+  def __init__(self, data = None):
     """
      Constructor
      @param data: Input binary data
-     @param halved: True if length of the packet is in 15 bits
     """
-    self.__halvedPacket = halved
     self.rawdata = data
 
   def isHalved(self, header):
@@ -44,7 +57,7 @@ class BasePacket(object):
      Returns False if length of the packet is in 16 bits
      @param header: int number of packet header
     """
-    return self.__halvedPacket
+    return False
 
   def rebuild(self):
     """
@@ -71,6 +84,10 @@ class BasePacket(object):
   def archive(self, value):
     self.__archive = value
     self.rebuild()
+
+  @property
+  def rawdatatail(self):
+    return self.__rawdatatail
 
   @property
   def rawdata(self):
@@ -108,10 +125,6 @@ class BasePacket(object):
     """
     buffer = self.__rawdata
     if buffer == None: return
-    crc = unpack("<H", buffer[-2:])[0]
-    crc_data = buffer[:-2]
-    if not self.isCorrectCrc(crc_data, crc):
-       raise Exception('Crc Is incorrect!');
 
     # read header and length
     archive = False
@@ -120,18 +133,26 @@ class BasePacket(object):
       archive = bits.bitTest(length, 15)
       length = bits.bitClear(length, 15)
 
+    crc = unpack("<H", buffer[length + 3:length + 5])[0]
+    crc_data = buffer[:length + 3]
+    if not self.isCorrectCrc(crc_data, crc):
+       raise Exception('Crc Is incorrect!');
+
     # now let's read packet data
     # but before this, check tagsdata length
-    body = buffer[3:-2]
+    body = buffer[3:length + 3]
     if len(body) != length:
       raise Exception('Body length Is incorrect!');
 
     # apply new data
+    self.__rawdatatail = buffer[length + 5:]
+    self.__rawdata = buffer[:length + 5]
     self.__archive = archive
     self.__header = header
     self.__length = length
     self.__body = body
     self.__crc = crc
+
     # parse packet body
     self._parseBody(body)
 
@@ -145,7 +166,7 @@ class BasePacket(object):
     self.__header = self.__header
     self.__length = len(self.__body)
     length = self.__length
-    if self.__halvedPacket:
+    if self.isHalved(self.__header):
       if self.__archive:
         length = bits.bitSet(self.__length, 15)
 
@@ -311,11 +332,11 @@ class TestCase(unittest.TestCase):
     self.assertEqual(packet.crc, 36996)
     packet.header = 15
     packet.body = b'\x00\x00'
-    self.assertEqual(packet.rawdata, b'\x0F\x02\x80\x00\x00pQ')
+    self.assertEqual(packet.rawdata, b'\x0F\x02\x00\x00\x00q\xb9')
     self.assertEqual(packet.length, 2)
 
   def test_defaultPacket(self):
-    packet = Packet(b'\x0F\x02\x00\x00\x00\x71\xB9', False)
+    packet = Packet(b'\x0F\x02\x00\x00\x00\x71\xB9')
     self.assertEqual(packet.header, 15)
     self.assertEqual(packet.length, 2)
     self.assertEqual(packet.body, b'\x00\x00')
@@ -339,3 +360,10 @@ class TestCase(unittest.TestCase):
     self.assertEqual(packet.hasTag(0x03), True)
     self.assertEqual(packet.hasTag(0xe2), False)
     self.assertEqual(packet.getTag(0xe1).getValue(), 'Photo ok')
+
+  def test_packetTail(self):
+    packets = Packet.getPacketsFromBuffer(
+      b'\x01\x17\x80\x01\n\x02w\x03868204000728070\x042\x00\x84\x90' +
+      b'\x01"\x00\x03868204000728070\x042\x00\xe0\x01\x00\x00\x00\xe1\x08Photo ok\x13\xf6' +
+      b'\x01"\x00\x03868204000728070\x042\x00\xe0\x01\x00\x00\x00\xe1\x08Photo ok\x13\xf6')
+    self.assertEqual(len(packets), 3)

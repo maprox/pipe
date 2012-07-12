@@ -36,43 +36,47 @@ class GalileoHandler(AbstractHandler):
     buffer = self.recv()
     while len(buffer) > 0:
       self.processData(buffer, packnum)
+      if (packnum == 1): self.sendCommand('Makephoto 1')
       buffer = self.recv()
       packnum += 1
 
     return super(GalileoHandler, self).dispatch()
 
-  def processData(self, data, packnum = 0):
+  def processData(self, data):
     """
      Processing of data from socket / storage.
      @param data: Data from socket
      @param packnum: Number of socket packet (defaults to 0)
      @return: self
     """
-    protocolPacket = packets.Packet(data)
-    observerPacket = self.translate(protocolPacket)
-    self.sendAcknowledgement(protocolPacket)
-    if observerPacket != None:
-      if 'uid' in observerPacket:
-        self.uid = observerPacket['uid']
+    protocolPackets = packets.Packet.getPacketsFromBuffer(data)
+    for protocolPacket in protocolPackets:
+      self.processProtocolPacket(protocolPacket)
+    return super(GalileoHandler, self).processData(data)
 
-    if (packnum == 1): self.sendCommand('Makephoto 1')
+  def processProtocolPacket(self, protocolPacket):
+    """
+     Process galileo packet.
+    """
+    observerPackets = self.translate(protocolPacket)
+    self.sendAcknowledgement(protocolPacket)
+    if len(observerPackets) > 0:
+      if 'uid' in observerPackets[0]:
+        self.headpack = observerPackets[0]
+        self.uid = self.headpack['uid']
+
     if (protocolPacket.header == 4):
       return self.recieveImage(protocolPacket)
 
     if protocolPacket.hasTag(0xE1): return
 
-    if (packnum == 0):
-      # HeadPack
-      self.headpack = observerPacket
-      return
-
     # MainPack
-    observerPacket.update(self.headpack)
+    for packet in observerPackets:
+      packet.update(self.headpack)
     #packet['__packnum'] = packnum
     #packet['__rawdata'] = buffer
-    log.info(observerPacket)
-    store_result = self.store([observerPacket])
-    return super(GalileoHandler, self).processData(data)
+    log.info(observerPackets)
+    store_result = self.store(observerPackets)
 
   def sendCommand(self, command):
     """
@@ -136,10 +140,17 @@ class GalileoHandler(AbstractHandler):
     if (data == None): return None
     if (data.tags == None): return None
 
-    packet = {}
-    packet['sensors'] = {}
+    packets = []
+    packet = {'sensors': {}}
+    prevNum = 0
     for tag in data.tags:
       num = tag.getNumber()
+
+      if (num < prevNum):
+        packets.append(packet)
+        packet = {'sensors': {}}
+
+      prevNum = num
       value = tag.getValue()
       #print(num, value)
       if (num == 3): # IMEI
@@ -170,7 +181,8 @@ class GalileoHandler(AbstractHandler):
       elif (num == 83): # Analog input 3
         packet['sensors']['analog_input3'] = value
 
-    return packet
+    packets.append(packet)
+    return packets
 
   def sendAcknowledgement(self, packet):
     """
@@ -207,11 +219,10 @@ class TestCase(unittest.TestCase):
   def setUp(self):
     pass
 
-  def test_sendImage(self):
+  def test_packetData(self):
     import kernel.pipe as pipe
     h = GalileoHandler(pipe.Manager(), None)
-    h.uid = '3519960467506531'
-    h.sendImages([{
-      'mime': 'image/jpeg',
-      'content': b'YOU ARE UNBELIEVABLE!'
-    }])
+    data = b'\x01"\x00\x03868204000728070\x042\x00\xe0\x00\x00\x00\x00\xe1\x08Photo ok\x137'
+    protocolPackets = packets.Packet.getPacketsFromBuffer(data)
+    for packet in protocolPackets:
+      self.assertEqual(packet.header, 1)

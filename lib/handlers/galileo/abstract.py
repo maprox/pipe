@@ -57,6 +57,7 @@ class GalileoHandler(AbstractHandler):
   def processProtocolPacket(self, protocolPacket):
     """
      Process galileo packet.
+     @param protocolPacket: Galileo protocol packet
     """
     observerPackets = self.translate(protocolPacket)
     self.sendAcknowledgement(protocolPacket)
@@ -64,11 +65,12 @@ class GalileoHandler(AbstractHandler):
       if 'uid' in observerPackets[0]:
         self.headpack = observerPackets[0]
         self.uid = self.headpack['uid']
+        return
 
     if (protocolPacket.header == 4):
       return self.recieveImage(protocolPacket)
 
-    if protocolPacket.hasTag(0xE1): return
+    if len(observerPackets) == 0: return
 
     # MainPack
     for packet in observerPackets:
@@ -137,10 +139,10 @@ class GalileoHandler(AbstractHandler):
      Translate gps-tracker data to observer pipe format
      @param data: dict() data from gps-tracker
     """
-    if (data == None): return None
-    if (data.tags == None): return None
-
     packets = []
+    if (data == None): return packets
+    if (data.tags == None): return packets
+
     packet = {'sensors': {}}
     prevNum = 0
     for tag in data.tags:

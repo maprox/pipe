@@ -36,7 +36,8 @@ class GalileoHandler(AbstractHandler):
     buffer = self.recv()
     while len(buffer) > 0:
       self.processData(buffer)
-      if (packnum == 1): self.sendCommand('Makephoto 1')
+      if (packnum == 1) and (self.__imageRecievingConfig is None):
+        self.sendCommand('Makephoto 1')
       buffer = self.recv()
       packnum += 1
 

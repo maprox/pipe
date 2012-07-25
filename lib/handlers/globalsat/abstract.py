@@ -251,6 +251,8 @@ class GlobalsatHandler(AbstractHandler):
         dec = int(value, 16)
         packet['movementsensor'] = (dec >> 7) % 2
        # ACC Sensor
+        packet['sensors']['battery_connected'] = (dec >> 15) % 2
+       # ACC Sensor
         packet['sensors']['acc'] = (dec >> 13) % 2
        # Digital inputs
         packet['sensors']['digital_input1'] = (dec >> 1) % 2

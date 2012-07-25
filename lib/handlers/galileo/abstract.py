@@ -50,8 +50,8 @@ class GalileoHandler(AbstractHandler):
      @param packnum: Number of socket packet (defaults to 0)
      @return: self
     """
-    if (len(data) >= 3) and (data[:3].decode() == 'OBS'):
-      return self.processRequest(data.decode())
+    #if (len(data) >= 3) and (data[:3].decode() == 'OBS'):
+    #  return self.processRequest(data.decode())
 
     protocolPackets = packets.Packet.getPacketsFromBuffer(data)
     for protocolPacket in protocolPackets:

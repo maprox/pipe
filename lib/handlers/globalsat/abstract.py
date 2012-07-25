@@ -498,10 +498,10 @@ class GlobalsatHandler(AbstractHandler):
     for key in options:
       ret += ',' + key + '=' + options[key]
 
-    ret += ',D1=' + str(data['gprs']['apn'])
-    ret += ',D2=' + (str(data['gprs']['username']) or '')
-    ret += ',D3=' + (str(data['gprs']['password']) or '')
-    ret += ',E0=' + str(data['host'])
-    ret += ',E1=' + str(data['port'])
+    ret += ',D1=' + str(data['gprs']['apn'] or '')
+    ret += ',D2=' + str(data['gprs']['username'] or '')
+    ret += ',D3=' + str(data['gprs']['password'] or '')
+    ret += ',E0=' + str(data['host'] or '')
+    ret += ',E1=' + str(data['port'] or '')
 
     return ret

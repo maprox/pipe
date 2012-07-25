@@ -103,6 +103,7 @@ class AbstractHandler(object):
 
     position = 0
 
+    log.debug("Search match in '" + data + "'")
     m = self.re_request.search(data, position)
     if m:
       log.debug("Request match found.")

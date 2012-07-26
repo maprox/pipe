@@ -245,20 +245,26 @@ class GlobalsatHandler(AbstractHandler):
         packet['hdop'] = float(value)
       # Extracting movement sensor from report type.
       # Have lower priority than actual movement sensor
+        """
+      TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
+
       elif char == "R":
         if not 'movementsensor' in packet:
           packet['movementsensor'] = int(value != '4' and
             value != 'F' and
             value != 'E')
+        """
       # Extracting movement sensor value and ACC
       elif char == "Y":
         # Tracker sends value as HEX string
         dec = int(value, 16)
         packet['movementsensor'] = (dec >> 7) % 2
         # ACC Sensor
-        packet['sensors']['battery_connected'] = (dec >> 15) % 2
-        # ACC Sensor
         packet['sensors']['acc'] = (dec >> 13) % 2
+        # GPS Antenna
+        packet['sensors']['gpsantenna'] = (dec >> 14) % 2
+        # No external power
+        packet['sensors']['extbattery'] = (dec >> 15) % 2
         # Digital inputs
         """
       TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
@@ -275,9 +281,9 @@ class GlobalsatHandler(AbstractHandler):
       elif char == "P":
         dec = int(value, 16)
         packet['sensors']['sos'] = dec % 2
-        packet['sensors']['nogpsantenna'] = (dec >> 2) % 2
-        packet['sensors']['battery_disconnect'] = (dec >> 6) % 2
-        packet['sensors']['battery_discharge'] = (dec >> 7) % 2
+        #packet['sensors']['gpsantenna'] = 1 - (dec >> 2) % 2
+        #packet['sensors']['battery_disconnect'] = (dec >> 6) % 2
+        #packet['sensors']['extbattery_low'] = (dec >> 7) % 2
       # Counters
       #elif char == "e":
         """

@@ -186,15 +186,19 @@ class GalileoHandler(AbstractHandler):
         packet.update(value)
         packet['sensors']['acc'] = value['acc']
         packet['sensors']['sos'] = value['sos']
-        packet['sensors']['battery_discharge'] = value['battery_discharge']
+        packet['sensors']['extbattery_low'] = value['extbattery_low']
       elif (num == 80): # Analog input 0
         packet['sensors']['analog_input0'] = value
+        """
+      TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
+
       elif (num == 81): # Analog input 1
         packet['sensors']['analog_input1'] = value
       elif (num == 82): # Analog input 2
         packet['sensors']['analog_input2'] = value
       elif (num == 83): # Analog input 3
         packet['sensors']['analog_input3'] = value
+        """
 
     packets.append(packet)
     return packets

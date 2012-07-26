@@ -206,7 +206,8 @@ class GlobalsatHandler(AbstractHandler):
     for char in data:
       value = data[char]
       # IMEI / UID
-      if   char == "S": packet['uid'] = value
+      if char == "S":
+        packet['uid'] = value
       # TIME
       elif char == "B":
         dt = datetime.strptime(value, '%d%m%y,%H%M%S')
@@ -241,27 +242,34 @@ class GlobalsatHandler(AbstractHandler):
       # HDOP (Horizontal Dilution of Precision)
       elif char == "M":
         packet['hdop'] = float(value)
-      # Extracting movement sensor from report type. Have lower priority than actual movement sensor
+      # Extracting movement sensor from report type.
+      # Have lower priority than actual movement sensor
       elif char == "R":
         if not 'movementsensor' in packet:
-          packet['movementsensor'] = int(value != '4' and value != 'F' and value != 'E')
+          packet['movementsensor'] = int(value != '4' and
+            value != 'F' and
+            value != 'E')
       # Extracting movement sensor value and ACC
       elif char == "Y":
         # Tracker sends value as HEX string
         dec = int(value, 16)
         packet['movementsensor'] = (dec >> 7) % 2
-       # ACC Sensor
+        # ACC Sensor
         packet['sensors']['battery_connected'] = (dec >> 15) % 2
-       # ACC Sensor
+        # ACC Sensor
         packet['sensors']['acc'] = (dec >> 13) % 2
-       # Digital inputs
+        # Digital inputs
+        """
+      TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
+
         packet['sensors']['digital_input1'] = (dec >> 1) % 2
         packet['sensors']['digital_input2'] = (dec >> 2) % 2
         packet['sensors']['digital_input3'] = (dec >> 3) % 2
-       # Digital outputs
+        # Digital outputs
         packet['sensors']['digital_output1'] = (dec >> 9) % 2
         packet['sensors']['digital_output2'] = (dec >> 10) % 2
         packet['sensors']['digital_output3'] = (dec >> 11) % 2
+        """
       # Signalization status
       elif char == "P":
         dec = int(value, 16)
@@ -270,7 +278,10 @@ class GlobalsatHandler(AbstractHandler):
         packet['sensors']['battery_disconnect'] = (dec >> 6) % 2
         packet['sensors']['battery_discharge'] = (dec >> 7) % 2
       # Counters
-      elif char == "e":
+      #elif char == "e":
+        """
+      TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
+
         packet['sensors']['counter0'] = float(value)
       elif char == "f":
         packet['sensors']['counter1'] = float(value)
@@ -278,10 +289,13 @@ class GlobalsatHandler(AbstractHandler):
         packet['sensors']['counter2'] = float(value)
       elif char == "h":
         packet['sensors']['counter3'] = float(value)
+        """
       # Analog input 0
       elif char == "a":
         packet['sensors']['analog_input0'] = float(value)
-      elif char == "n" or char == "N":
+      elif char == "m":
+        packet['sensors']['extvoltage'] = float(value)
+      elif char == "n":
         if (self.re_volts.match(value)):
           packet['batterylevel'] = 1
         elif (self.re_percents.match(value)):

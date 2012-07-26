@@ -50,6 +50,7 @@ class GlobalsatHandler(AbstractHandler):
       'K': '\d+',
       'L': '\d+',
       'M': '\d+(\.\d+)?',
+      'N': '\d+',
       'P': '[0-9A-F]{2}',
      #'Z': '',
      #'Q': '',

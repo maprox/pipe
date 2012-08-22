@@ -108,7 +108,9 @@ class GlobalsatHandler(AbstractHandler):
       'A0': '0',
       'A1': '0',
       # Turn off voice monitoring
-      'V0': '0'
+      'V0': '0',
+      # Report settings through TCP
+      'OO': '02'
     })
 
   @classmethod
@@ -484,11 +486,22 @@ class GlobalsatHandler(AbstractHandler):
     """
     current_db = db.get(self.uid)
     if not current_db.isReading() and not current_db.isReadReady():
-      command = 'GSC,' + self.uid + ',L1(ALL)'
+      command = 'GSC,' + self.uid + ',N1(OO=02),L1(ALL)'
       command = self.addChecksum(command)
       log.debug('Command sent: ' + command)
       current_db.startReading()
       self.send(command.encode())
+
+  def processCommandExecute(self, data):
+    """
+     Execute command for the device
+     @param data: data dict()
+    """
+    log.info('Observer is sending a command:')
+    log.info(data)
+    command = 'GSC,' + self.uid + ',' + data['command']
+    command = self.addChecksum(command)
+    self.send(command.encode())
 
   def processCommandSet(self, data):
     """

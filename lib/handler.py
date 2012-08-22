@@ -81,8 +81,8 @@ class AbstractHandler(object):
         send = {}
         config = self.translateConfig(current_db.getRead())
         send['config'] = json.dumps(config, separators=(',',':'))
-        connection = urlopen(conf.pipeSetUrl + urlencode(send))
         log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
+        connection = urlopen(conf.pipeSetUrl + urlencode(send))
         answer = connection.read()
         log.debug('Config answered: ' + answer.decode())
         result = self.re_success.search(answer.decode(), 0)

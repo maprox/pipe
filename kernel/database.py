@@ -48,7 +48,7 @@ class Database(object):
     if not os.path.exists(path):
       return False
 
-    if os.path.getmtime(path) - time.time() > 7200:
+    if time.time() - os.path.getmtime(path) > 7200:
       try:
         os.remove(self.getPath())
       except os.error:

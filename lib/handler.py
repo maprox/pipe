@@ -27,8 +27,8 @@ class AbstractHandler(object):
   uid = False
   """ Uid of currently connected device """
 
-  re_request = re.compile('^OBS,request\((?P<data>.+)\)$')
-  re_success = re.compile('^OBS,request\(.*success.*\)$')
+  re_request = re.compile('^OBS.*request\((?P<data>.+)\)$')
+  re_success = re.compile('^OBS,success')
 
   def __init__(self, store, clientThread):
     """

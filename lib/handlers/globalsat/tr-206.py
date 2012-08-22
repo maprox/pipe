@@ -24,7 +24,7 @@ class Handler(GlobalsatHandler):
      @param send: {string[]} data to send
      @param options: {string[]} parsed options
     """
-    send = GlobalsatHandler.translateConfigOptions(send, options)
+    send = GlobalsatHandler.translateConfigOptions(self, send, options)
     send['freq_mov'] = options['R1']
     send['freq_idle'] = options['R0']
 

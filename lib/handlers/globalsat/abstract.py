@@ -332,8 +332,14 @@ class GlobalsatHandler(AbstractHandler):
       value = '='.join(option)
       options[key] = value
 
-    send['freq_mov'] = options['R1']
-    send['freq_idle'] = options['R0']
+    return self.translateConfigOptions(send, options)
+
+  def translateConfigOptions(self, send, options):
+    """
+     Translate gps-tracker parsed options to observer format
+     @param send: {string[]} data to send
+     @param options: {string[]} parsed options
+    """
     send['sos_phone'] = options['G0'] + ',' + options['G1'] + ',' + options['G2'] \
        + ',' + options['G3'] + ',' + options['G4'] + ',' + options['G5']
     send['uid'] = options['B2']

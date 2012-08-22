@@ -17,3 +17,15 @@ class Handler(GlobalsatHandler):
 
   confSectionName = "globalsat.tr-600"
   reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
+
+  def translateConfigOptions(self, send, options):
+    """
+     Translate gps-tracker parsed options to observer format
+     @param send: {string[]} data to send
+     @param options: {string[]} parsed options
+    """
+    send = GlobalsatHandler.translateConfigOptions(send, options)
+    send['freq_mov'] = options['Ri']
+    send['freq_idle'] = options['Ra']
+
+    return send

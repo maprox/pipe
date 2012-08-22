@@ -79,7 +79,8 @@ class AbstractHandler(object):
       current_db = db.get(self.uid)
       if current_db.isReadReady():
         send = {}
-        send['config'] = self.translateConfig(current_db.getRead())
+        config = self.translateConfig(current_db.getRead())
+        send['config'] = json.dumps(config, separators=(',',':'))
         connection = urlopen(conf.pipeSetUrl + urlencode(send))
         log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
         answer = connection.read()

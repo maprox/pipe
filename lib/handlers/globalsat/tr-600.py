@@ -25,7 +25,22 @@ class Handler(GlobalsatHandler):
      @param options: {string[]} parsed options
     """
     send = GlobalsatHandler.translateConfigOptions(self, send, options)
-    send['freq_mov'] = options['Ri']
-    send['freq_idle'] = options['Ra']
+    if 'Ri' in options:
+      send['freq_mov'] = options['Ri']
+    if 'Ra' in options:
+      send['freq_idle'] = options['Ra']
 
     return send
+
+  def addCommandSetOptions(self, data):
+    """
+     Add device options
+     @param data: data dict()
+    """
+    command = GlobalsatHandler.addCommandSetOptions(self, data)
+    for option, value in data.items():
+      if option == 'freq_mov':
+        command += ',Ri=' + value
+      elif option == 'freq_idle':
+        command += ',Ra=' + value
+    return command

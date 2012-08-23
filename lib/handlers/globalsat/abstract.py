@@ -514,20 +514,22 @@ class GlobalsatHandler(AbstractHandler):
      Set device configuration
      @param data: data dict()
     """
-    command = 'GSS,' + self.uid + ',3,0,'
-    for option, value in data.items():
-      if option == 'freq_mov':
-        command += 'R1=' + value
-      elif option == 'freq_idle':
-        command += 'R0=' + value
-      elif option == 'sos_phone':
-        command += 'H0=03,G0=' + value
-      else:
-        log.error('Unknown option: ' + data.option)
-
+    command = 'GSS,' + self.uid + ',3,0'
+    command = command + self.addCommandSetOptions(data)
     command = self.addChecksum(command)
     log.debug('Command sent: ' + command)
     self.send(command.encode())
+
+  def addCommandSetOptions(self, data):
+    """
+     Add device options
+     @param data: data dict()
+    """
+    command = ''
+    for option, value in data.items():
+      if option == 'sos_phone':
+        command += ',H0=03,G0=' + value
+    return command
 
   def parseOptions(self, options, data):
     """

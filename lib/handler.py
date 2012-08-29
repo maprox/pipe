@@ -8,6 +8,7 @@
 from datetime import datetime
 import re
 import json
+import redis
 import base64
 from urllib.parse import urlencode
 from kernel.logger import log
@@ -92,9 +93,19 @@ class AbstractHandler(object):
     return self
 
   def getCommands(self):
-    connection = urlopen(conf.pipeGetUrl + 'uid=' + self.uid)
-    answer = connection.read()
-    return answer.decode()
+    store = redis.StrictRedis(host=conf.redisHost, port=conf.redisPort, db=0)
+    log.debug('Redis key is: ' + 'zc:k:tracker_action' + self.uid)
+    commands = store.hget('zc:k:tracker_action' + self.uid, 'd')
+
+    if commands is None:
+      connection = urlopen(conf.pipeRequestUrl + 'uid=' + self.uid)
+      commands = store.hget('zc:k:tracker_action' + self.uid, 'd')
+
+    if commands is None:
+      log.error('Error reading actions for uid ' + self.uid)
+      commands = ''
+
+    return str(commands)
 
   def processRequest(self, data):
     """

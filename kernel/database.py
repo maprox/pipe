@@ -5,9 +5,9 @@
 @copyright 2009-2011, Maprox Ltd.
 @author    sunsay <box@sunsay.ru>
 '''
-import os
-import time
-
+import json
+import redis
+from urllib.request import urlopen
 from kernel.config import conf
 from kernel.logger import log
 
@@ -29,76 +29,64 @@ class DatabaseManager(object):
 class Database(object):
   """ uid storage """
   __uid = None
+  __store = None
 
   def __init__(self, uid):
     """ Constructor. Sets uid """
     self.__uid = uid
+    self.__store = redis.StrictRedis(host=conf.redisHost, port=conf.redisPort, db=0)
 
-  def getPath(self):
-    """ Returns path to working file """
-    return 'db/' + self.__uid
-
-  def getPathReady(self):
-    """ Returns path to ready file """
-    return 'db/' + self.__uid + '.ready'
-
-  def isReading(self):
+  def isReadingSettings(self):
     """ Tests, if currently in reading state """
-    path = self.getPath()
-    if not os.path.exists(path):
-      return False
+    return self.__store.hexists(self._settingsKey(), 'reading')
 
-    if time.time() - os.path.getmtime(path) > 7200:
-      try:
-        os.remove(self.getPath())
-      except os.error:
-        pass
-      return False
-
-    return True
-
-  def isReadReady(self):
+  def isSettingsReady(self):
     """ Tests, if currently have ready read """
-    return os.path.exists(self.getPathReady())
+    return self.__store.hexists(self._settingsKey(), 'data') \
+      and !self.__store.hexists(self._settingsKey(), 'reading')
 
-  def startReading(self):
+  def startReadingSettings(self):
     """ Starts reading """
-    self.addRead('')
+    self.__store.hset(self._settingsKey(), 'reading', 1)
 
-  def addRead(self, string):
-    """ Adds string reading """
-    path = self.getPath()
-    file = open(path, 'a')
-    file.write(string + '\n')
-    file.close()
-
-  def endRead(self):
+  def finishSettingsRead(self):
     """ Marks data as ready """
-    os.rename(self.getPath(), self.getPathReady())
+    self.__store.hdel(self._settingsKey(), 'reading')
 
-  def getRead(self):
+  def addSettings(self, string):
+    """ Adds string reading """
+    current = self.__store.hget(self._settingsKey(), 'data')
+    if current is None:
+      current = ''
+    self.__store.hset(self._settingsKey(), 'data', current + string)
+
+  def getSettings(self):
     """ return ready data """
-    path = self.getPathReady()
-    file = open(path, 'r')
-    text = file.read()
-    file.close()
+    return self.__store.hget(self._settingsKey(), 'data')
 
-    log.info('Reading settings from ' + self.__uid + ': ' + text)
-
-    return text.split('\n')
-
-  def deleteRead(self):
+  def deleteSettings(self):
     """ Deletes data """
+    self.__store.delete(self._settingsKey())
 
-    try:
-      os.remove(self.getPath())
-    except os.error:
-      pass
+  def _settingsKey(self):
+    return 'tracker_setting' + self.__uid
 
-    try:
-      os.remove(self.getPathReady())
-    except os.error:
-      pass
+  def getCommands(self):
+    log.debug('Redis key is: ' + 'zc:k:tracker_action' + self.__uid)
+    commands = self.__store.hget('zc:k:tracker_action' + self.__uid, 'd')
+
+    if commands is None:
+      connection = urlopen(conf.pipeRequestUrl + 'uid=' + self.__uid)
+      commands = self.__store.hget('zc:k:tracker_action' + self.__uid, 'd')
+
+    if commands is None:
+      log.error('Error reading actions for uid ' + self.__uid)
+      commands = '[]'
+    else:
+      commands = commands.decode("utf-8")
+
+    log.debug('Commands for uid ' + self.__uid + ' are: ' + commands)
+    return json.loads(commands)
 
 # let's create instance of global database manager
 db = DatabaseManager()

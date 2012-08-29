@@ -8,7 +8,6 @@
 from datetime import datetime
 import re
 import json
-import redis
 import base64
 from urllib.parse import urlencode
 from kernel.logger import log
@@ -93,19 +92,8 @@ class AbstractHandler(object):
     return self
 
   def getCommands(self):
-    store = redis.StrictRedis(host=conf.redisHost, port=conf.redisPort, db=0)
-    log.debug('Redis key is: ' + 'zc:k:tracker_action' + self.uid)
-    commands = store.hget('zc:k:tracker_action' + self.uid, 'd')
-
-    if commands is None:
-      connection = urlopen(conf.pipeRequestUrl + 'uid=' + self.uid)
-      commands = store.hget('zc:k:tracker_action' + self.uid, 'd')
-
-    if commands is None:
-      log.error('Error reading actions for uid ' + self.uid)
-      commands = ''
-
-    return str(commands)
+    current_db = db.get(self.uid)
+    return current_db.getCommands()
 
   def processRequest(self, data):
     """
@@ -113,28 +101,13 @@ class AbstractHandler(object):
      @param data: request
     """
 
-    position = 0
-
-    log.debug("Search match in '" + data + "'")
-    m = self.re_request.search(data, position)
-    if m:
-      log.debug("Request match found.")
-      data = m.groupdict()['data']
-      data = json.loads(data)
-
-      if data:
-        for command in data:
-          function_name = 'processCommand' + command['cmd'].capitalize()
-          function = getattr(self, function_name)
-          if 'data' in command:
-            function(command['data'])
-          else:
-            function(None)
-
-      self.send(self.transmissionEndSymbol.encode())
-
-    else:
-      log.error("Incorrect request format")
+    for command in data:
+      function_name = 'processCommand' + command['action'].capitalize()
+      function = getattr(self, function_name)
+      if 'value' in command:
+        function(command['value'])
+      else:
+        function(None)
 
     return self
 

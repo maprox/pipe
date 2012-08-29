@@ -234,14 +234,14 @@ class GalileoHandler(AbstractHandler):
     """
     pass
 
-  def processCommandRead(self, data):
+  def processCommandReadSettings(self, data):
     """
      Sending command to read all of device configuration
      @param data: data string
     """
     pass
 
-  def processCommandSet(self, data):
+  def processCommandSetOption(self, data):
     """
      Set device configuration
      @param data: data dict()

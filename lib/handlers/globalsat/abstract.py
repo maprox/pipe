@@ -485,7 +485,7 @@ class GlobalsatHandler(AbstractHandler):
     string = self.addChecksum(string)
     self.send(string.encode())
 
-  def processCommandRead(self, data):
+  def processCommandReadSettings(self, data):
     """
      Sending command to read all of device configuration
      @param data: data string
@@ -509,7 +509,7 @@ class GlobalsatHandler(AbstractHandler):
     command = self.addChecksum(command)
     self.send(command.encode())
 
-  def processCommandSet(self, data):
+  def processCommandSetOption(self, data):
     """
      Set device configuration
      @param data: data dict()

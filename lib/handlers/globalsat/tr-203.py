@@ -52,9 +52,9 @@ class Handler(GlobalsatHandler):
      @param data: data dict()
     """
     command = GlobalsatHandler.addCommandSetOptions(self, data)
-    for option, value in data.items():
-      if option == 'freq_mov':
-        command += ',R1=' + value
-      elif option == 'freq_idle':
-        command += ',R0=' + value
+    for item in data:
+      if item['option'] == 'freq_mov':
+        command += ',R1=' + item['value']
+      elif item['option'] == 'freq_idle':
+        command += ',R0=' + item['value']
     return command

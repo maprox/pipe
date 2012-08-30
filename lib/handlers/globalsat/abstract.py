@@ -534,9 +534,9 @@ class GlobalsatHandler(AbstractHandler):
      @param data: data dict()
     """
     command = ''
-    for option, value in data.items():
-      if option == 'sos_phone':
-        command += ',H0=03,G0=' + value
+    for item in data:
+      if item['option'] == 'sos_phone':
+        command += ',H0=03,G0=' + item['value']
     return command
 
   def parseOptions(self, options, data):

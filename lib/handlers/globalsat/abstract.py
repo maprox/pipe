@@ -525,7 +525,7 @@ class GlobalsatHandler(AbstractHandler):
     data = json.loads(data)
     if type(data) is dict:
       data = [data]
-    command = command + self.addCommandSetOptions()
+    command = command + self.addCommandSetOptions(data)
     command = self.addChecksum(command)
     log.debug('Command sent: ' + command)
     self.send(command.encode())

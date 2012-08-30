@@ -495,7 +495,7 @@ class GlobalsatHandler(AbstractHandler):
       command = 'GSC,' + self.uid + ',N1(OO=02),L1(ALL)'
       command = self.addChecksum(command)
       log.debug('Command sent: ' + command)
-      current_db.startReadingSettings()
+      current_db.startReadingSettings(data['id'])
       self.send(command.encode())
 
   def processCommandExecute(self, data):

@@ -218,32 +218,36 @@ class GalileoHandler(AbstractHandler):
     """
     return pack('<BH', 2, crc)
 
-  def processCommandExecute(self, data):
+  def processCommandExecute(self, task, data):
     """
      Execute command for the device
+     @param task: id task
      @param data: data dict()
     """
     log.info('Observer is sending a command:')
     log.info(data)
     self.sendCommand(data['command'])
 
-  def processCommandFormat(self, data):
+  def processCommandFormat(self, task, data):
     """
      Processing command to form config string
+     @param task: id task
      @param data: request
     """
     pass
 
-  def processCommandReadSettings(self, data):
+  def processCommandReadSettings(self, task, data):
     """
      Sending command to read all of device configuration
+     @param task: id task
      @param data: data string
     """
     pass
 
-  def processCommandSetOption(self, data):
+  def processCommandSetOption(self, task, data):
     """
      Set device configuration
+     @param task: id task
      @param data: data dict()
     """
     pass

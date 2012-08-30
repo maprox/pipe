@@ -73,8 +73,8 @@ class AbstractHandler(object):
 
     if self.uid:
 
-      commands = self.getCommands()
-      self.processRequest(commands)
+      current_db = db.get(self.uid)
+      self.processRequest(current_db.getCommands())
 
       current_db = db.get(self.uid)
       if current_db.isSettingsReady():
@@ -92,10 +92,6 @@ class AbstractHandler(object):
 
     return self
 
-  def getCommands(self):
-    current_db = db.get(self.uid)
-    return current_db.getCommands()
-
   def processRequest(self, data):
     """
      Processing of observer request from socket
@@ -107,9 +103,9 @@ class AbstractHandler(object):
         + command['action'][1:]
       function = getattr(self, function_name)
       if 'value' in command:
-        function(command['value'])
+        function(command['id'], command['value'])
       else:
-        function(None)
+        function(command['id'], None)
 
     return self
 

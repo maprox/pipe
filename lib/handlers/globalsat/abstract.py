@@ -469,9 +469,10 @@ class GlobalsatHandler(AbstractHandler):
     else:
       log.error("Unknown data format for %s", mu.group('uid'))
 
-  def processCommandFormat(self, data):
+  def processCommandFormat(self, task, data):
     """
      Processing command to form config string
+     @param task: id task
      @param data: request
     """
     string = self.commandStart.format(data['identifier'])
@@ -485,9 +486,10 @@ class GlobalsatHandler(AbstractHandler):
     string = self.addChecksum(string)
     self.send(string.encode())
 
-  def processCommandReadSettings(self, data):
+  def processCommandReadSettings(self, task, data):
     """
      Sending command to read all of device configuration
+     @param task: id task
      @param data: data string
     """
     current_db = db.get(self.uid)
@@ -495,12 +497,13 @@ class GlobalsatHandler(AbstractHandler):
       command = 'GSC,' + self.uid + ',N1(OO=02),L1(ALL)'
       command = self.addChecksum(command)
       log.debug('Command sent: ' + command)
-      current_db.startReadingSettings(data['id'])
+      current_db.startReadingSettings(task)
       self.send(command.encode())
 
-  def processCommandExecute(self, data):
+  def processCommandExecute(self, task, data):
     """
      Execute command for the device
+     @param task: id task
      @param data: data dict()
     """
     log.info('Observer is sending a command:')
@@ -509,9 +512,10 @@ class GlobalsatHandler(AbstractHandler):
     command = self.addChecksum(command)
     self.send(command.encode())
 
-  def processCommandSetOption(self, data):
+  def processCommandSetOption(self, task, data):
     """
      Set device configuration
+     @param task: id task
      @param data: data dict()
     """
     command = 'GSS,' + self.uid + ',3,0'

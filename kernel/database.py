@@ -65,7 +65,7 @@ class Database(object):
 
   def addSettings(self, string):
     """ Adds string reading """
-    current = self.__store.hget(self._settingsKey(), 'data')
+    current = str(self.__store.hget(self._settingsKey(), 'data'))
     if current is None:
       current = ''
     self.__store.hset(self._settingsKey(), 'data', current + string)

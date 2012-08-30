@@ -35,7 +35,12 @@ class Database(object):
   def __init__(self, uid):
     """ Constructor. Sets uid """
     self.__uid = uid
-    self.__store = redis.StrictRedis(host=conf.redisHost, port=conf.redisPort, db=0)
+    if conf.redisPassword:
+      self.__store = redis.StrictRedis(password=conf.redisPassword, \
+        host=conf.redisHost, port=conf.redisPort, db=0)
+    else:
+      self.__store = redis.StrictRedis(host=conf.redisHost, \
+        port=conf.redisPort, db=0)
 
   def isReadingSettings(self):
     """ Tests, if currently in reading state """

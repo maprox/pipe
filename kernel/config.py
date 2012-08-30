@@ -50,6 +50,7 @@ try:
   conf.pipeRequestUrl = conf.get("pipe", "urlrequest")
   conf.redisHost = conf.get("redis", "host")
   conf.redisPort = int(conf.get("redis", "port"))
+  conf.redisPassword = conf.get("redis", "password")
 
 except Exception as E:
   log.critical("Error reading " + options.pipeconf + ": " + E.message)

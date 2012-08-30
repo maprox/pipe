@@ -450,10 +450,10 @@ class GlobalsatHandler(AbstractHandler):
      @param data: device setting
     """
     current_db = db.get(data['uid'])
-    current_db.addRead(data['data'])
+    current_db.addSettings(data['data'])
     log.debug('Transmission status: ' + data['status'])
     if data['status'] == '2':
-      current_db.endRead()
+      current_db.finishSettingsRead()
 
   def processError(self, data):
     """
@@ -491,11 +491,11 @@ class GlobalsatHandler(AbstractHandler):
      @param data: data string
     """
     current_db = db.get(self.uid)
-    if not current_db.isReading() and not current_db.isReadReady():
+    if not current_db.isReadingSettings() and not current_db.isSettingsReady():
       command = 'GSC,' + self.uid + ',N1(OO=02),L1(ALL)'
       command = self.addChecksum(command)
       log.debug('Command sent: ' + command)
-      current_db.startReading()
+      current_db.startReadingSettings()
       self.send(command.encode())
 
   def processCommandExecute(self, data):

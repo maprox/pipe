@@ -77,10 +77,11 @@ class AbstractHandler(object):
       self.processRequest(commands)
 
       current_db = db.get(self.uid)
-      if current_db.isReadReady():
+      if current_db.isSettingsReady():
         send = {}
-        config = self.translateConfig(current_db.getRead())
+        config = self.translateConfig(current_db.getSettings())
         send['config'] = json.dumps(config, separators=(',',':'))
+        send['id_action'] = current_db.getSettingsTaskId()
         log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
         connection = urlopen(conf.pipeSetUrl + urlencode(send))
         answer = connection.read()
@@ -102,7 +103,8 @@ class AbstractHandler(object):
     """
 
     for command in data:
-      function_name = 'processCommand' + command['action'].capitalize()
+      function_name = 'processCommand' + command['action'][0].upper() \
+        + command['action'][1:]
       function = getattr(self, function_name)
       if 'value' in command:
         function(command['value'])

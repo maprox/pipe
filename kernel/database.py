@@ -5,6 +5,7 @@
 @copyright 2009-2011, Maprox Ltd.
 @author    sunsay <box@sunsay.ru>
 '''
+import time
 import json
 import redis
 from urllib.request import urlopen
@@ -38,16 +39,20 @@ class Database(object):
 
   def isReadingSettings(self):
     """ Tests, if currently in reading state """
-    return self.__store.hexists(self._settingsKey(), 'reading')
+    return self.__store.hexists(self._settingsKey(), 'reading') \
+      and float(self.__store.hget(self._settingsKey(), 'start')) + 7200 > time.time()
 
   def isSettingsReady(self):
     """ Tests, if currently have ready read """
     return self.__store.hexists(self._settingsKey(), 'data') \
-      and !self.__store.hexists(self._settingsKey(), 'reading')
+      and not self.__store.hexists(self._settingsKey(), 'reading')
 
-  def startReadingSettings(self):
+  def startReadingSettings(self, task):
     """ Starts reading """
+    """ @param task: id task """
+    self.__store.hset(self._settingsKey(), 'task', task)
     self.__store.hset(self._settingsKey(), 'reading', 1)
+    self.__store.hset(self._settingsKey(), 'start', time.time())
 
   def finishSettingsRead(self):
     """ Marks data as ready """
@@ -63,6 +68,10 @@ class Database(object):
   def getSettings(self):
     """ return ready data """
     return self.__store.hget(self._settingsKey(), 'data')
+
+  def getSettingsTaskId(self):
+    """ return ready data """
+    return self.__store.hget(self._settingsKey(), 'task')
 
   def deleteSettings(self):
     """ Deletes data """

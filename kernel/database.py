@@ -65,14 +65,14 @@ class Database(object):
 
   def addSettings(self, string):
     """ Adds string reading """
-    current = str(self.__store.hget(self._settingsKey(), 'data'))
+    current = self.__store.hget(self._settingsKey(), 'data').decode('utf-8')
     if current is None:
       current = ''
     self.__store.hset(self._settingsKey(), 'data', current + string)
 
   def getSettings(self):
     """ return ready data """
-    return str(self.__store.hget(self._settingsKey(), 'data'))
+    return self.__store.hget(self._settingsKey(), 'data').decode('utf-8')
 
   def getSettingsTaskId(self):
     """ return ready data """

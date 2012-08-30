@@ -321,7 +321,7 @@ class GlobalsatHandler(AbstractHandler):
      @param data: {string[]} data from gps-tracker
     """
     send = {}
-    send['raw'] = ','.join(data)
+    send['raw'] = data
 
     tmp_options = send['raw'].split(',')
     options = {}

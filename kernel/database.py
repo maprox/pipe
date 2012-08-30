@@ -72,7 +72,7 @@ class Database(object):
 
   def getSettings(self):
     """ return ready data """
-    return self.__store.hget(self._settingsKey(), 'data')
+    return str(self.__store.hget(self._settingsKey(), 'data'))
 
   def getSettingsTaskId(self):
     """ return ready data """

@@ -450,7 +450,7 @@ class GlobalsatHandler(AbstractHandler):
      @param data: device setting
     """
     current_db = db.get(data['uid'])
-    current_db.addSettings(data['data'])
+    current_db.addSettings(data['data'] + ',')
     log.debug('Transmission status: ' + data['status'])
     if data['status'] == '2':
       current_db.finishSettingsRead()

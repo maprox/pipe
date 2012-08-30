@@ -522,7 +522,7 @@ class GlobalsatHandler(AbstractHandler):
      @param data: data dict()
     """
     command = 'GSS,' + self.uid + ',3,0'
-    command = command + self.addCommandSetOptions(data)
+    command = command + self.addCommandSetOptions(json.loads(data))
     command = self.addChecksum(command)
     log.debug('Command sent: ' + command)
     self.send(command.encode())

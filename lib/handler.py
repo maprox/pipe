@@ -88,7 +88,7 @@ class AbstractHandler(object):
         log.debug('Config answered: ' + answer.decode())
         result = self.re_success.search(answer.decode(), 0)
         if result:
-          current_db.deleteRead()
+          current_db.deleteSettings()
 
     return self
 

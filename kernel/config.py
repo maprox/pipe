@@ -45,7 +45,7 @@ try:
   # pipe settings
   conf.pipeKey = conf.get("pipe", "key")
   conf.pipeSetUrl = conf.get("pipe", "urlset")
-  conf.pipeGetUrl = conf.get("pipe", "urlget")
+  conf.pipeFinishUrl = conf.get("pipe", "urlfinish")
   conf.pipeConfigUrl = conf.get("pipe", "urlconfig")
   conf.pipeRequestUrl = conf.get("pipe", "urlrequest")
   conf.redisHost = conf.get("redis", "host")

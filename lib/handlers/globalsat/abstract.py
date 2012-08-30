@@ -12,6 +12,7 @@ from datetime import datetime
 from kernel.logger import log
 from kernel.config import conf
 from kernel.database import db
+from urllib.request import urlopen
 from lib.handler import AbstractHandler
 from lib.geo import Geo
 
@@ -511,6 +512,8 @@ class GlobalsatHandler(AbstractHandler):
     command = 'GSC,' + self.uid + ',' + data['command']
     command = self.addChecksum(command)
     self.send(command.encode())
+    connection = urlopen(conf.pipeFinishUrl + 'id_action=' + task)
+    answer = connection.read()
 
   def processCommandSetOption(self, task, data):
     """
@@ -523,6 +526,7 @@ class GlobalsatHandler(AbstractHandler):
     command = self.addChecksum(command)
     log.debug('Command sent: ' + command)
     self.send(command.encode())
+    self.processCommandReadSettings(task, None)
 
   def addCommandSetOptions(self, data):
     """

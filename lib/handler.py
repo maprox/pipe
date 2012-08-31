@@ -101,6 +101,7 @@ class AbstractHandler(object):
     for command in data:
       function_name = 'processCommand' + command['action'][0].upper() \
         + command['action'][1:]
+      log.debug('Command is: ' + function_name)
       function = getattr(self, function_name)
       if 'value' in command:
         function(command['id'], command['value'])

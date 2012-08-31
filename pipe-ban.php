@@ -47,6 +47,7 @@ function blockIp($ip, $tracker)
 			print "[OK]\n";
 		}
 	}
+	shell_exec("sudo iptables-save > /dev/null 2>&1");
 }
 
 function unblockIp($ip, $tracker)
@@ -73,6 +74,7 @@ function unblockIp($ip, $tracker)
 			print "[OK]\n";
 		}
 	}
+	shell_exec("sudo iptables-save > /dev/null 2>&1");
 }
 
 function listTrackers($tracker)

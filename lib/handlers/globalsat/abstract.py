@@ -341,9 +341,23 @@ class GlobalsatHandler(AbstractHandler):
      @param send: {string[]} data to send
      @param options: {string[]} parsed options
     """
-    send['sos_phone'] = options['G0'] + ',' + options['G1'] + ',' + options['G2'] \
-       + ',' + options['G3'] + ',' + options['G4'] + ',' + options['G5']
-    send['uid'] = self.uid
+    if 'O5' in options:
+      send['identifier'] = options['O5']
+    if 'O7' in options:
+      send['version'] = options['O7']
+    if 'G0' in options:
+      send['sos_phone_1'] = options['G0']
+    if 'G1' in options:
+      send['sos_phone_2'] = options['G1']
+    if 'G2' in options:
+      send['sos_phone_3'] = options['G2']
+    if 'G3' in options:
+      send['sos_phone_4'] = options['G3']
+    if 'G4' in options:
+      send['sos_phone_5'] = options['G4']
+    if 'G5' in options:
+      send['sos_phone_6'] = options['G5']
+    send['identifier'] = self.uid
 
     return send
 
@@ -537,9 +551,30 @@ class GlobalsatHandler(AbstractHandler):
      @param data: data dict()
     """
     command = ''
+    reportMediaNeeded = False
     for item in data:
-      if item['option'] == 'sos_phone':
-        command += ',H0=03,G0=' + item['value']
+      if item['option'] == 'sos_phone_1':
+        command += ',G0=' + item['value']
+        reportMediaNeeded = True
+      elif item['option'] == 'sos_phone_2':
+        command += ',G1=' + item['value']
+        reportMediaNeeded = True
+      elif item['option'] == 'sos_phone_3':
+        command += ',G2=' + item['value']
+        reportMediaNeeded = True
+      elif item['option'] == 'sos_phone_4':
+        command += ',G3=' + item['value']
+        reportMediaNeeded = True
+      elif item['option'] == 'sos_phone_5':
+        command += ',G4=' + item['value']
+        reportMediaNeeded = True
+      elif item['option'] == 'sos_phone_6':
+        command += ',G5=' + item['value']
+        reportMediaNeeded = True
+
+    if reportMediaNeeded:
+      command += ',H0=03'
+
     return command
 
   def parseOptions(self, options, data):

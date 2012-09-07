@@ -535,15 +535,17 @@ class GlobalsatHandler(AbstractHandler):
      @param task: id task
      @param data: data dict()
     """
-    command = 'GSS,' + self.uid + ',3,0'
-    data = json.loads(data)
-    if type(data) is dict:
-      data = [data]
-    command = command + self.addCommandSetOptions(data)
-    command = self.addChecksum(command)
-    log.debug('Command sent: ' + command)
-    self.send(command.encode())
-    self.processCommandReadSettings(task, None)
+    current_db = db.get(self.uid)
+    if not current_db.isReadingSettings()
+      command = 'GSS,' + self.uid + ',3,0'
+      data = json.loads(data)
+      if type(data) is dict:
+        data = [data]
+      command = command + self.addCommandSetOptions(data)
+      command = self.addChecksum(command)
+      log.debug('Command sent: ' + command)
+      self.send(command.encode())
+      self.processCommandReadSettings(task, None)
 
   def addCommandSetOptions(self, data):
     """

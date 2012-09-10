@@ -44,7 +44,6 @@ class Database(object):
 
   def isReadingSettings(self):
     """ Tests, if currently in reading state """
-    log.info('Expiration test: comparing ' + str((float(self.__store.hget(self._settingsKey(), 'start')) + 7200)) + ' with ' + str(time.time()))
     return self.__store.hexists(self._settingsKey(), 'reading') \
       and float(self.__store.hget(self._settingsKey(), 'start')) + 7200 > time.time()
 
@@ -81,7 +80,7 @@ class Database(object):
     """ return ready data """
     return self.__store.hget(self._settingsKey(), 'task')
 
-  def deleteSettingsisReadingSettings(self):
+  def deleteSettings(self):
     """ Deletes data """
     self.__store.delete(self._settingsKey())
 

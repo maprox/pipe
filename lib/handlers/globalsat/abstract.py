@@ -536,7 +536,7 @@ class GlobalsatHandler(AbstractHandler):
      @param data: data dict()
     """
     current_db = db.get(self.uid)
-    if not current_db.isReadingSettings()
+    if not current_db.isReadingSettings():
       command = 'GSS,' + self.uid + ',3,0'
       data = json.loads(data)
       if type(data) is dict:

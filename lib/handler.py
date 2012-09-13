@@ -83,7 +83,7 @@ class AbstractHandler(object):
         send['config'] = json.dumps(config, separators=(',',':'))
         send['id_action'] = current_db.getSettingsTaskId()
         log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
-        connection = urlopen(conf.pipeSetUrl + urlencode(send))
+        connection = urlopen(conf.pipeSetUrl, urlencode(send))
         answer = connection.read()
         log.debug('Config answered: ' + answer.decode())
         result = self.re_success.search(answer.decode(), 0)

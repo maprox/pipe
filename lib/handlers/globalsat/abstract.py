@@ -386,7 +386,7 @@ class GlobalsatHandler(AbstractHandler):
       log.debug("Request match found.")
       data = m.groupdict()['data']
       data = json.loads(data)
-      self.processRequest([{'action': 'format', 'value': data[0], 'id': 0}])
+      self.processRequest([{'action': 'format', 'value': data[0]['data'], 'id': 0}])
 
   def getFunction(self, data):
     """

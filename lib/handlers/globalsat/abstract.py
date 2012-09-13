@@ -381,7 +381,7 @@ class GlobalsatHandler(AbstractHandler):
     """
      Processing observer command
     """
-    m = self.re_request.search(data, position)
+    m = self.re_request.search(data, 0)
     if m:
       log.debug("Request match found.")
       data = m.groupdict()['data']

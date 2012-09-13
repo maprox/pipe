@@ -509,7 +509,7 @@ class GlobalsatHandler(AbstractHandler):
       raise NotImplementedError("Custom options not implemented yet")
 
     string = string + self.parseOptions(options, data)
-    string = self.addChecksum(string)
+    string = self.addChecksum(string) + self.transmissionEndSymbol
     self.send(string.encode())
 
   def processCommandReadSettings(self, task, data):

@@ -45,7 +45,7 @@ class Database(object):
   def isReadingSettings(self):
     """ Tests, if currently in reading state """
     return self.__store.hexists(self._settingsKey(), 'reading') \
-      and float(self.__store.hget(self._settingsKey(), 'start')) + 7200 > time.time()
+      and float(self.__store.hget(self._settingsKey(), 'start')) + 600 > time.time()
 
   def isSettingsReady(self):
     """ Tests, if currently have ready read """

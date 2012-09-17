@@ -507,6 +507,7 @@ class GlobalsatHandler(AbstractHandler):
     string = string + self.parseOptions(options, data)
     string = self.addChecksum(string) + self.transmissionEndSymbol
     log.debug('Formatted string result: ' + string)
+    self.send(string.encode())
 
   def processCommandReadSettings(self, task, data):
     """

@@ -503,14 +503,10 @@ class GlobalsatHandler(AbstractHandler):
     """
     string = self.commandStart.format(data['identifier'])
 
-    if data['options'] == 'DEFAULT':
-      options = self.default_options
-    else:
-      raise NotImplementedError("Custom options not implemented yet")
-
+    options = self.default_options
     string = string + self.parseOptions(options, data)
     string = self.addChecksum(string) + self.transmissionEndSymbol
-    self.send(string.encode())
+    log.debug('Formatted string result: ' + string)
 
   def processCommandReadSettings(self, task, data):
     """
@@ -566,23 +562,24 @@ class GlobalsatHandler(AbstractHandler):
     command = ''
     reportMediaNeeded = False
     for item in data:
+      val = str(item['value'])
       if item['option'] == 'sos_phone_1':
-        command += ',G0=' + item['value']
+        command += ',G0=' + val
         reportMediaNeeded = True
       elif item['option'] == 'sos_phone_2':
-        command += ',G1=' + item['value']
+        command += ',G1=' + val
         reportMediaNeeded = True
       elif item['option'] == 'sos_phone_3':
-        command += ',G2=' + item['value']
+        command += ',G2=' + val
         reportMediaNeeded = True
       elif item['option'] == 'sos_phone_4':
-        command += ',G3=' + item['value']
+        command += ',G3=' + val
         reportMediaNeeded = True
       elif item['option'] == 'sos_phone_5':
-        command += ',G4=' + item['value']
+        command += ',G4=' + val
         reportMediaNeeded = True
       elif item['option'] == 'sos_phone_6':
-        command += ',G5=' + item['value']
+        command += ',G5=' + val
         reportMediaNeeded = True
 
     if reportMediaNeeded:

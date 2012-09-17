@@ -41,10 +41,11 @@ class Handler(GlobalsatHandler):
     """
     command = GlobalsatHandler.addCommandSetOptions(self, data)
     for item in data:
+      val = str(item['value'])
       if item['option'] == 'freq_mov':
-        command += ',R1=' + item['value']
+        command += ',R1=' + val
       elif item['option'] == 'freq_idle':
-        command += ',R0=' + item['value']
+        command += ',R0=' + val
       elif item['option'] == 'send_mov':
-        command += ',R3=' + item['value']
+        command += ',R3=' + val
     return command

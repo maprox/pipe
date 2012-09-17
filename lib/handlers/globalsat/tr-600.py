@@ -49,18 +49,19 @@ class Handler(GlobalsatHandler):
     """
     command = GlobalsatHandler.addCommandSetOptions(self, data)
     for item in data:
+      val = str(item['value'])
       if item['option'] == 'freq_mov':
-        command += ',Ri=' + item['value']
+        command += ',Ri=' + val
       elif item['option'] == 'freq_idle':
-        command += ',Ra=' + item['value']
+        command += ',Ra=' + val
       elif item['option'] == 'send_mov':
-        command += ',Ro=' + item['value']
+        command += ',Ro=' + val
       elif item['option'] == 'voice_phone_1':
-        command += ',V4=' + item['value']
+        command += ',V4=' + val
       elif item['option'] == 'voice_phone_2':
-        command += ',V8=' + item['value']
+        command += ',V8=' + val
       elif item['option'] == 'voice_phone_3':
-        command += ',V9=' + item['value']
+        command += ',V9=' + val
       elif item['option'] == 'voice_call_on_sos':
-        command += ',V0=' + item['value']
+        command += ',V0=' + val
     return command

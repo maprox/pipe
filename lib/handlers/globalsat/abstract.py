@@ -509,7 +509,7 @@ class GlobalsatHandler(AbstractHandler):
     log.debug('Formatted string result: ' + string)
 
     send = {}
-    send['command'] = json.dumps(config, separators=(',',':'))
+    send['result'] = json.dumps(config, separators=(',',':'))
     send['id_action'] = current_db.getSettingsTaskId()
     connection = urlopen(conf.pipeFinishUrl, urlencode(send).encode('utf-8'))
 

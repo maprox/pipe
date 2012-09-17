@@ -505,8 +505,13 @@ class GlobalsatHandler(AbstractHandler):
 
     options = self.default_options
     string = string + self.parseOptions(options, data)
-    string = self.addChecksum(string) + self.transmissionEndSymbol
+    string = self.addChecksum(string)
     log.debug('Formatted string result: ' + string)
+
+    send = {}
+    send['command'] = json.dumps(config, separators=(',',':'))
+    send['id_action'] = current_db.getSettingsTaskId()
+    connection = urlopen(conf.pipeFinishUrl, urlencode(send).encode('utf-8'))
 
   def processCommandReadSettings(self, task, data):
     """

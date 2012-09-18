@@ -378,17 +378,6 @@ class GlobalsatHandler(AbstractHandler):
       function(data_socket)
       data_socket = self.recv().decode()
 
-  def processCommand(self, data):
-    """
-     Processing observer command
-    """
-    m = self.re_request.search(data, 0)
-    if m:
-      log.debug("Request match found.")
-      data = m.groupdict()['data']
-      data = json.loads(data)
-      self.processRequest([{'action': 'format', 'value': data[0]['data'], 'id': 0}])
-
   def getFunction(self, data):
     """
      Returns a function name according to supplied data
@@ -397,9 +386,7 @@ class GlobalsatHandler(AbstractHandler):
     """
     data_type = data.split(",")[0]
 
-    if data_type == 'OBS':
-      return "processCommand"
-    elif data_type == 'GSs':
+    if data_type == 'GSs':
       return "processSettings"
     elif data_type == 'GSr':
       return "processData"

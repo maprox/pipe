@@ -16,14 +16,15 @@ class Controller(object):
 
   # -----------------------------
   def __init__(self):
-    'Конструктор класса Starter'
+    'Конструктор класса Controller'
     log.debug('Controller::__init__')
 
   # -----------------------------
   def run(self):
-    'Запуск основного цикла приложения'
-    log.debug('Starter::run()')
+    'Запуск проверки комманд на выполнение'
+    log.debug('Controller::run()')
     try:
-      Server(conf.port).run()
+      commands = db.getController().getCommands()
+      log.info(commands)
     except Exception as E:
       log.critical(E)

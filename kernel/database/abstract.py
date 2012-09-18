@@ -20,7 +20,7 @@ class DatabaseAbstract(object):
   """ Store connection """
   _store = None
 
-  def __init__(self, uid):
+  def __init__(self):
     """ Constructor. Inits redis connection """
     if conf.redisPassword:
       self._store = redis.StrictRedis(password=conf.redisPassword, \
@@ -30,18 +30,25 @@ class DatabaseAbstract(object):
         port=conf.redisPort, db=0)
 
   def getCommands(self):
+    """ Reads command from redis """
+
     log.debug('Redis key is: ' + self._commandKey)
     commands = self._store.hget(self._commandKey, 'd')
 
     if commands is None:
+      log.info('Requesting commands at ' + conf.pipeRequestUrl + self._requestParam)
       connection = urlopen(conf.pipeRequestUrl + self._requestParam)
       commands = self._store.hget(self._commandKey, 'd')
 
     if commands is None:
-      log.error('Error reading actions for uid ' + self._uid)
+      log.error('Error reading actions for  ' + self.getLogName())
       commands = '[]'
     else:
       commands = commands.decode("utf-8")
 
-    log.debug('Commands for uid ' + self._uid + ' are: ' + commands)
+    log.debug('Commands for ' + self.getLogName() + ' are: ' + commands)
     return json.loads(commands)
+
+  def getLogName(self):
+    """ Returns name to write in logs """
+    return 'ERROR: Abstract database called directly'

@@ -8,8 +8,12 @@
 
 from kernel.database.abstract import DatabaseAbstract
 
-class DatabaseController(object):
+class DatabaseController(DatabaseAbstract):
   """ key for reading commands """
   _commandKey = 'zc:k:controller'
   """ param for requesting commands """
   _requestParam = 'controller=1'
+
+  def getLogName(self):
+    """ Returns name to write in logs """
+    return 'Controller'

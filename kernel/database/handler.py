@@ -20,6 +20,10 @@ class DatabaseHandler(DatabaseAbstract):
     self._requestParam = 'uid=' + self._uid
     DatabaseAbstract.__init__(self)
 
+  def getLogName(self):
+    """ Returns name to write in logs """
+    return 'uid ' + self._uid
+
   def isReadingSettings(self):
     """ Tests, if currently in reading state """
     return self._store.hexists(self._settingsKey(), 'reading') \

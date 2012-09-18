@@ -11,7 +11,7 @@ from datetime import datetime
 
 from kernel.logger import log
 from kernel.config import conf
-from kernel.database import db
+from kernel.dbmanager import db
 from urllib.request import urlopen
 from lib.handler import AbstractHandler
 from lib.geo import Geo

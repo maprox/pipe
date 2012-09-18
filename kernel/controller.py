@@ -6,19 +6,18 @@
 '''
 
 from kernel.logger import log
-from kernel.database import db
+from kernel.dbmanager import db
 
 # ===========================================================================
 class Controller(object):
   '''
-   Центральный класс, запускающий tcp-сервер
-   и остальные компоненты обсервера.
+   Класс управляющий Pipe-сервером
   '''
 
   # -----------------------------
   def __init__(self):
     'Конструктор класса Starter'
-    log.debug('Starter::__init__')
+    log.debug('Controller::__init__')
 
   # -----------------------------
   def run(self):

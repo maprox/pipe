@@ -12,7 +12,7 @@ import base64
 from urllib.parse import urlencode
 from kernel.logger import log
 from kernel.config import conf
-from kernel.database import db
+from kernel.dbmanager import db
 from lib.storage import storage
 from urllib.request import urlopen
 

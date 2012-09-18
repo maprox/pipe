@@ -1,19 +1,15 @@
 # -*- coding: utf8 -*-
 '''
 @project   Maprox Observer <http://maprox.net/observer>
-@info      Запускающий модуль
-@copyright 2009-2011 © Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/kernel/starter.py $
-@version   $Id: starter.py 400 2011-02-20 22:06:46Z sunsay $
+@info      Управляющий модуль
+@copyright 2009-2012 © Maprox Ltd.
 '''
 
 from kernel.logger import log
-from kernel.config import conf
-from kernel.server import Server
+from kernel.database import db
 
 # ===========================================================================
-class Starter(object):
+class Controller(object):
   '''
    Центральный класс, запускающий tcp-сервер
    и остальные компоненты обсервера.

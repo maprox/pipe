@@ -5,16 +5,14 @@
 @copyright 2009-2011, Maprox Ltd.
 @author    sunsay <box@sunsay.ru>
 '''
-import time
-import json
-import redis
-from urllib.request import urlopen
-from kernel.config import conf
-from kernel.logger import log
+
+from kernel.database.controller import DatabaseController
+from kernel.database.handler import DatabaseHandler
 
 class DatabaseManager(object):
   """ Database handlers """
   __db = {}
+  __dbController = False
 
   def __init__(self):
     self.__db = {}
@@ -23,86 +21,17 @@ class DatabaseManager(object):
     """ Returns the database object """
 
     if not uid in self.__db:
-      self.__db[uid] = Database(uid)
+      self.__db[uid] = DatabaseHandler(uid)
 
     return self.__db[uid]
 
-class Database(object):
-  """ uid storage """
-  __uid = None
-  __store = None
+  def getController(self):
+    """ Returns the database object for controller """
 
-  def __init__(self, uid):
-    """ Constructor. Sets uid """
-    self.__uid = uid
-    if conf.redisPassword:
-      self.__store = redis.StrictRedis(password=conf.redisPassword, \
-        host=conf.redisHost, port=conf.redisPort, db=0)
-    else:
-      self.__store = redis.StrictRedis(host=conf.redisHost, \
-        port=conf.redisPort, db=0)
+    if not self.__dbController:
+      self.__dbController = DatabaseController()
 
-  def isReadingSettings(self):
-    """ Tests, if currently in reading state """
-    return self.__store.hexists(self._settingsKey(), 'reading') \
-      and float(self.__store.hget(self._settingsKey(), 'start')) + 600 > time.time()
-
-  def isSettingsReady(self):
-    """ Tests, if currently have ready read """
-    return self.__store.hexists(self._settingsKey(), 'data') \
-      and not self.__store.hexists(self._settingsKey(), 'reading')
-
-  def startReadingSettings(self, task):
-    """ Starts reading """
-    """ @param task: id task """
-    self.__store.hset(self._settingsKey(), 'task', task)
-    self.__store.hset(self._settingsKey(), 'reading', 1)
-    self.__store.hset(self._settingsKey(), 'start', time.time())
-
-  def finishSettingsRead(self):
-    """ Marks data as ready """
-    self.__store.hdel(self._settingsKey(), 'reading')
-
-  def addSettings(self, string):
-    """ Adds string reading """
-    self.__store.hset(self._settingsKey(), 'data', self.getSettings() + string)
-
-  def getSettings(self):
-    """ return ready data """
-    current = self.__store.hget(self._settingsKey(), 'data')
-    if current is None:
-      current = ''
-    else:
-      current = current.decode('utf-8')
-    return current
-
-  def getSettingsTaskId(self):
-    """ return ready data """
-    return self.__store.hget(self._settingsKey(), 'task')
-
-  def deleteSettings(self):
-    """ Deletes data """
-    self.__store.delete(self._settingsKey())
-
-  def _settingsKey(self):
-    return 'tracker_setting' + self.__uid
-
-  def getCommands(self):
-    log.debug('Redis key is: ' + 'zc:k:tracker_action' + self.__uid)
-    commands = self.__store.hget('zc:k:tracker_action' + self.__uid, 'd')
-
-    if commands is None:
-      connection = urlopen(conf.pipeRequestUrl + 'uid=' + self.__uid)
-      commands = self.__store.hget('zc:k:tracker_action' + self.__uid, 'd')
-
-    if commands is None:
-      log.error('Error reading actions for uid ' + self.__uid)
-      commands = '[]'
-    else:
-      commands = commands.decode("utf-8")
-
-    log.debug('Commands for uid ' + self.__uid + ' are: ' + commands)
-    return json.loads(commands)
+    return self.__dbController
 
 # let's create instance of global database manager
 db = DatabaseManager()

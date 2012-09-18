@@ -31,22 +31,21 @@ class Controller(object):
   def run(self):
     'Запуск проверки комманд на выполнение'
     log.debug('Controller::run()')
-    try:
-      commands = db.getController().getCommands()
-      for command in commands:
-        handler = self.__handlerTranslation[command['handler']]
-        log.info(handler)
-        for HandlerClass in handlersList:
-          log.info(HandlerClass)
-#        if command['handler'] = '':
-
-#        function_name = 'processCommand' + command['action'][0].upper() \
-#          + command['action'][1:]
-#        log.debug('Command is: ' + function_name)
-#        function = getattr(self, function_name)
-#        if 'value' in command:
-#          function(command['id'], command['value'])
-#        else:
-#          function(command['id'], None)
-    except Exception as E:
-      log.critical(E)
+   # try:
+    commands = db.getController().getCommands()
+    for command in commands:
+      handler = 'lib.handlers.' + self.__handlerTranslation[command['handler']]
+      for HandlerClass in handlersList:
+        if HandlerClass.__module__ == handler:
+          handler = HandlerClass(False, False)
+          handler.uid = command['uid']
+          function_name = 'processCommand' + command['action'][0].upper() \
+            + command['action'][1:]
+          log.debug('Command is: ' + function_name)
+          function = getattr(handler, function_name)
+          if 'value' in command:
+            function(command['id'], command['value'])
+          else:
+            function(command['id'], None)
+  #  except Exception as E:
+  #    log.critical(E)

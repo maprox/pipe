@@ -12,6 +12,7 @@ from datetime import datetime
 from kernel.logger import log
 from kernel.config import conf
 from kernel.dbmanager import db
+from urllib.parse import urlencode
 from urllib.request import urlopen
 from lib.handler import AbstractHandler
 from lib.geo import Geo
@@ -501,6 +502,7 @@ class GlobalsatHandler(AbstractHandler):
      @param task: id task
      @param data: request
     """
+    data = json.loads(data)
     string = self.commandStart.format(data['identifier'])
 
     options = self.default_options
@@ -509,8 +511,9 @@ class GlobalsatHandler(AbstractHandler):
     log.debug('Formatted string result: ' + string)
 
     send = {}
-    send['result'] = json.dumps(config, separators=(',',':'))
-    send['id_action'] = current_db.getSettingsTaskId()
+    send['result'] = string
+    send['id_action'] = task
+    log.debug('Formatted string sent: ' + conf.pipeFinishUrl + urlencode(send))
     connection = urlopen(conf.pipeFinishUrl, urlencode(send).encode('utf-8'))
 
   def processCommandReadSettings(self, task, data):

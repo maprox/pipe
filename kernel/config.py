@@ -48,6 +48,7 @@ try:
   conf.pipeFinishUrl = conf.get("pipe", "urlfinish")
   conf.pipeConfigUrl = conf.get("pipe", "urlconfig")
   conf.pipeRequestUrl = conf.get("pipe", "urlrequest")
+  conf.pipeRestUrl = conf.get("pipe", "urlrest")
   conf.redisHost = conf.get("redis", "host")
   conf.redisPort = int(conf.get("redis", "port"))
   conf.redisPassword = conf.get("redis", "password")

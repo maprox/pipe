@@ -191,8 +191,9 @@ def movecar(track_files, template_str):
               res_str = res_str + hdop + ','
               res_str = res_str + '14600,14470mV,0,0,0,0,0,' + odometer + ',0'
               #add the checksum
-              checksum = getChecksum(res_str)
+              checksum = getChecksum(res_str)              
               res_str = res_str + '*' + checksum + '!'
+              logger.debug('ORIGRESTR ' + res_str)
               sendData(res_str)
 
               #random sleep

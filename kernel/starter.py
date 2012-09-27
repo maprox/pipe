@@ -8,8 +8,6 @@
 @version   $Id: starter.py 400 2011-02-20 22:06:46Z sunsay $
 '''
 
-import time
-
 from kernel.logger import log
 from kernel.config import conf
 from kernel.server import Server
@@ -17,11 +15,11 @@ from kernel.server import Server
 # ===========================================================================
 class Starter(object):
   '''
-   Центральный класс, запускающий tcp-сервер 
+   Центральный класс, запускающий tcp-сервер
    и остальные компоненты обсервера.
   '''
 
-  # -----------------------------   
+  # -----------------------------
   def __init__(self):
     'Конструктор класса Starter'
     log.debug('Starter::__init__')

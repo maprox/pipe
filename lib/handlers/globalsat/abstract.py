@@ -11,7 +11,8 @@ from datetime import datetime
 
 from kernel.logger import log
 from kernel.config import conf
-from kernel.database import db
+from kernel.dbmanager import db
+from urllib.parse import urlencode
 from urllib.request import urlopen
 from lib.handler import AbstractHandler
 from lib.geo import Geo
@@ -377,17 +378,6 @@ class GlobalsatHandler(AbstractHandler):
       function(data_socket)
       data_socket = self.recv().decode()
 
-  def processCommand(self, data):
-    """
-     Processing observer command
-    """
-    m = self.re_request.search(data, 0)
-    if m:
-      log.debug("Request match found.")
-      data = m.groupdict()['data']
-      data = json.loads(data)
-      self.processRequest([{'action': 'format', 'value': data[0]['data'], 'id': 0}])
-
   def getFunction(self, data):
     """
      Returns a function name according to supplied data
@@ -396,9 +386,7 @@ class GlobalsatHandler(AbstractHandler):
     """
     data_type = data.split(",")[0]
 
-    if data_type == 'OBS':
-      return "processCommand"
-    elif data_type == 'GSs':
+    if data_type == 'GSs':
       return "processSettings"
     elif data_type == 'GSr':
       return "processData"
@@ -501,6 +489,7 @@ class GlobalsatHandler(AbstractHandler):
      @param task: id task
      @param data: request
     """
+    data = json.loads(data)
     string = self.commandStart.format(data['identifier'])
 
     options = self.default_options
@@ -509,8 +498,9 @@ class GlobalsatHandler(AbstractHandler):
     log.debug('Formatted string result: ' + string)
 
     send = {}
-    send['result'] = json.dumps(config, separators=(',',':'))
-    send['id_action'] = current_db.getSettingsTaskId()
+    send['result'] = string
+    send['id_action'] = task
+    log.debug('Formatted string sent: ' + conf.pipeFinishUrl + urlencode(send))
     connection = urlopen(conf.pipeFinishUrl, urlencode(send).encode('utf-8'))
 
   def processCommandReadSettings(self, task, data):

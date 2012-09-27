@@ -53,7 +53,6 @@ def sendData(data):
    #Sends data by rest
    #@param data: data string
   """
-  logger.debug('REST URL ' + conf.host)
   params = urllib.urlencode(data)
   headers = {
     "Content-type": "application/x-www-form-urlencoded", 
@@ -103,8 +102,8 @@ def movecar(track_files, uid):
             # Packet time
             curTime = int(datetime.strptime(row[h.index('time')], "%Y-%m-%d %H:%M:%S").strftime("%s"))
 
-            logger.debug('curtime ' + str(curTime))
-            logger.debug('Prev time ' + str(prevTime))
+            #logger.debug('Cur time ' + str(curTime))
+            #logger.debug('Prev time ' + str(prevTime))
 
             # If first packet, send it now
             if (prevTime == 0):
@@ -123,10 +122,10 @@ def movecar(track_files, uid):
                   lastSleep = sleep
               else:
                 lastSleep = sleep
-              #sleep = 10 # temp force sleep time
+
             # Save prev time
             prevTime = curTime
-            logger.debug('Sleep for ' + str(sleep))
+            #logger.debug('Sleep for ' + str(sleep))
             # sleep
             time.sleep(sleep)
 
@@ -161,8 +160,6 @@ def movecar(track_files, uid):
               'hdop': row[h.index('hdop')],
               'sensors': json.dumps(sensors)
             }
-            logger.debug('DATA')
-            logger.debug(data)
 
             # Send data by post request
             sendData(data)

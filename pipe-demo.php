@@ -26,7 +26,7 @@ function serviceStart()
 {
 		print "Starting demo-server... ";
 		$dir = WORKING_DIR . 'democlient/';
-		exec("cd $dir && sudo -u pipe python send.py >/dev/null &");
+		exec("cd $dir && sudo -u pipe python send.py -p ../conf/pipe-default.conf >/dev/null &");
 		print "[OK]\n";
 }
 

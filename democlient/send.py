@@ -173,4 +173,4 @@ threading.Thread(target=movecar, name="thread1", args=[track_files1, uid1]).star
 threading.Thread(target=movecar, name="thread2", args=[track_files2, uid2]).start()
 threading.Thread(target=movecar, name="thread3", args=[track_files3, uid3]).start()
 threading.Thread(target=movecar, name="thread4", args=[track_files4, uid4]).start()
-#threading.Thread(target=movecar, name="thread5", args=[track_files5, uid5]).start()
+threading.Thread(target=movecar, name="thread5", args=[track_files5, uid5]).start()

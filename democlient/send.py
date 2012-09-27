@@ -133,10 +133,15 @@ def movecar(track_files, uid):
             # Sensors
             sensors = {
               'acc': row[h.index('sensor_acc')] if 'sensor_acc' in h else None,
-              'odometer': row[h.index('sensor_odometer')]
-                if 'sensor_odometer' in h else None,
+              #'odometer': row[h.index('sensor_odometer')]
+              #  if 'sensor_odometer' in h else None,
               'sos': row[h.index('sensor_sos')] if 'sensor_sos' in h else None
             }
+
+            odometer = row[h.index('sensor_odometer')] if 'sensor_odometer' in h else None
+
+            if (odometer):
+              sensors['odometer'] = odometer
 
             # Data   
             data = {

@@ -31,6 +31,9 @@ try:
   conf.read(options.pipeconf);
   # pipe settings
   conf.pipeRestUrl = conf.get("pipe", "urlrest")
+  urlParts = re.search('//(.+?)(/.+)', conf.pipeRestUrl)
+  conf.restHost = urlParts.group(1)
+  conf.restPath = urlParts.group(2)
   conf.host = conf.get("tracker", "host")
 except Exception as E:
   log.critical("Error reading " + options.pipeconf + ": " + E.message)
@@ -43,7 +46,7 @@ hdlr.setFormatter(formatter)
 logger = logging.getLogger('democlient')
 logger.addHandler(hdlr)
 logger.setLevel(logging.DEBUG)
-logger.debug('START')
+logger.debug('START!')
 
 # Max sleep time
 maxSleep = 600
@@ -58,8 +61,8 @@ def sendData(data):
     "Content-type": "application/x-www-form-urlencoded", 
     "Accept": "text/plain"
   }
-  conn = httplib.HTTPConnection(conf.host, 80)  
-  conn.request("POST", conf.pipeRestUrl, params, headers)
+  conn = httplib.HTTPConnection(conf.restHost, 80)  
+  conn.request("POST", conf.restPath, params, headers)
   response = conn.getresponse()
 
 #data for demo cars 

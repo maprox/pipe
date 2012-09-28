@@ -35,7 +35,7 @@ function serviceStart()
  */
 function serviceStop()
 {
-	$mask = "[p]ython.*send\.py";
+	$mask = "[p]ython.*send-old\.py";
 
 	print "Stopping... ";
 	$command = "sudo pkill -f $mask 2>&1";
@@ -49,7 +49,7 @@ function serviceStop()
  */
 function serviceTest()
 {
-	$mask = "[p]ython.*send\.py";
+	$mask = "[p]ython.*send-old\.py";
 
 	$output = shell_exec("sudo pgrep -f $mask 2>&1");
 

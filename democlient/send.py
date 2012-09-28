@@ -25,6 +25,15 @@ from commandline import options
 from datetime import datetime
 from random import *
 
+# logger setup
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
+hdlr = logging.FileHandler(os.getcwd() + '/send.log')
+hdlr.setFormatter(formatter)
+logger = logging.getLogger('democlient')
+logger.addHandler(hdlr)
+logger.setLevel(logging.DEBUG)
+logger.debug('START!')
+
 # config
 conf = ConfigParser()
 try:
@@ -36,17 +45,8 @@ try:
   conf.restPath = urlParts.group(2)
   conf.host = conf.get("tracker", "host")
 except Exception as E:
-  log.critical("Error reading " + options.pipeconf + ": " + E.message)
+  logger.critical("Error reading " + options.pipeconf + ": " + E.message)
   exit(1)
-
-# logger setup
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr = logging.FileHandler(os.getcwd() + '/send.log')
-hdlr.setFormatter(formatter)
-logger = logging.getLogger('democlient')
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
-logger.debug('START!')
 
 # Max sleep time
 maxSleep = 600

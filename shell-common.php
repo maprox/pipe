@@ -8,8 +8,8 @@
 function arguments($argv)
 {
 	$_ARG = array('input' => array());
-	// First param is this scripts name. Not needed.
-	array_shift($argv);
+	// First param is this scripts name..
+	$_ARG['name'] = array_shift($argv);
 	foreach ($argv as $arg)
 	{
 		if (preg_match('#^-{1,2}([a-zA-Z0-9]*)=?(.*)$#', $arg, $matches))

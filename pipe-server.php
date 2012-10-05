@@ -333,6 +333,18 @@ function serviceTest($params)
 	}
 }
 
+
+/**
+ * Performs installation of service
+ */
+function doInstall()
+{
+	shell_exec('sudo ln -s ' . __FILE__ . ' /etc/init.d/pipe-server');
+	shell_exec('sudo chmod +x ' . __FILE__);
+	shell_exec('sudo update-rc.d pipe-server defaults');
+	print "Installation complete\n";
+}
+
 print "Pipe-server Starter v1.0.5\n";
 
 // read input arguments
@@ -361,6 +373,9 @@ $params['stop'] = empty($params['stop']) ? false : $params['stop'];
 
 switch ($command)
 {
+	case 'install':
+		doInstall();
+		break;
 	case 'start':
 		serviceStart($params);
 		break;
@@ -378,6 +393,7 @@ switch ($command)
 		break;
 	default:
 		$file = basename(__FILE__, '.php');
-		print "Usage: service $file {start|stop|restart|reload|force-reload|status}".
-			" [{--stop|-s}=all] [{--flag|-f}=%FLAG%] [{--port|-p}=%PORT%] [%TRACKER_1%] [%TRACKER_2%] ... [%TRACKER_N%]\n";
+		print "Usage: service $file {start|stop|restart|reload|force-reload|status}" .
+			" [{--stop|-s}=all] [{--flag|-f}=%FLAG%] [{--port|-p}=%PORT%] [%TRACKER_1%] [%TRACKER_2%] ... [%TRACKER_N%]\n" .
+			"Install: php " . $params['name'] . " install\n";
 }

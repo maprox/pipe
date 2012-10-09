@@ -13,8 +13,8 @@ import logging
 import json
 import os
 import csv
-import httplib
-import urllib
+import http.client
+import urllib.parse
 import sys
 if sys.version_info < (3, 0):
   from ConfigParser import ConfigParser
@@ -22,7 +22,6 @@ else:
   from configparser import ConfigParser
 
 from commandline import options
-from datetime import datetime
 from random import *
 
 # logger setup
@@ -56,12 +55,12 @@ def sendData(data):
    #Sends data by rest
    #@param data: data string
   """
-  params = urllib.urlencode(data)
+  params = urllib.parse.urlencode(data)
   headers = {
     "Content-type": "application/x-www-form-urlencoded", 
     "Accept": "text/plain"
   }
-  conn = httplib.HTTPConnection(conf.restHost, 80)  
+  conn = http.client.HTTPConnection(conf.restHost, 80)  
   conn.request("POST", conf.restPath, params, headers)
   response = conn.getresponse()
 
@@ -81,6 +80,7 @@ track_files4 = [
 uid5 = "157460032240926_888"
 track_files5 = [
   'tracks/car5/1.csv']
+
 def movecar(track_files, uid):
   """
    Car moving function - it parse input file and send data to server
@@ -88,84 +88,85 @@ def movecar(track_files, uid):
    @param uid: device's identifier
    @return: string
   """
+
+  from datetime import datetime
+
   while (True):
     try:
       for track in track_files:
         logger.debug('OPEN: ' + track)
         # Read data from CSV file
-        with open(track, 'rb') as f:
-          reader = csv.reader(f, delimiter=';', quotechar='"')
-          # Prev packet time
-          prevTime = 0
-          # Last sleep time
-          lastSleep = 0
-          # Column headers
-          h = reader.next();
-          for row in reader:
-            # Packet time
-            curTime = int(datetime.strptime(row[h.index('time')], "%Y-%m-%d %H:%M:%S").strftime("%s"))
+        # Prev packet time
+        prevTime = 0
+        # Last sleep time
+        lastSleep = 0
+        # Column headers
+        reader = csv.DictReader(open(track, newline='', encoding='utf-8'),
+          dialect="excel",
+          delimiter=';')
+        for row in reader:
+          dt = datetime.strptime(row['time'], "%Y-%m-%d %H:%M:%S")
+          curTime = time.mktime(dt.timetuple())
 
-            #logger.debug('Cur time ' + str(curTime))
-            #logger.debug('Prev time ' + str(prevTime))
+          #logger.debug('Cur time ' + str(curTime))
+          #logger.debug('Prev time ' + str(prevTime))
 
-            # If first packet, send it now
-            if (prevTime == 0):
-              sleep = 0
-            else:
-              # Count sleep time
-              sleep = curTime - prevTime
-              # Sleeping time can not be more than 20 minutes
-              if (sleep > maxSleep):
-                # Check pervious sleep time
-                if (lastSleep >= maxSleep):
-                  lastSleep = sleep
-                  sleep = 0
-                else:
-                  sleep = maxSleep
-                  lastSleep = sleep
-              else:
+          # If first packet, send it now
+          if (prevTime == 0):
+            sleep = 0
+          else:
+            # Count sleep time
+            sleep = curTime - prevTime
+            # Sleeping time can not be more than 20 minutes
+            if (sleep > maxSleep):
+              # Check pervious sleep time
+              if (lastSleep >= maxSleep):
                 lastSleep = sleep
+                sleep = 0
+              else:
+                sleep = maxSleep
+                lastSleep = sleep
+            else:
+              lastSleep = sleep
 
-            # Save prev time
-            prevTime = curTime
-            #logger.debug('Sleep for ' + str(sleep))
-            # sleep
-            time.sleep(sleep)
+          # Save prev time
+          prevTime = curTime
+          #logger.debug('Sleep for ' + str(sleep))
+          # sleep
+          time.sleep(sleep)
 
-            # Sensors
-            sensors = {
-              'acc': row[h.index('sensor_acc')] if 'sensor_acc' in h else None,
-              #'odometer': row[h.index('sensor_odometer')]
-              #  if 'sensor_odometer' in h else None,
-              'sos': row[h.index('sensor_sos')] if 'sensor_sos' in h else None
-            }
+          # Sensors
+          sensors = {
+            'acc': row['sensor_acc'] if 'sensor_acc' in row else None,
+            'sos': row['sensor_sos'] if 'sensor_sos' in row else None,
+          }
 
-            odometer = row[h.index('sensor_odometer')] if 'sensor_odometer' in h else None
+          odometer = row['sensor_odometer'] if 'sensor_odometer' in row else None
 
-            if (odometer):
-              sensors['odometer'] = odometer
+          if (odometer):
+            sensors['odometer'] = odometer
 
-            # Data   
-            data = {
-              'uid': uid, 
-              'time': datetime.utcnow(),
-              'odometer': row[h.index('sensor_odometer')]
-                if 'sensor_odometer' in h else None,
-              'lat': row[h.index('latitude')],
-              'lon': row[h.index('longitude')],
-              'alt': row[h.index('altitude')],
-              'speed': row[h.index('speed')],
-              'fuel': row[h.index('fuel')],
-              'azimuth': row[h.index('azimuth')],
-              'movementsensor': row[h.index('movementsensor')],
-              'satellitescount': row[h.index('satellitescount')],
-              'batterylevel': row[h.index('batterylevel')],
-              'hdop': row[h.index('hdop')],
-              'sensors': json.dumps(sensors)
-            }
+          # Data   
+          data = {
+            'uid': uid, 
+            'time': datetime.utcnow(),
+            'odometer': row['sensor_odometer']
+              if 'sensor_odometer' in row else None,
+            'lat': row['latitude'],
+            'lon': row['longitude'],
+            'alt': row['altitude'],
+            'speed': row['speed'],
+            'fuel': row['fuel'],
+            'azimuth': row['azimuth'],
+            'movementsensor': row['movementsensor'],
+            'satellitescount': row['satellitescount'],
+            'batterylevel': row['batterylevel'],
+            'hdop': row['hdop'],
+            'sensors': json.dumps(sensors)
+          }
 
-            # Send data by post request
-            sendData(data)
+          # Send data by post request
+          sendData(data)
 
         #sleep for 120 seconds and not more than 140 seconds between tracks
         interval = randint(120, 140)

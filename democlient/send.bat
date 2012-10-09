@@ -1,2 +1,2 @@
-c:\Python27\python send.py
+c:\Python32\python send.py -p ../conf/pipe-default.conf
 pause

@@ -306,7 +306,7 @@ class GlobalsatHandler(AbstractHandler):
         packet['sensors']['analog_input0'] = float(value)
       elif char == "m":
         packet['sensors']['extvoltage'] = float(value)
-      elif char == "n":
+      elif char == "n" or char == "N":
         if (self.re_volts.match(value)):
           packet['batterylevel'] = 1
         elif (self.re_percents.match(value)):
@@ -316,6 +316,20 @@ class GlobalsatHandler(AbstractHandler):
           percents = int(value) / 100
           packet['batterylevel'] = percents
     return packet
+
+  def formatBatteryLevel(self, value):
+    """
+     Formats batterylevel into float
+     @param value: string data from gps-tracker
+    """
+    if (self.re_volts.match(value)):
+      return 1
+    elif (self.re_percents.match(value)):
+      return float(self.re_percents.search(value).group(1)) / 100
+    elif (self.re_number.match(value)):
+      return int(value) / 100
+    else:
+      return 0
 
   def translateConfig(self, data):
     """

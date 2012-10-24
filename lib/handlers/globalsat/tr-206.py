@@ -34,6 +34,18 @@ class Handler(GlobalsatHandler):
 
     return send
 
+  def translate(self, data):
+    """
+     Translate gps-tracker data to observer pipe format
+     @param data: dict() data from gps-tracker
+    """
+    packet = GlobalsatHandler.translate(self, data)
+    for char in data:
+      value = data[char]
+      if char == "N":
+        packet['batterylevel'] = self.formatBatteryLevel(value)
+    return packet
+
   def addCommandSetOptions(self, data):
     """
      Add device options

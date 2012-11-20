@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net>
-@info      Restoring from storage
+@project   Maprox <http://www.maprox.net>
+@info      Project tests
 @copyright 2009-2012, Maprox LLC
 '''
 

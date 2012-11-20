@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
+@project   Maprox <http://www.maprox.net>
 @info      Abstract class for working with Geo coordinates
-@copyright 2009-2012, Maprox Ltd.
+@copyright 2009-2012, Maprox LLC
 
 Some links for smoking:
   http://www.earthpoint.us/Convert.aspx

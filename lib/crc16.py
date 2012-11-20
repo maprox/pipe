@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
+@project   Maprox <http://www.maprox.net>
 @info      CRC-16 calculate algorithm
-@copyright 2012, Maprox Ltd.
+@copyright 2012, Maprox LLC
 
 Some links for smoking:
   http://www.modbus.org/docs/Modbus_over_serial_line_V1_02.pdf

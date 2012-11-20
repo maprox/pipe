@@ -1,11 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
+@project   Maprox <http://www.maprox.net>
 @info      Protocol handlers list
-@copyright 2009-2011, Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/lib/listeners/list.py $
-@version   $Id: list.py 403 2011-02-24 13:26:07Z sunsay $
+@copyright 2009-2011, Maprox LLC
 '''
 
 from kernel.logger import log

@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net>
+@project   Maprox <http://www.maprox.net>
 @info      Galileo tags
 @copyright 2012, Maprox LLC
 '''

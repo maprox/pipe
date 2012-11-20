@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net>
+@project   Maprox <http://www.maprox.net>
 @info      Restoring from storage
-@copyright 2009-2012, Maprox Ltd.
+@copyright 2009-2012, Maprox LLC
 '''
 
 import re
@@ -28,7 +28,8 @@ try:
           contents = item['contents'].split('\n')
           for line in contents:
             time.sleep(1)
-            # В случае внезапного обрыва связи переподключаемся, и пытаемся еще раз послать пакет
+            # В случае внезапного обрыва связи переподключаемся,
+            # и пытаемся еще раз послать пакет
             try:
               sock.send(bytes(line, 'UTF-8'))
             except Exception as E:

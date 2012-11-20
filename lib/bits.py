@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net>
+@project   Maprox <http://www.maprox.net>
 @info      Working with bits utility
 @copyright 2012, Maprox LLC
 '''

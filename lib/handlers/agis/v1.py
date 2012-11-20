@@ -1,11 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
+@project   Maprox <http://www.maprox.net>
 @info      Протокол AGIS-V1
-@copyright 2009-2011 © Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL: http://vcs.maprox.net/svn/observer/Server/trunk/lib/listeners/agis/v1.py $
-@version   $Id: v1.py 404 2011-02-24 22:16:22Z sunsay $
+@copyright 2009-2011, Maprox LLC
 '''
 
 import re

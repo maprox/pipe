@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net>
+@project   Maprox <http://www.maprox.net>
 @info      Class of storage for protocol handlers (Files I/O)
-@copyright 2012, Maprox Ltd.
+@copyright 2012, Maprox LLC
 '''
 
 import re

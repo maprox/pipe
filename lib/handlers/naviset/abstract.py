@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 '''
 @project   Maprox <http://www.maprox.net>
-@info      Galileo base class for other Galileo firmware
+@info      Naviset base class for other Naviset firmware
 @copyright 2012, Maprox LLC
 '''
 
@@ -12,14 +12,14 @@ from kernel.logger import log
 from lib.handler import AbstractHandler
 import lib.crc16 as crc16
 import lib.bits as bits
-import lib.handlers.galileo.tags as tags
-import lib.handlers.galileo.packets as packets
+#import lib.handlers.galileo.tags as tags
+#import lib.handlers.galileo.packets as packets
 
 # ---------------------------------------------------------------------------
 
-class GalileoHandler(AbstractHandler):
+class NavisetHandler(AbstractHandler):
   """
-   Base handler for Galileo protocol
+   Base handler for Naviset protocol
   """
   __commands = {}
   __commands_num_seq = 0
@@ -36,12 +36,10 @@ class GalileoHandler(AbstractHandler):
     buffer = self.recv()
     while len(buffer) > 0:
       self.processData(buffer)
-      if (packnum == 1) and (self.__imageRecievingConfig is None):
-        self.sendCommand('Makephoto 1')
       buffer = self.recv()
       packnum += 1
 
-    return super(GalileoHandler, self).dispatch()
+    return super(NavisetHandler, self).dispatch()
 
   def processData(self, data):
     """
@@ -53,18 +51,20 @@ class GalileoHandler(AbstractHandler):
     if (len(data) >= 3) and (data[:3] == b'OBS'):
       return self.processRequest(data.decode())
 
-    protocolPackets = packets.Packet.getPacketsFromBuffer(data)
+    log.debug(data)
+    '''protocolPackets = packets.Packet.getPacketsFromBuffer(data)
     for protocolPacket in protocolPackets:
-      self.processProtocolPacket(protocolPacket)
+      self.processProtocolPacket(protocolPacket)'''
 
-    if self.__imageRecievingConfig is None:
-      return super(GalileoHandler, self).processData(data)
+    #if self.__imageRecievingConfig is None:
+    return super(NavisetHandler, self).processData(data)
 
   def processProtocolPacket(self, protocolPacket):
     """
-     Process galileo packet.
-     @param protocolPacket: Galileo protocol packet
+     Process naviset packet.
+     @param protocolPacket: Naviset protocol packet
     """
+    '''
     observerPackets = self.translate(protocolPacket)
     self.sendAcknowledgement(protocolPacket)
 
@@ -92,6 +92,8 @@ class GalileoHandler(AbstractHandler):
     #packet['__rawdata'] = buffer
     log.info(observerPackets)
     store_result = self.store(observerPackets)
+    '''
+    pass
 
   def sendCommand(self, command):
     """
@@ -99,6 +101,7 @@ class GalileoHandler(AbstractHandler):
      @param command: Command string
     """
     log.info('Sending "' + command + '"...')
+    '''
     packet = packets.Packet()
     packet.header = 1
     packet.addTag(0x03, self.headpack['uid'])
@@ -109,6 +112,8 @@ class GalileoHandler(AbstractHandler):
     # save sended command in local dict
     self.__commands[self.__commands_num_seq] = packet
     self.__commands_num_seq += 1 # increase command number sequence
+    '''
+    pass
 
   def recieveImage(self, packet):
     """
@@ -119,6 +124,7 @@ class GalileoHandler(AbstractHandler):
       log.error('Empty image packet. Transfer aborted!')
       return
 
+    '''
     config = self.__imageRecievingConfig
     partnum = packet.body[0]
     if self.__imageRecievingConfig is None:
@@ -146,12 +152,15 @@ class GalileoHandler(AbstractHandler):
 
     imagedata = packet.body[1:]
     config['imageparts'][partnum] = imagedata
+    '''
+    pass
 
   def translate(self, data):
     """
      Translate gps-tracker data to observer pipe format
      @param data: dict() data from gps-tracker
     """
+    '''
     packets = []
     if (data == None): return packets
     if (data.tags == None): return packets
@@ -202,21 +211,29 @@ class GalileoHandler(AbstractHandler):
 
     packets.append(packet)
     return packets
+    '''
+    pass
 
   def sendAcknowledgement(self, packet):
     """
      Sends acknowledgement to the socket
     """
+    '''
     buf = self.getAckPacket(packet.crc)
     log.info("Send acknowledgement, crc = %d" % packet.crc)
     return self.send(buf)
+    '''
+    pass
 
   @classmethod
   def getAckPacket(cls, crc):
     """
       Returns acknowledgement buffer value
     """
+    '''
     return pack('<BH', 2, crc)
+    '''
+    pass
 
   def processCommandExecute(self, task, data):
     """
@@ -224,9 +241,12 @@ class GalileoHandler(AbstractHandler):
      @param task: id task
      @param data: data dict()
     """
+    '''
     log.info('Observer is sending a command:')
     log.info(data)
     self.sendCommand(data['command'])
+    '''
+    pass
 
   def processCommandFormat(self, task, data):
     """
@@ -265,7 +285,7 @@ class TestCase(unittest.TestCase):
 
   def test_packetData(self):
     import kernel.pipe as pipe
-    h = GalileoHandler(pipe.Manager(), None)
+    h = NavisetHandler(pipe.Manager(), None)
     data = b'\x01"\x00\x03868204000728070\x042\x00\xe0\x00\x00\x00\x00\xe1\x08Photo ok\x137'
     protocolPackets = packets.Packet.getPacketsFromBuffer(data)
     for packet in protocolPackets:

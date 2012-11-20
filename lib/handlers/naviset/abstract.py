@@ -13,7 +13,7 @@ from lib.handler import AbstractHandler
 import lib.crc16 as crc16
 import lib.bits as bits
 #import lib.handlers.galileo.tags as tags
-#import lib.handlers.galileo.packets as packets
+import lib.handlers.naviset.packets as packets
 
 # ---------------------------------------------------------------------------
 
@@ -52,9 +52,9 @@ class NavisetHandler(AbstractHandler):
       return self.processRequest(data.decode())
 
     log.debug(data)
-    '''protocolPackets = packets.Packet.getPacketsFromBuffer(data)
+    protocolPackets = packets.Packet.getPacketsFromBuffer(data)
     for protocolPacket in protocolPackets:
-      self.processProtocolPacket(protocolPacket)'''
+      self.processProtocolPacket(protocolPacket)
 
     #if self.__imageRecievingConfig is None:
     return super(NavisetHandler, self).processData(data)
@@ -64,10 +64,10 @@ class NavisetHandler(AbstractHandler):
      Process naviset packet.
      @param protocolPacket: Naviset protocol packet
     """
-    '''
     observerPackets = self.translate(protocolPacket)
     self.sendAcknowledgement(protocolPacket)
 
+    '''
     if (protocolPacket.hasTag(0xE1)):
       log.info('Device answer is "' +
         protocolPacket.getTag(0xE1).getValue() + '".')
@@ -101,7 +101,7 @@ class NavisetHandler(AbstractHandler):
      @param command: Command string
     """
     log.info('Sending "' + command + '"...')
-    '''
+
     packet = packets.Packet()
     packet.header = 1
     packet.addTag(0x03, self.headpack['uid'])
@@ -112,7 +112,7 @@ class NavisetHandler(AbstractHandler):
     # save sended command in local dict
     self.__commands[self.__commands_num_seq] = packet
     self.__commands_num_seq += 1 # increase command number sequence
-    '''
+
     pass
 
   def recieveImage(self, packet):

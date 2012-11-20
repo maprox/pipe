@@ -16,3 +16,5 @@ trash/*
 !trash/.gitignore
 
 kernel/version.txt
+
+.idea

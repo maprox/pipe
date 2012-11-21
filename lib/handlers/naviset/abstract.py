@@ -51,8 +51,7 @@ class NavisetHandler(AbstractHandler):
     if (len(data) >= 3) and (data[:3] == b'OBS'):
       return self.processRequest(data.decode())
 
-    log.debug(data)
-    protocolPackets = packets.Packet.getPacketsFromBuffer(data)
+    protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
     for protocolPacket in protocolPackets:
       self.processProtocolPacket(protocolPacket)
 
@@ -67,23 +66,13 @@ class NavisetHandler(AbstractHandler):
     observerPackets = self.translate(protocolPacket)
     self.sendAcknowledgement(protocolPacket)
 
-    '''
-    if (protocolPacket.hasTag(0xE1)):
-      log.info('Device answer is "' +
-        protocolPacket.getTag(0xE1).getValue() + '".')
+    if (isinstance(packets.PacketHead, protocolPacket)):
+      log.info('HeadPack is stored.')
+      self.uid = protocolPacket.deviceIMEI
 
-    if (len(observerPackets) > 0):
-      if 'uid' in observerPackets[0]:
-        self.headpack = observerPackets[0]
-        self.uid = self.headpack['uid']
-        log.info('HeadPack is stored.')
-        return
-
-    if (protocolPacket.header == 4):
-      return self.recieveImage(protocolPacket)
-
-    log.info('Location packet not found. Exiting...')
-    if len(observerPackets) == 0: return
+    if len(observerPackets) == 0:
+      log.info('Location packet not found. Exiting...')
+      return
 
     # MainPack
     for packet in observerPackets:
@@ -92,8 +81,6 @@ class NavisetHandler(AbstractHandler):
     #packet['__rawdata'] = buffer
     log.info(observerPackets)
     store_result = self.store(observerPackets)
-    '''
-    pass
 
   def sendCommand(self, command):
     """
@@ -104,8 +91,6 @@ class NavisetHandler(AbstractHandler):
 
     packet = packets.Packet()
     packet.header = 1
-    packet.addTag(0x03, self.headpack['uid'])
-    packet.addTag(0x04, self.headpack['uid2'])
     packet.addTag(0xE0, self.__commands_num_seq)
     packet.addTag(0xE1, command)
     self.send(packet.rawdata)
@@ -115,55 +100,23 @@ class NavisetHandler(AbstractHandler):
 
     pass
 
-  def recieveImage(self, packet):
+  def receiveImage(self, packet):
     """
-     Recieves an image from tracker.
-     Sends it to the observer server, when totally recieved.
+     Receives an image from tracker.
+     Sends it to the observer server, when totally received.
     """
-    if (packet == None) or (packet.body == None) or (len(packet.body) == 0):
-      log.error('Empty image packet. Transfer aborted!')
-      return
+    log.error('Image receiving not implemented yet!')
 
-    '''
-    config = self.__imageRecievingConfig
-    partnum = packet.body[0]
-    if self.__imageRecievingConfig is None:
-      self.__imageRecievingConfig = {
-        'imageparts': {}
-      }
-      config = self.__imageRecievingConfig
-      log.info('Image transfer is started.')
-    else:
-      if len(packet.body) > 1:
-        log.debug('Image transfer in progress...')
-        log.debug('Size of chunk is %d bytes', len(packet.body) - 1)
-      else:
-        imagedata = b''
-        imageparts = self.__imageRecievingConfig['imageparts']
-        for num in sorted(imageparts.keys()):
-          imagedata += imageparts[num]
-        self.sendImages([{
-          'mime': 'image/jpeg',
-          'content': imagedata
-        }])
-        self.__imageRecievingConfig = None
-        log.debug('Transfer complete.')
-        return
-
-    imagedata = packet.body[1:]
-    config['imageparts'][partnum] = imagedata
-    '''
-    pass
-
-  def translate(self, data):
+  def translate(self, protocolPacket):
     """
      Translate gps-tracker data to observer pipe format
-     @param data: dict() data from gps-tracker
+     @param protocolPacket: Naviset protocol packet
     """
-    '''
     packets = []
-    if (data == None): return packets
-    if (data.tags == None): return packets
+    if (protocolPacket == None): return packets
+    if (not isinstance(packets.PacketData, protocolPacket)):
+        return packets
+    if (protocolPacket.tags == None): return packets
 
     packet = {'sensors': {}}
     prevNum = 0
@@ -198,42 +151,25 @@ class NavisetHandler(AbstractHandler):
         packet['sensors']['extbattery_low'] = value['extbattery_low']
       elif (num == 80): # Analog input 0
         packet['sensors']['analog_input0'] = value
-        """
-      TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
-
-      elif (num == 81): # Analog input 1
-        packet['sensors']['analog_input1'] = value
-      elif (num == 82): # Analog input 2
-        packet['sensors']['analog_input2'] = value
-      elif (num == 83): # Analog input 3
-        packet['sensors']['analog_input3'] = value
-        """
 
     packets.append(packet)
     return packets
-    '''
-    pass
 
   def sendAcknowledgement(self, packet):
     """
      Sends acknowledgement to the socket
+     @param packet: a L{packets.Packet} subclass
     """
-    '''
-    buf = self.getAckPacket(packet.crc)
+    buf = self.getAckPacket(packet)
     log.info("Send acknowledgement, crc = %d" % packet.crc)
     return self.send(buf)
-    '''
-    pass
 
   @classmethod
   def getAckPacket(cls, crc):
     """
       Returns acknowledgement buffer value
     """
-    '''
-    return pack('<BH', 2, crc)
-    '''
-    pass
+    return b'\x01' + pack('<H', crc)
 
   def processCommandExecute(self, task, data):
     """
@@ -241,12 +177,9 @@ class NavisetHandler(AbstractHandler):
      @param task: id task
      @param data: data dict()
     """
-    '''
     log.info('Observer is sending a command:')
     log.info(data)
     self.sendCommand(data['command'])
-    '''
-    pass
 
   def processCommandFormat(self, task, data):
     """
@@ -286,7 +219,8 @@ class TestCase(unittest.TestCase):
   def test_packetData(self):
     import kernel.pipe as pipe
     h = NavisetHandler(pipe.Manager(), None)
-    data = b'\x01"\x00\x03868204000728070\x042\x00\xe0\x00\x00\x00\x00\xe1\x08Photo ok\x137'
-    protocolPackets = packets.Packet.getPacketsFromBuffer(data)
+    #data = b'\x01"\x00\x03868204000728070\x042\x00\xe0\x00\x00\x00\x00\xe1\x08Photo ok\x137'
+    #protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
+    protocolPackets = []
     for packet in protocolPackets:
       self.assertEqual(packet.header, 1)

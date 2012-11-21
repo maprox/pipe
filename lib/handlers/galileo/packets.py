@@ -208,7 +208,9 @@ class BasePacket(object):
 # ---------------------------------------------------------------------------
 
 class Packet(BasePacket):
-
+  """
+   Default galileo protocol packet
+  """
   _tags = None
   _tagsMap = None
 
@@ -225,9 +227,6 @@ class Packet(BasePacket):
   def tagsMap(self):
     return self._tagsMap
 
-  """
-   Default galileo protocol packet
-  """
   def isHalved(self, header):
     """
      Returns True if length of the packet is in 15 bits

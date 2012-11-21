@@ -80,7 +80,7 @@ class GalileoHandler(AbstractHandler):
         return
 
     if (protocolPacket.header == 4):
-      return self.recieveImage(protocolPacket)
+      return self.receiveImage(protocolPacket)
 
     log.info('Location packet not found. Exiting...')
     if len(observerPackets) == 0: return
@@ -110,10 +110,10 @@ class GalileoHandler(AbstractHandler):
     self.__commands[self.__commands_num_seq] = packet
     self.__commands_num_seq += 1 # increase command number sequence
 
-  def recieveImage(self, packet):
+  def receiveImage(self, packet):
     """
-     Recieves an image from tracker.
-     Sends it to the observer server, when totally recieved.
+     Receives an image from tracker.
+     Sends it to the observer server, when totally received.
     """
     if (packet == None) or (packet.body == None) or (len(packet.body) == 0):
       log.error('Empty image packet. Transfer aborted!')

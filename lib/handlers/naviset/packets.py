@@ -284,7 +284,7 @@ class PacketAnswer(Packet):
          @protected
         """
         super(PacketAnswer, self)._parseBody(body)
-        self.__command = Command.CMD_GET_STATUS;
+        self.__command = Command.CMD_GET_STATUS
 
     def _buildBody(self):
         """
@@ -306,10 +306,23 @@ class PacketAnswer(Packet):
 
 # ---------------------------------------------------------------------------
 
-class PacketData(Packet):
+class PacketData(PacketNumbered):
     """
       Data packet of naviset messaging protocol
     """
+    # private properties
+    __dataStructure = 0
+    __itemsData = None
+    __items = None
+
+    def __init__(self, data = None):
+        """
+         Constructor
+         @param data: Binary data of data packet
+         @return: PacketData instance
+        """
+        self.__items = []
+        super(PacketData, self).__init__(data)
 
     def _parseBody(self, body):
         """
@@ -317,14 +330,162 @@ class PacketData(Packet):
          @param body: Body bytes
          @protected
         """
-        super(Packet, self)._parseBody(body)
+        super(PacketData, self)._parseBody(body)
+        self.__dataStructure = unpack('<H', body[2:4])[0]
+        self.__itemsData = body[4:]
+        self.__items = PacketDataItem.getDataItemsFromBuffer(
+            self.__itemsData,
+            self.__dataStructure
+        )
 
     def _buildBody(self):
         """
          Builds rawData from object variables
          @protected
         """
-        return super(Packet, self)._buildBody()
+        result = super(PacketData, self)._buildBody()
+        result += pack('<H', self.__dataStructure)
+        return result
+
+    @property
+    def items(self):
+        return self.__items
+
+# ---------------------------------------------------------------------------
+
+class PacketDataItem:
+    """
+      Item of data packet of naviset messaging protocol
+    """
+    # private properties
+    __rawData = None
+    __rawDataTail = None
+    __dataStructure = 0
+    __number = 0
+    __params = None
+    __additional = 0
+
+    def __init__(self, data = None, ds = 0):
+        """
+         Constructor
+         @param data: Binary data for packet item
+         @param ds: Data structure word
+         @return: PacketDataItem instance
+        """
+        super(PacketDataItem, self).__init__()
+        self.__rawData = data
+        self.__dataStructure = ds
+        self.__params = {}
+        self.__parse()
+
+    @classmethod
+    def getAdditionalDataLength(cls, ds = None):
+        """
+         Returns length of additional data buffer
+         according to ds parameter
+         @param ds: Data structure definition (2 byte)
+         @return: Size of additional data buffer in bytes
+        """
+        # exit if dataStructure is empty
+        if (ds == None) or (ds == 0):
+            return 0
+
+        dsMap = {
+             0: 1,
+             1: 4,
+             2: 1,
+             3: 2,
+             4: 4,
+             5: 4,
+             6: 4,
+             7: 4,
+             8: 4,
+             9: 4,
+            10: 6,
+            11: 4,
+            12: 4,
+            13: 2,
+            14: 4,
+            15: 8
+        }
+        size = 0
+        for key in dsMap:
+            if bits.bitTest(ds, key):
+                size += dsMap[key]
+        return size
+
+    @classmethod
+    def getDataItemsFromBuffer(cls, data = None, ds = None):
+        """
+         Returns an array of PacketDataItem instances from data
+         @param data: Input binary data
+         @return: array of PacketDataItem instances (empty array if not found)
+        """
+        items = []
+        while True:
+            item = cls(data, ds)
+            data = item.rawDataTail
+            items.append(item)
+            if len(data) == 0: break
+        return items
+
+    def convertCoordinate(self, coord):
+        result = str(coord)
+        result = result[:2] + '.' + result[2:]
+        return float(result)
+
+    def __parse(self):
+        """
+         Parses body of the packet
+         @param body: Body bytes
+         @protected
+        """
+        buffer = self.__rawData
+        length = self.length
+        if buffer == None: return
+        if len(buffer) < length: return
+
+        self.__number = unpack("<H", buffer[:2])[0]
+        self.__params['time'] = datetime.fromtimestamp(
+            unpack("<L", buffer[2:6])[0])
+        self.__params['satellitescount'] = unpack("<B", buffer[6:7])[0]
+        self.__params['latitude'] = self.convertCoordinate(
+            unpack("<L", buffer[7:11])[0])
+        self.__params['longitude'] = self.convertCoordinate(
+            unpack("<L", buffer[11:15])[0])
+        self.__params['speed'] = unpack("<H", buffer[15:17])[0]
+        self.__params['azimuth'] = unpack("<H", buffer[17:19])[0]
+        self.__params['altitude'] = unpack("<H", buffer[19:21])[0]
+        self.__params['hdop'] = unpack("<B", buffer[21:22])[0]
+        self.__additional = buffer[22:length]
+
+        # apply new data
+        self.__rawDataTail = buffer[length:]
+        self.__rawData = buffer[:length]
+
+    @property
+    def length(self):
+        return 22 + self.getAdditionalDataLength(self.__dataStructure)
+
+    @property
+    def rawData(self):
+        return self.__rawData
+
+    @property
+    def rawDataTail(self):
+        return self.__rawDataTail
+
+    @property
+    def number(self):
+        return self.__number
+
+    @property
+    def params(self):
+        return self.__params
+
+    @property
+    def additional(self):
+        return self.__additional
 
 # ---------------------------------------------------------------------------
 
@@ -385,54 +546,105 @@ class PacketFactory:
 import unittest
 class TestCase(unittest.TestCase):
 
-  def setUp(self):
-    pass
+    def setUp(self):
+        pass
 
-  def test_headPacket(self):
-    packet = PacketFactory.getInstance(
-        b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9')
-    self.assertEqual(isinstance(packet, PacketHead), True)
-    self.assertEqual(isinstance(packet, PacketData), False)
-    self.assertEqual(packet.header, 0)
-    self.assertEqual(packet.length, 18)
-    self.assertEqual(packet.body, b'\x01\x00012896001609129\x06')
-    self.assertEqual(packet.crc, 47519)
-
-  def test_setPacketBody(self):
-      packet = PacketFactory.getInstance(
+    def test_headPacket(self):
+        packet = PacketFactory.getInstance(
           b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9')
-      self.assertEqual(packet.length, 18)
-      self.assertEqual(isinstance(packet, PacketHead), True)
-      packet.body = b'\x22\x00012896001609129\x05'
-      self.assertEqual(packet.length, 18)
-      self.assertEqual(packet.deviceNumber, 34)
-      self.assertEqual(packet.deviceIMEI, '012896001609129')
-      self.assertEqual(packet.protocolVersion, 5)
-      self.assertEqual(packet.rawData, b'\x12\x00\x22\x00012896001609129\x05$6')
+        self.assertEqual(isinstance(packet, PacketHead), True)
+        self.assertEqual(isinstance(packet, PacketData), False)
+        self.assertEqual(packet.header, 0)
+        self.assertEqual(packet.length, 18)
+        self.assertEqual(packet.body, b'\x01\x00012896001609129\x06')
+        self.assertEqual(packet.crc, 47519)
 
-  def test_packetTail(self):
-      packets = PacketFactory.getPacketsFromBuffer(
+    def test_setPacketBody(self):
+        packet = PacketFactory.getInstance(
+          b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9')
+        self.assertEqual(packet.length, 18)
+        self.assertEqual(isinstance(packet, PacketHead), True)
+        packet.body = b'\x22\x00012896001609129\x05'
+        self.assertEqual(packet.length, 18)
+        self.assertEqual(packet.deviceNumber, 34)
+        self.assertEqual(packet.deviceIMEI, '012896001609129')
+        self.assertEqual(packet.protocolVersion, 5)
+        self.assertEqual(packet.rawData, b'\x12\x00\x22\x00012896001609129\x05$6')
+
+    def test_packetTail(self):
+        packets = PacketFactory.getPacketsFromBuffer(
           b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9' +
           b'\x12\x00\x22\x00012896001609129\x05$6')
-      self.assertEqual(len(packets), 2)
+        self.assertEqual(len(packets), 2)
 
-  def test_commandPacket(self):
-    """
-    packet = Packet()
-    packet.header = 1
-    tagslist = []
-    tagslist.append(tags.Tag.getInstance(3, b'2345545456444445'))
-    tagslist.append(tags.Tag.getInstance(4, b'\x03\x04'))
-    tagslist.append(tags.Tag.getInstance(0xE0, b'\xFA\x72\x50\x25'))
-    tagslist.append(tags.Tag.getInstance(0xE1, b'Makephoto 1'))
-    packet.tags = tagslist
-    self.assertEqual(packet.rawData, b'\x01&\x00\x032345545456444445\x04\x03\x04\xe0\xfarP%\xe1\x0bMakephoto 1\xbc\xb5')
-
-  def test_answerPacketPhoto(self):
-    packet = Packet(b'\x01"\x00\x03868204000728070\x042\x00\xe0\x01\x00\x00\x00\xe1\x08Photo ok\x13\xf6')
-    self.assertEqual(packet.header, 1)
-    self.assertEqual(packet.length, 34)
-    self.assertEqual(packet.hasTag(0x03), True)
-    self.assertEqual(packet.hasTag(0xe2), False)
-    self.assertEqual(packet.getTag(0xe1).getValue(), 'Photo ok')
-  """
+    def test_dataPacket(self):
+        packets = PacketFactory.getPacketsFromBuffer(
+          b'\xe2C\x01\x00\x00\x00\x00\x00s\x01\xaaP\x10HfR\x034\x91=\x02' +
+          b'\x00\x00\x00\x00\x00\x00\xff\x01\x00s\x01\xaaP\x10HfR\x034\x91' +
+          b'=\x02\x00\x00\x00\x00\x00\x00\xff\x02\x00\x8f\x02\xaaP\x068fR' +
+          b'\x03\x18\x91=\x02\x01\x00\x00\x00\xb0\x00\x1c\x03\x00\xae\x02' +
+          b'\xaaP\x07\xfceR\x03t\x91=\x02\x03\x00\x00\x00\x9c\x00\x1a\x04' +
+          b'\x00\xbd\x02\xaaP\x07\xfceR\x03\x84\x91=\x02\x00\x007\x04\xa3' +
+          b'\x00\x1a\x05\x00\'\x03\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00' +
+          b'\x00\xa3\x00\x0b\x06\x00\xa0\x03\xaaP\t\xfceR\x03\x84\x91=\x02' +
+          b'\x00\x00\x00\x00\xa2\x00\r\x07\x00\x19\x04\xaaP\n\xfceR\x03\x84' +
+          b'\x91=\x02\x00\x00X\n\xa0\x00\x0b\x08\x00\x92\x04\xaaP\x0b\xfceR' +
+          b'\x03\x84\x91=\x02\x00\x00\x00\x00\x9c\x00\n\t\x00\x0b\x05\xaaP' +
+          b'\n\xfceR\x03\x84\x91=\x02\x00\x00+\n\x9a\x00\n\n\x00\x84\x05\xaa' +
+          b'P\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xb9\t\x99\x00\t\x0b\x00\xfd' +
+          b'\x05\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x98\x00\n' +
+          b'\x0c\x00v\x06\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x99' +
+          b'\x00\x0b\r\x00\xef\x06\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00' +
+          b'\xe4\x08\x98\x00\x08\x0e\x00h\x07\xaaP\t\xfceR\x03\x84\x91=\x02' +
+          b'\x00\x00H\n\x98\x00\n\x0f\x00\xe1\x07\xaaP\x0c\xfceR\x03\x84\x91' +
+          b'=\x02\x00\x008\x0c\x98\x00\x08\x10\x00Z\x08\xaaP\x0b\xfceR\x03' +
+          b'\x84\x91=\x02\x00\x00\x00\x00\x98\x00\n\x11\x00\xd3\x08\xaaP' +
+          b'\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xe5\t\x98\x00\t\x12\x00L\t' +
+          b'\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x93\x00\x08\x13' +
+          b'\x00\xc5\t\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\\\n\x93\x00' +
+          b'\x08\x14\x00>\n\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00' +
+          b'\x93\x00\t\x15\x00\xb7\n\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
+          b'\xad\x04\x92\x00\t\x16\x000\x0b\xaaP\x0b\xfceR\x03\x84\x91=\x02' +
+          b'\x00\x00\x00\x00\x93\x00\t\x17\x00\xa9\x0b\xaaP\r\xfceR\x03\x84' +
+          b'\x91=\x02\x00\x00\xd6\x03\x93\x00\x08\x18\x00"\x0c\xaaP\x0c\xfc' +
+          b'eR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\x08\x19\x00\x9b\x0c' +
+          b'\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\n\x1a\x00' +
+          b'\x14\r\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\x0b' +
+          b'\x1b\x00\x8d\r\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x95' +
+          b'\x00\x0c\x1c\x00\x06\x0e\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
+          b'\x00\x00\x95\x00\n\x1d\x00\x7f\x0e\xaaP\n\xfceR\x03\x84\x91=\x02' +
+          b'\x00\x00k\x03\x95\x00\x0b\x1e\x00\xf8\x0e\xaaP\n\xfceR\x03\x84' +
+          b'\x91=\x02\x00\x00\x00\x00\x97\x00\n\x1f\x00q\x0f\xaaP\t\xfceR' +
+          b'\x03\x84\x91=\x02\x00\x00\x00\x00\x97\x00\r \x00\xea\x0f\xaaP' +
+          b'\x0c\xfceR\x03\x84\x91=\x02\x00\x00~\x04\x96\x00\n!\x00c\x10' +
+          b'\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x96\x00\x0b"\x00' +
+          b'\xdc\x10\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x96' +
+          b'\x00\x0e#\x00U\x11\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00V\t' +
+          b'\x96\x00\x0c$\x00\xce\x11\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
+          b'\x00\x00\x97\x00\n%\x00G\x12\xaaP\x0c\xfceR\x03\x84\x91=\x02' +
+          b'\x00\x00\xec\t\x97\x00\n&\x00\xc0\x12\xaaP\x0c\xfceR\x03\x84' +
+          b'\x91=\x02\x00\x00\x00\x00\x97\x00\n\'\x009\x13\xaaP\n\xfceR\x03' +
+          b'\x84\x91=\x02\x00\x00\x00\x00\x97\x00\n(\x00\xb2\x13\xaaP\n\xfc' +
+          b'eR\x03\x84\x91=\x02\x00\x00\x00\x00\x97\x00\x0c)\x00+\x14\xaaP' +
+          b'\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x98\x00\t*\x00\xa4' +
+          b'\x14\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x99\x00' +
+          b'\x12+\x00\x1d\x15\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xad' +
+          b'\x06\x9b\x00\t,\x00\x96\x15\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00' +
+          b'\x00\x00\x00\x9b\x00\n\x98+')
+        self.assertEqual(len(packets), 1)
+        packet = packets[0]
+        self.assertEqual(isinstance(packet, PacketData), True)
+        self.assertEqual(len(packet.items), 45)
+        packetItem = packet.items[3]
+        self.assertEqual(isinstance(packetItem, PacketDataItem), True)
+        self.assertEqual(packetItem.params['speed'], 3)
+        self.assertEqual(packetItem.params['latitude'], 55.731708)
+        self.assertEqual(packetItem.params['longitude'], 37.589364)
+        self.assertEqual(packetItem.params['satellitescount'], 7)
+        self.assertEqual(packetItem.params['time'].
+            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2012-11-19T13:58:06.000000')
+        packetItem2 = packet.items[6]
+        self.assertEqual(packetItem2.params['speed'], 0)
+        self.assertEqual(packetItem2.params['satellitescount'], 9)
+        self.assertEqual(packetItem2.number, 6)
+        self.assertEqual(packetItem2.additional, b'')

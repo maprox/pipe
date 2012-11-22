@@ -32,12 +32,10 @@ class NavisetHandler(AbstractHandler):
     AbstractHandler.dispatch(self)
 
     log.debug("Recieving...")
-    packnum = 0
     buffer = self.recv()
     while len(buffer) > 0:
       self.processData(buffer)
       buffer = self.recv()
-      packnum += 1
 
     return super(NavisetHandler, self).dispatch()
 
@@ -55,7 +53,6 @@ class NavisetHandler(AbstractHandler):
     for protocolPacket in protocolPackets:
       self.processProtocolPacket(protocolPacket)
 
-    #if self.__imageRecievingConfig is None:
     return super(NavisetHandler, self).processData(data)
 
   def processProtocolPacket(self, protocolPacket):
@@ -63,22 +60,17 @@ class NavisetHandler(AbstractHandler):
      Process naviset packet.
      @param protocolPacket: Naviset protocol packet
     """
-    observerPackets = self.translate(protocolPacket)
     self.sendAcknowledgement(protocolPacket)
-
-    if (isinstance(packets.PacketHead, protocolPacket)):
+    if isinstance(protocolPacket, packets.PacketHead):
       log.info('HeadPack is stored.')
       self.uid = protocolPacket.deviceIMEI
+      return
 
+    observerPackets = self.translate(protocolPacket)
     if len(observerPackets) == 0:
       log.info('Location packet not found. Exiting...')
       return
 
-    # MainPack
-    for packet in observerPackets:
-      packet.update(self.headpack)
-    #packet['__packnum'] = packnum
-    #packet['__rawdata'] = buffer
     log.info(observerPackets)
     store_result = self.store(observerPackets)
 
@@ -88,72 +80,37 @@ class NavisetHandler(AbstractHandler):
      @param command: Command string
     """
     log.info('Sending "' + command + '"...')
-
-    packet = packets.Packet()
-    packet.header = 1
-    packet.addTag(0xE0, self.__commands_num_seq)
-    packet.addTag(0xE1, command)
-    self.send(packet.rawdata)
-    # save sended command in local dict
-    self.__commands[self.__commands_num_seq] = packet
-    self.__commands_num_seq += 1 # increase command number sequence
-
-    pass
+    log.info('[IS NOT IMPLEMENTED]')
 
   def receiveImage(self, packet):
     """
      Receives an image from tracker.
      Sends it to the observer server, when totally received.
     """
-    log.error('Image receiving not implemented yet!')
+    log.error('Image receiving...')
+    log.info('[IS NOT IMPLEMENTED]')
 
   def translate(self, protocolPacket):
     """
      Translate gps-tracker data to observer pipe format
      @param protocolPacket: Naviset protocol packet
     """
-    packets = []
-    if (protocolPacket == None): return packets
-    if (not isinstance(packets.PacketData, protocolPacket)):
-        return packets
-    if (protocolPacket.tags == None): return packets
-
-    packet = {'sensors': {}}
-    prevNum = 0
-    for tag in data.tags:
-      num = tag.getNumber()
-
-      if (num < prevNum):
-        packets.append(packet)
-        packet = {'sensors': {}}
-
-      prevNum = num
-      value = tag.getValue()
-      #print(num, value)
-      if (num == 3): # IMEI
-        packet['uid'] = value
-      elif (num == 4): # CODE
-        packet['uid2'] = value
-      elif (num == 32): # Timestamp
-        packet['time'] = value.strftime('%Y-%m-%dT%H:%M:%S.%f')
-      elif (num == 48): # Satellites count, Correctness, Latitude, Longitude
-        packet.update(value)
-      elif (num == 51): # Speed, Azimuth
-        packet.update(value)
-      elif (num == 52): # Altitude
-        packet['altitude'] = value
-      elif (num == 53): # HDOP
-        packet['hdop'] = value
-      elif (num == 64): # Status
-        packet.update(value)
-        packet['sensors']['acc'] = value['acc']
-        packet['sensors']['sos'] = value['sos']
-        packet['sensors']['extbattery_low'] = value['extbattery_low']
-      elif (num == 80): # Analog input 0
-        packet['sensors']['analog_input0'] = value
-
-    packets.append(packet)
-    return packets
+    list = []
+    if (protocolPacket == None): return list
+    if not isinstance(protocolPacket, packets.PacketData):
+        return list
+    if (len(protocolPacket.items) == 0):
+        return list
+    for item in protocolPacket.items:
+        packet = {'uid': self.uid}
+        packet.update(item.params)
+        packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+        list.append(packet)
+        #packet['sensors']['acc'] = value['acc']
+        #packet['sensors']['sos'] = value['sos']
+        #packet['sensors']['extbattery_low'] = value['extbattery_low']
+        #packet['sensors']['analog_input0'] = value
+    return list
 
   def sendAcknowledgement(self, packet):
     """
@@ -165,11 +122,12 @@ class NavisetHandler(AbstractHandler):
     return self.send(buf)
 
   @classmethod
-  def getAckPacket(cls, crc):
+  def getAckPacket(cls, packet):
     """
-      Returns acknowledgement buffer value
+     Returns acknowledgement buffer value
+     @param packet: a L{packets.Packet} subclass
     """
-    return b'\x01' + pack('<H', crc)
+    return b'\x01' + pack('<H', packet.crc)
 
   def processCommandExecute(self, task, data):
     """

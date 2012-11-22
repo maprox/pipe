@@ -22,4 +22,9 @@ if [ "$1" = 'galileo' ]; then
   ./run_galileo.sh $2 $3 $4 &
 fi
 
+if [ "$1" = 'naviset' ]; then
+  echo 'Starting Naviset listener'
+  ./run_naviset.sh $2 $3 $4 &
+fi
+
 exit 0

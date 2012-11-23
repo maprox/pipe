@@ -1,18 +1,19 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
+@project   Maprox <http://www.maprox.net>
 @info      Class for working with pipe-controller 
-@copyright 2009-2011, Maprox Ltd.
-@author    sunsay <box@sunsay.ru>
-@link      $HeadURL$
-@version   $Id$
+@copyright 2009-2012, Maprox LLC
 '''
 
 class Store(object):
-  """ Abstract class defining storage for device packets"""
+  """
+   Abstract class defining storage for device packets
+  """
 
   def __init__(self):
-    """ Constructor """
+    """
+     Constructor
+    """
     pass
 
   def send(self, obj):

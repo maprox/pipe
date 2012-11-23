@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 '''
-@project   Maprox Observer <http://maprox.net/observer>
+@project   Maprox <http://www.maprox.net>
 @info      Logger
 @copyright 2009-2012, Maprox LLC
 '''

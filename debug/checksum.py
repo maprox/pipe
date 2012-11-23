@@ -1,21 +1,21 @@
 # -*- coding: utf8 -*-
 '''
-@auth: Maprox Ltd. (sunsay)
+@auth: Maprox LLC (sunsay)
 @date: 2011
 @info: Checksum output
 '''
 
 def getChecksum(data):
-  """
-   Returns the data checksum
-   @param data: data string
-   @return: hex string checksum
-  """
-  csum = 0
-  for c in data:
-      csum ^= ord(c)
-  hex_csum = "%02X" % csum
-  return hex_csum
+    """
+     Returns the data checksum
+     @param data: data string
+     @return: hex string checksum
+    """
+    csum = 0
+    for c in data:
+        csum ^= ord(c)
+    hex_csum = "%02X" % csum
+    return hex_csum
 
 
 s = "GSS,354660044558446,3,0,Ri=30"

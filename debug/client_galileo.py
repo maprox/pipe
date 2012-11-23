@@ -19,12 +19,12 @@ data2 = b'\x01t\x00\x042\x00\x109\t T\xe3o80\x10\x00\x00\x00\x00\x00\x00\x00\x00
 host, port = "localhost", 21001
 
 try:
-  # Create a socket (SOCK_STREAM means a TCP socket)
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.connect((host, port))
-  sock.send(data)
-  print(sock.recv(4096))
-  sock.send(data2)
-  sock.close()
+    # Create a socket (SOCK_STREAM means a TCP socket)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((host, port))
+    sock.send(data)
+    print(sock.recv(4096))
+    sock.send(data2)
+    sock.close()
 except Exception as E:
-  print(E)
+    print(E)

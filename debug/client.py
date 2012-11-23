@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 '''
-@auth: Maprox Ltd © sunsay
+@auth: Maprox LLC © sunsay
 @date: 2009.07.06
 @info: Клиент для тестов
 '''
@@ -9,26 +9,26 @@ import re
 import socket
 
 def coordEncode(coord):
-  res = coord[:2]
-  tail = '0' + coord[2:]
-  tail = 60 * float(tail)
-  if tail < 10:
-    res += '0' + str(tail)
-  else:
-    res += str(tail)
-  return res
+    res = coord[:2]
+    tail = '0' + coord[2:]
+    tail = 60 * float(tail)
+    if tail < 10:
+        res += '0' + str(tail)
+    else:
+        res += str(tail)
+    return res
 
 def getChecksum(data):
-  """
-   Returns the data checksum
-   @param data: data string
-   @return: hex string checksum
-  """
-  csum = 0
-  for c in data:
-      csum ^= ord(c)
-  hex_csum = "%02X" % csum
-  return hex_csum
+    """
+     Returns the data checksum
+     @param data: data string
+     @return: hex string checksum
+    """
+    csum = 0
+    for c in data:
+        csum ^= ord(c)
+    hex_csum = "%02X" % csum
+    return hex_csum
 
 uid = '356051037867929'
 speed = '20.00'
@@ -61,10 +61,10 @@ print(data)
 host, port = "localhost", 20100
 
 try:
-  # Create a socket (SOCK_STREAM means a TCP socket)
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  sock.connect((host, port))
-  sock.send(bytes(data + "\r\n", "ascii"))
-  sock.close()
+    # Create a socket (SOCK_STREAM means a TCP socket)
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((host, port))
+    sock.send(bytes(data + "\r\n", "ascii"))
+    sock.close()
 except Exception as E:
-  print(E)
+    print(E)

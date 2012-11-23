@@ -15,4 +15,4 @@ from lib.handlers.naviset.packets import TestCase as tc4
 from lib.handlers.naviset.abstract import TestCase as tc5
 
 if __name__ == '__main__':
-  unittest.main()
+    unittest.main()

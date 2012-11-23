@@ -4,17 +4,17 @@ cd $5
 
 if [ "$1" = 'tr600' ]; then
   echo 'Starting TR-600 listener'
-  ./run_tr-600.sh $2 $3 $4 &
+  ./run_tr600.sh $2 $3 $4 &
 fi
 
 if [ "$1" = 'tr203' ]; then
   echo 'Starting TR-203 listener'
-  ./run_tr-203.sh $2 $3 $4 &
+  ./run_tr203.sh $2 $3 $4 &
 fi
 
 if [ "$1" = 'tr206' ]; then
   echo 'Starting TR-206 listener'
-  ./run_tr-206.sh $2 $3 $4 &
+  ./run_tr206.sh $2 $3 $4 &
 fi
 
 if [ "$1" = 'galileo' ]; then

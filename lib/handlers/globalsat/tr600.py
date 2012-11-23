@@ -15,7 +15,7 @@ from lib.handlers.globalsat.abstract import GlobalsatHandler
 class Handler(GlobalsatHandler):
     """ Globalsat. TR-600 """
 
-    confSectionName = "globalsat.tr-600"
+    confSectionName = "globalsat.tr600"
     reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
 
     def translateConfigOptions(self, send, options):

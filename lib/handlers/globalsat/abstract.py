@@ -510,13 +510,14 @@ class GlobalsatHandler(AbstractHandler):
         string = self.addChecksum(string)
         log.debug('Formatted string result: ' + string)
 
-        send = {}
-        send['result'] = string
-        send['id_action'] = task
+        message = {
+            'result': string,
+            'id_action': task
+        }
         log.debug('Formatted string sent: ' \
-          + conf.pipeFinishUrl + urlencode(send))
+            + conf.pipeFinishUrl + urlencode(message))
         connection = urlopen(conf.pipeFinishUrl,
-          urlencode(send).encode('utf-8'))
+          urlencode(message).encode('utf-8'))
 
     def processCommandReadSettings(self, task, data):
         """

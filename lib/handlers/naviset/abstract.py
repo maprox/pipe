@@ -5,13 +5,17 @@
 @copyright 2012, Maprox LLC
 '''
 
-import time, datetime
-from struct import unpack, pack, calcsize
+
+import json
+from struct import pack
 
 from kernel.logger import log
+from kernel.config import conf
 from lib.handler import AbstractHandler
 from kernel.dbmanager import db
 import lib.handlers.naviset.packets as packets
+from urllib.parse import urlencode
+from urllib.request import urlopen
 
 # ---------------------------------------------------------------------------
 
@@ -19,9 +23,23 @@ class NavisetHandler(AbstractHandler):
     """
      Base handler for Naviset protocol
     """
+    # private fields
     __commands = {}
     __commands_num_seq = 0
     __imageRecievingConfig = None
+
+    # protected fields
+    _confSectionName = "naviset.protocolname"
+    _serverIp = None
+    _serverPort = None
+
+    def __init__(self, store, thread):
+        """ Constructor """
+        AbstractHandler.__init__(self, store, thread)
+        if conf.has_section(self._confSectionName):
+            section = conf[self._confSectionName]
+            self._serverIp = section.get("serverIp", "212.100.159.142")
+            self._serverPort = section.get("serverPort", "21100")
 
     def dispatch(self):
         """
@@ -143,7 +161,19 @@ class NavisetHandler(AbstractHandler):
          @param task: id task
          @param data: request
         """
-        pass
+        data = json.loads(data)
+        string = 'COM3 1234,' \
+            + str(self._serverIp) + ',' \
+            + str(self._serverPort)
+        log.debug('Formatted string result: ' + string)
+        message = {
+            'result': string,
+            'id_action': task
+        }
+        log.debug('Formatted string sent: ' \
+            + conf.pipeFinishUrl + urlencode(message))
+        #connection = urlopen(conf.pipeFinishUrl,
+        #    urlencode(message).encode('utf-8'))
 
     def processCommandReadSettings(self, task, data):
         """

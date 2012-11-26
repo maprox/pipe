@@ -7,7 +7,7 @@
 
 import time
 from datetime import datetime, timedelta
-from struct import unpack, pack, calcsize
+from struct import unpack, pack
 import lib.bits as bits
 import lib.crc16 as crc16
 

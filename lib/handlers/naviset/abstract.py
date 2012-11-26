@@ -162,14 +162,20 @@ class NavisetHandler(AbstractHandler):
          @param data: request
         """
         data = json.loads(data)
-        string = 'COM3 1234,' \
-            + str(self._serverIp) + ',' \
-            + str(self._serverPort)
+        command0 = 'COM3 1234,' \
+            + str(data['host'] or self._serverIp) + ',' \
+            + str(data['port'] or self._serverPort)
+        command1 = 'COM5 '
+        #string += ',D1=' + str(data['gprs']['apn'] or '')
+        #string += ',D2=' + str(data['gprs']['username'] or '')
+        #string += ',D3=' + str(data['gprs']['password'] or '')
+        string = '["' + command0 + '", "' + command1 + '"]'
         log.debug('Formatted string result: ' + string)
         message = {
             'result': string,
             'id_action': task
         }
+
         log.debug('Formatted string sent: ' \
             + conf.pipeFinishUrl + urlencode(message))
         #connection = urlopen(conf.pipeFinishUrl,

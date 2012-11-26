@@ -25,5 +25,14 @@ class TestCase(unittest.TestCase):
 
     def test_format(self):
         import kernel.pipe as pipe
+        import json
         h = Handler(pipe.Manager(), None)
-        h.processCommandFormat('format', '"DATADATA"')
+        h.processCommandFormat('format', json.dumps({
+            "host": "trx.maprox.net",
+            "port": None,
+            "gprs": {
+                "apn": "internet",
+                "username": None,
+                "password": None
+            }
+        }))

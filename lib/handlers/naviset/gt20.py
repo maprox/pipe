@@ -27,12 +27,9 @@ class TestCase(unittest.TestCase):
         import kernel.pipe as pipe
         import json
         h = Handler(pipe.Manager(), None)
-        h.processCommandFormat('format', json.dumps({
-            "host": "trx.maprox.net",
-            "port": None,
-            "gprs": {
-                "apn": "internet",
-                "username": None,
-                "password": None
-            }
+        h.processCommandFormat(116363, json.dumps({
+            "host":"observer.localhost",
+            "port":80,
+            "identifier":"012896001609129",
+            "gprs":{"apn":"internet","username":"","password":""}
         }))

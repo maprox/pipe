@@ -19,6 +19,7 @@ class Controller(object):
      'tr600': 'globalsat.tr600',
      'tr203': 'globalsat.tr203',
      'tr206': 'globalsat.tr206',
+     'tr151': 'globalsat.tr151',
      'naviset': 'naviset.gt20',
      'galileo': 'galileo.firmware0119'
     }

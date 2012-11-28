@@ -23,11 +23,9 @@ INITIAL_DF1 = 0x0000
 class Crc16(object):
     """ Class for CRC-16 Modbus calculation """
 
-    """
-     ---------------------------------------------------------------
-     256-word look-up table of partially prepared
-     answers to greatly reduce the system load
-    """
+    # ---------------------------------------------------------------
+    # 256-word look-up table of partially prepared
+    # answers to greatly reduce the system load
     __table = (
       0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
       0xC601, 0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440,

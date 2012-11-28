@@ -10,9 +10,6 @@ from struct import unpack, pack, calcsize
 
 from kernel.logger import log
 from lib.handler import AbstractHandler
-import lib.crc16 as crc16
-import lib.bits as bits
-import lib.handlers.galileo.tags as tags
 import lib.handlers.galileo.packets as packets
 
 # ---------------------------------------------------------------------------
@@ -23,25 +20,8 @@ class GalileoHandler(AbstractHandler):
     """
     __commands = {}
     __commands_num_seq = 0
-    __imageRecievingConfig = None
-
-    def dispatch(self):
-        """
-         Dispatching data from socket
-        """
-        AbstractHandler.dispatch(self)
-
-        log.debug("Recieving...")
-        packnum = 0
-        buffer = self.recv()
-        while len(buffer) > 0:
-            self.processData(buffer)
-            if (packnum == 1) and (self.__imageRecievingConfig is None):
-                self.sendCommand('Makephoto 1')
-            buffer = self.recv()
-            packnum += 1
-
-        return super(GalileoHandler, self).dispatch()
+    __imageReceivingConfig = None
+    __packNum = 0
 
     def processData(self, data):
         """
@@ -50,14 +30,15 @@ class GalileoHandler(AbstractHandler):
          @param packnum: Number of socket packet (defaults to 0)
          @return: self
         """
-        if (len(data) >= 3) and (data[:3] == b'OBS'):
-            return self.processRequest(data.decode())
+        if (self.__packNum == 1) and (self.__imageReceivingConfig is None):
+            self.sendCommand("Makephoto 1")
+        self.__packNum += 1
 
         protocolPackets = packets.Packet.getPacketsFromBuffer(data)
         for protocolPacket in protocolPackets:
             self.processProtocolPacket(protocolPacket)
 
-        if self.__imageRecievingConfig is None:
+        if self.__imageReceivingConfig is None:
             return super(GalileoHandler, self).processData(data)
 
     def processProtocolPacket(self, protocolPacket):
@@ -119,13 +100,13 @@ class GalileoHandler(AbstractHandler):
             log.error('Empty image packet. Transfer aborted!')
             return
 
-        config = self.__imageRecievingConfig
+        config = self.__imageReceivingConfig
         partnum = packet.body[0]
-        if self.__imageRecievingConfig is None:
-            self.__imageRecievingConfig = {
+        if self.__imageReceivingConfig is None:
+            self.__imageReceivingConfig = {
               'imageparts': {}
             }
-            config = self.__imageRecievingConfig
+            config = self.__imageReceivingConfig
             log.info('Image transfer is started.')
         else:
             if len(packet.body) > 1:
@@ -133,14 +114,14 @@ class GalileoHandler(AbstractHandler):
                 log.debug('Size of chunk is %d bytes', len(packet.body) - 1)
             else:
                 imagedata = b''
-                imageparts = self.__imageRecievingConfig['imageparts']
+                imageparts = self.__imageReceivingConfig['imageparts']
                 for num in sorted(imageparts.keys()):
                     imagedata += imageparts[num]
                 self.sendImages([{
                   'mime': 'image/jpeg',
                   'content': imagedata
                 }])
-                self.__imageRecievingConfig = None
+                self.__imageReceivingConfig = None
                 log.debug('Transfer complete.')
                 return
 

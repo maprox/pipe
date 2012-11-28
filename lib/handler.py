@@ -56,15 +56,11 @@ class AbstractHandler(object):
           clientThread thread of the socket;
         """
         log.debug('%s::dispatch()', self.__class__)
-        self.prepare()
-        return self
+        buffer = self.recv()
+        while len(buffer) > 0:
+            self.processData(buffer)
+            buffer = self.recv()
 
-    def prepare(self):
-        """
-         Preparing for data transfer.
-         Can be overridden in child classes
-        """
-        return self
 
     def processData(self, data):
         """

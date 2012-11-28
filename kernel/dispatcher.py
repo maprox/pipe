@@ -38,8 +38,8 @@ class Dispatcher(object):
         for HandlerClass in handlersList:
             log.debug('Protocol handler: %s', HandlerClass.__doc__)
             HandlerClass(self.getStore(), clientThread).dispatch()
-            return
-        log.debug('No protocol handlers found')
+            return self # We are working with first handler only
+        log.warn('No protocol handlers found')
 
 # let's create instance of global protocol dispatcher
 disp = Dispatcher()

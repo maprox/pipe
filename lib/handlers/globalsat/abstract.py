@@ -94,7 +94,9 @@ class GlobalsatHandler(AbstractHandler):
         """ Constructor """
         AbstractHandler.__init__(self, store, thread)
 
-        """ Options for Globalsat """
+        # Options for Globalsat
+        self.__getReportFormat()
+        self.__compileRegularExpressions()
         self.default_options.update({
           # SOS Report count
           # 0 = None, 1 = SMS, 2 = TCP, 3 = SMS and TCP, 4 = UDP
@@ -192,14 +194,6 @@ class GlobalsatHandler(AbstractHandler):
         self.re_compiled['search_uid'] = \
           re.compile(p['search_uid'], flags = re.IGNORECASE)
         self.re_compiled['search_config'] = re.compile(p['search_config'])
-        return self
-
-    def prepare(self):
-        """
-         Preparing for data transfer
-        """
-        self.__getReportFormat()
-        self.__compileRegularExpressions()
         return self
 
     def translate(self, data):
@@ -376,20 +370,6 @@ class GlobalsatHandler(AbstractHandler):
 
         return send
 
-    def dispatch(self):
-        """
-         Dispatching data from socket
-        """
-        AbstractHandler.dispatch(self)
-        log.debug("Recieving...")
-        data_socket = self.recv().decode()
-        log.debug("Data recieved:\n%s", data_socket)
-        while len(data_socket) > 0:
-            function_name = self.getFunction(data_socket)
-            function = getattr(self, function_name)
-            function(data_socket)
-            data_socket = self.recv().decode()
-
     def getFunction(self, data):
         """
          Returns a function name according to supplied data
@@ -402,16 +382,25 @@ class GlobalsatHandler(AbstractHandler):
         elif data_type == 'GSr':
             return "processData"
         else:
-            raise NotImplementedError("Unknown data type" + data_type)
+            raise NotImplementedError("Unknown data type " + data_type)
 
     def processData(self, data):
         """
          Processing of data from socket / storage.
          @param data: Data from socket
         """
+        # let's work with text data
+        data = data.decode('utf-8')
+
+        function_name = self.getFunction(data)
+        if function_name != 'processData':
+            function = getattr(self, function_name)
+            return function(data)
+
         rc = self.re_compiled['report']
         position = 0
 
+        log.debug("Data received:\n%s", data)
         m = rc.search(data, position)
         if not m:
             self.processError(data)

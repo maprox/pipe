@@ -41,20 +41,6 @@ class NavisetHandler(AbstractHandler):
             self._serverIp = section.get("serverIp", "212.100.159.142")
             self._serverPort = section.get("serverPort", "21100")
 
-    def dispatch(self):
-        """
-         Dispatching data from socket
-        """
-        AbstractHandler.dispatch(self)
-
-        log.debug("Recieving...")
-        buffer = self.recv()
-        while len(buffer) > 0:
-            self.processData(buffer)
-            buffer = self.recv()
-
-        return super(NavisetHandler, self).dispatch()
-
     def processData(self, data):
         """
          Processing of data from socket / storage.
@@ -62,9 +48,6 @@ class NavisetHandler(AbstractHandler):
          @param packnum: Number of socket packet (defaults to 0)
          @return: self
         """
-        if (len(data) >= 3) and (data[:3] == b'OBS'):
-            return self.processRequest(data.decode())
-
         protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
         for protocolPacket in protocolPackets:
             self.processProtocolPacket(protocolPacket)

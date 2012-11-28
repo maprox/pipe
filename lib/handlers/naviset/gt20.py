@@ -29,7 +29,7 @@ class TestCase(unittest.TestCase):
         h = Handler(pipe.Manager(), None)
         h.processCommandFormat(116363, json.dumps({
             "host":"observer.localhost",
-            "port":80,
+            "port":21100,
             "identifier":"012896001609129",
             "gprs":{"apn":"internet","username":"","password":""}
         }))

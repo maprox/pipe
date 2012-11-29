@@ -26,10 +26,10 @@ class TestCase(unittest.TestCase):
     def test_format(self):
         import kernel.pipe as pipe
         import json
-        h = Handler(pipe.Manager(), None)
-        h.processCommandFormat(116363, json.dumps({
-            "host":"observer.localhost",
-            "port":21100,
-            "identifier":"012896001609129",
-            "gprs":{"apn":"internet","username":"","password":""}
-        }))
+        #h = Handler(pipe.Manager(), None)
+        #h.processCommandFormat(116363, json.dumps({
+        #    "host":"observer.localhost",
+        #    "port":21100,
+        #    "identifier":"012896001609129",
+        #    "gprs":{"apn":"internet","username":"","password":""}
+        #}))

@@ -21,4 +21,4 @@ class Store(object):
      Sending data to the store
      @param obj: (list | dict) Packet object(s)
     """
-    return FalconAnswer()
+    pass

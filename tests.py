@@ -15,6 +15,7 @@ from lib.handlers.naviset.packets import TestCase as tc4
 from lib.handlers.naviset.abstract import TestCase as tc5
 from lib.handlers.naviset.gt10 import TestCase as tc6
 from lib.handlers.naviset.gt20 import TestCase as tc7
+from lib.handlers.globalsat.tr151 import TestCase as tc8
 
 if __name__ == '__main__':
     unittest.main()

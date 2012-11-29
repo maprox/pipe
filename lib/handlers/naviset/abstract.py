@@ -16,6 +16,7 @@ from kernel.dbmanager import db
 import lib.handlers.naviset.packets as packets
 from urllib.parse import urlencode
 from urllib.request import urlopen
+from lib.ip import get_ip
 
 # ---------------------------------------------------------------------------
 
@@ -23,23 +24,6 @@ class NavisetHandler(AbstractHandler):
     """
      Base handler for Naviset protocol
     """
-    # private fields
-    __commands = {}
-    __commands_num_seq = 0
-    __imageRecievingConfig = None
-
-    # protected fields
-    _confSectionName = "naviset.protocolname"
-    _serverIp = None
-    _serverPort = None
-
-    def __init__(self, store, thread):
-        """ Constructor """
-        AbstractHandler.__init__(self, store, thread)
-        if conf.has_section(self._confSectionName):
-            section = conf[self._confSectionName]
-            self._serverIp = section.get("serverIp", "212.100.159.142")
-            self._serverPort = section.get("serverPort", "21100")
 
     def processData(self, data):
         """
@@ -146,8 +130,8 @@ class NavisetHandler(AbstractHandler):
         """
         data = json.loads(data)
         command0 = 'COM3 1234,' \
-            + str(data['host'] or self._serverIp) + ',' \
-            + str(data['port'] or self._serverPort)
+            + str(data['host'] or get_ip()) + ',' \
+            + str(data['port'] or conf.port)
         command1 = 'COM13 1234,1,'+ str(data['gprs']['apn'] or '') \
             + ',' + str(data['gprs']['username'] or '') \
             + ',' + str(data['gprs']['password'] or '') \
@@ -177,9 +161,10 @@ class NavisetHandler(AbstractHandler):
          @param task: id task
          @param data: data dict()
         """
-        current_db = db.get(self.uid)
-        if not current_db.isReadingSettings():
-            pass
+        #current_db = db.get(self.uid)
+        #if not current_db.isReadingSettings():
+        #    pass
+        pass
 
 # ===========================================================================
 # TESTS

@@ -389,6 +389,8 @@ class GlobalsatHandler(AbstractHandler):
          Processing of data from socket / storage.
          @param data: Data from socket
         """
+        initialData = data
+
         # let's work with text data
         data = data.decode('utf-8')
 
@@ -416,7 +418,7 @@ class GlobalsatHandler(AbstractHandler):
                 data_observ['__rawdata'] = m.group(0)
                 log.info(data_observ)
                 self.uid = data_observ['uid']
-                store_result = self.store([data_observ])
+                self.store([data_observ])
                 if data_observ['sensors']['sos'] == 1:
                     self.stopSosSignal()
             else:
@@ -425,7 +427,7 @@ class GlobalsatHandler(AbstractHandler):
             position += len(m.group(0))
             m = rc.search(data, position)
 
-        return super(GlobalsatHandler, self).processData(data)
+        return super(GlobalsatHandler, self).processData(initialData)
 
     def stopSosSignal(self):
         """

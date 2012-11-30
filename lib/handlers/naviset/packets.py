@@ -446,7 +446,7 @@ class PacketDataItem:
 
         self.__number = unpack("<H", buffer[:2])[0]
         self.__params['time'] = datetime.fromtimestamp(
-            unpack("<L", buffer[2:6])[0]) - timedelta(hours=4)
+            unpack("<L", buffer[2:6])[0]) #- timedelta(hours=4)
         self.__params['satellitescount'] = unpack("<B", buffer[6:7])[0]
         self.__params['latitude'] = self.convertCoordinate(
             unpack("<L", buffer[7:11])[0])
@@ -642,7 +642,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packetItem.params['longitude'], 37.589364)
         self.assertEqual(packetItem.params['satellitescount'], 7)
         self.assertEqual(packetItem.params['time'].
-            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2012-11-19T09:58:06.000000')
+            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2012-11-19T13:58:06.000000')
         packetItem2 = packet.items[6]
         self.assertEqual(packetItem2.params['speed'], 0)
         self.assertEqual(packetItem2.params['satellitescount'], 9)

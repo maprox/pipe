@@ -452,10 +452,11 @@ class PacketDataItem:
             unpack("<L", buffer[7:11])[0])
         self.__params['longitude'] = self.convertCoordinate(
             unpack("<L", buffer[11:15])[0])
-        self.__params['speed'] = unpack("<H", buffer[15:17])[0]
-        self.__params['azimuth'] = unpack("<H", buffer[17:19])[0]
+        self.__params['speed'] = unpack("<H", buffer[15:17])[0] / 10
+        self.__params['azimuth'] = int(round(
+            unpack("<H", buffer[17:19])[0] / 10))
         self.__params['altitude'] = unpack("<H", buffer[19:21])[0]
-        self.__params['hdop'] = unpack("<B", buffer[21:22])[0]
+        self.__params['hdop'] = unpack("<B", buffer[21:22])[0] / 10
         self.__additional = buffer[22:length]
 
         # apply new data
@@ -636,7 +637,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(len(packet.items), 45)
         packetItem = packet.items[3]
         self.assertEqual(isinstance(packetItem, PacketDataItem), True)
-        self.assertEqual(packetItem.params['speed'], 3)
+        self.assertEqual(packetItem.params['speed'], 0.3)
         self.assertEqual(packetItem.params['latitude'], 55.731708)
         self.assertEqual(packetItem.params['longitude'], 37.589364)
         self.assertEqual(packetItem.params['satellitescount'], 7)

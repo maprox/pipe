@@ -187,7 +187,7 @@ class Handler(AbstractHandler):
         """
         data = json.loads(data)
         string = '?7,'\
-                   + str(data['imei'] or '') + ',7,'\
+                   + str(data['identifier'] or '') + ',7,'\
                    + str(data['port'] or conf.port) + ','\
                    + str(data['gprs']['apn'] or '') + ','\
                    + str(data['gprs']['username'] or '') + ','\

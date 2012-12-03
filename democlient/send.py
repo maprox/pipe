@@ -51,6 +51,12 @@ except Exception as E:
 # Max sleep time
 maxSleep = 600
 
+# Max parking time
+maxParkingTime = 300
+
+# Min parking speed
+minParkingSpeed = 1
+
 def sendData(data):
     """
      #Sends data by rest
@@ -101,6 +107,8 @@ def movecar(track_files, uid):
                 prevTime = 0
                 # Last sleep time
                 lastSleep = 0
+                # Parking start time
+                parkingStartTime = 0;
                 # Column headers
                 reader = csv.DictReader(
                   open(track, newline='', encoding='utf-8'),
@@ -120,7 +128,7 @@ def movecar(track_files, uid):
                     else:
                         # Count sleep time
                         sleep = curTime - prevTime
-                        # Sleeping time can not be more than 20 minutes
+                        # Sleeping time can not be more than maxSleep
                         if (sleep > maxSleep):
                             # Check pervious sleep time
                             if (lastSleep >= maxSleep):
@@ -134,6 +142,27 @@ def movecar(track_files, uid):
 
                     # Save prev time
                     prevTime = curTime
+
+                    #logger.debug('speed ' + row['speed'] + ' state ' + row['state'])
+
+                    # Check if parking begin
+                    if (float(row['speed']) <= minParkingSpeed or int(row['state']) == 4):
+                        # Save parking start time
+                        if (parkingStartTime == 0):
+                            parkingStartTime = curTime
+                            #logger.debug('Set parking start time to cur')
+
+                        if ((curTime - parkingStartTime) + sleep >= maxParkingTime):
+                            #sleep = 0;
+                            #logger.debug('>>>Set sleep to 0 (continue)')
+                            continue
+
+                        #logger.debug('normal sleep')
+                    # Check if moving begin
+                    if (float(row['speed']) > minParkingSpeed and int(row['state']) != 4):
+                        #logger.debug('Reset parking start time')
+                        parkingStartTime = 0;
+
                     #logger.debug('Sleep for ' + str(sleep))
                     # sleep
                     time.sleep(sleep)

@@ -159,8 +159,10 @@ class GlobalsatHandler(AbstractHandler):
         """
         if conf.has_section(self.confSectionName):
             section = conf[self.confSectionName]
-            self.reportFormat = self.truncateChecksum(section.get(
-              "defaultReportFormat", self.reportFormat))
+            self.reportFormat = section.get("defaultReportFormat", 
+                self.reportFormat)
+        
+        self.reportFormat = self.truncateChecksum(self.reportFormat)
 
     def getRawReportFormat(self):
         """

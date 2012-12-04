@@ -65,28 +65,10 @@ def sendData(data):
     conn.request("POST", conf.restPath, params, headers)
     response = conn.getresponse()
 
-#data for demo cars 
-uid1 = "757460032240926_888"
-track_files1 = [
-  'tracks/car1/1.csv']
-uid2 = "857460032240926_888"
-track_files2 = [
-  'tracks/car2/1.csv']
-uid3 = "957460032240926_888"
-track_files3 = [
-  'tracks/car3/1.csv']
-uid4 = "057460032240926_888"
-track_files4 = [
-  'tracks/car4/1.csv']
-uid5 = "157460032240926_888"
-track_files5 = [
-  'tracks/car5/1.csv']
-
-def movecar(track_files, uid):
+def movecar(packet):
     """
      Car moving function - it parse input file and send data to server
-     @param track_files: array of file names
-     @param uid: device's identifier
+     @param packet: dict
      @return: string
     """
 
@@ -94,7 +76,7 @@ def movecar(track_files, uid):
 
     while (True):
         try:
-            for track in track_files:
+            for track in packet['track_files']:
                 logger.debug('OPEN: ' + track)
                 # Read data from CSV file
                 # Prev packet time
@@ -154,21 +136,22 @@ def movecar(track_files, uid):
 
                     # Data
                     data = {
-                      'uid': uid, 
-                      'time': datetime.utcnow(),
-                      'odometer': row['sensor_odometer']
-                        if 'sensor_odometer' in row else None,
-                      'lat': row['latitude'],
-                      'lon': row['longitude'],
-                      'alt': row['altitude'],
-                      'speed': row['speed'],
-                      'fuel': row['fuel'],
-                      'azimuth': row['azimuth'],
-                      'movementsensor': row['movementsensor'],
-                      'satellitescount': row['satellitescount'],
-                      'batterylevel': row['batterylevel'],
-                      'hdop': row['hdop'],
-                      'sensors': json.dumps(sensors)
+                        'device_key': packet['device_key'],
+                        'uid': packet['uid'],
+                        'time': datetime.utcnow(),
+                        'odometer': row['sensor_odometer']
+                          if 'sensor_odometer' in row else None,
+                        'lat': row['latitude'],
+                        'lon': row['longitude'],
+                        'alt': row['altitude'],
+                        'speed': row['speed'],
+                        'fuel': row['fuel'],
+                        'azimuth': row['azimuth'],
+                        'movementsensor': row['movementsensor'],
+                        'satellitescount': row['satellitescount'],
+                        'batterylevel': row['batterylevel'],
+                        'hdop': row['hdop'],
+                        'sensors': json.dumps(sensors)
                     }
 
                     # Send data by post request
@@ -180,8 +163,27 @@ def movecar(track_files, uid):
         except Exception as E:
             logger.exception(E)
 
-threading.Thread(target=movecar, name="thread1", args=[track_files1, uid1]).start()
-threading.Thread(target=movecar, name="thread2", args=[track_files2, uid2]).start()
-threading.Thread(target=movecar, name="thread3", args=[track_files3, uid3]).start()
-threading.Thread(target=movecar, name="thread4", args=[track_files4, uid4]).start()
-threading.Thread(target=movecar, name="thread5", args=[track_files5, uid5]).start()
+data = [{
+  "device_key": "a9265e4b14c08a491c85723ec7af6329",
+  "uid": "757460032240926_888",
+  "track_files": ['tracks/car1/1.csv']
+}, {
+  "device_key": "075be5b737d7ad9a7f109aa7bdd32f15",
+  "uid": "857460032240926_888",
+  "track_files": ['tracks/car2/1.csv']
+}, {
+  "device_key": "0b1c0b070bf53c6a9f0dfac9308498f2",
+  "uid": "957460032240926_888",
+  "track_files": ['tracks/car3/1.csv']
+}, {
+  "device_key": "39561823c27a6a891de8e078fa02a69f",
+  "uid": "057460032240926_888",
+  "track_files": ['tracks/car4/1.csv']
+}, {
+  "device_key": "991996e1ee344dd3a49a99cf7089d023",
+  "uid": "157460032240926_888",
+  "track_files": ['tracks/car5/1.csv']
+}]
+
+for i, t in enumerate(data):
+    threading.Thread(target=movecar, name="t" + str(i), args=[t]).start()

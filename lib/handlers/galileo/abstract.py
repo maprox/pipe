@@ -69,10 +69,10 @@ class GalileoHandler(AbstractHandler):
         # MainPack
         for packet in observerPackets:
             packet.update(self.headpack)
-        #packet['__packnum'] = packnum
-        #packet['__rawdata'] = buffer
+
         log.info(observerPackets)
-        store_result = self.store(observerPackets)
+        self._buffer = protocolPacket.rawdata
+        self.store(observerPackets)
 
     def sendCommand(self, command):
         """

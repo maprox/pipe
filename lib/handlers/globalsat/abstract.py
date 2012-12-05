@@ -417,9 +417,9 @@ class GlobalsatHandler(AbstractHandler):
             cs2 = str.upper(self.getChecksum(data_device['line']))
             if (cs1 == cs2):
                 data_observ = self.translate(data_device)
-                data_observ['__rawdata'] = m.group(0)
                 log.info(data_observ)
                 self.uid = data_observ['uid']
+                self._buffer = m.group(0).encode()
                 self.store([data_observ])
                 if data_observ['sensors']['sos'] == 1:
                     self.stopSosSignal()

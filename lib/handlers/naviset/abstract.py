@@ -41,6 +41,7 @@ class NavisetHandler(AbstractHandler):
     def processProtocolPacket(self, protocolPacket):
         """
          Process naviset packet.
+         @type protocolPacket: packets.Packet
          @param protocolPacket: Naviset protocol packet
         """
         self.sendAcknowledgement(protocolPacket)
@@ -55,7 +56,8 @@ class NavisetHandler(AbstractHandler):
             return
 
         log.info(observerPackets)
-        store_result = self.store(observerPackets)
+        self._buffer = protocolPacket.rawData
+        self.store(observerPackets)
 
     def sendCommand(self, command):
         """

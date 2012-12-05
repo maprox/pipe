@@ -53,17 +53,13 @@ class Storage(object):
             storageFileName = base64.b64encode(uid.encode()).decode()
         return os.path.join(self.__path, storageFileName + self.filePostfix)
 
-    def save(self, packets):
+    def save(self, uid, data):
         """
          Save protocol data into storage
-         @param packets: list of packets to save into storage
+         @param uid: device identifier
+         @param data: data to save to the storage
         """
-        for packet in packets:
-            if '__rawdata' in packet:
-                self.saveByUid(packet['uid'], packet['__rawdata'])
-            else:
-                log.info('Unable to save packet into storage: ' +
-                  'Property "__rawdata" is not found.')
+        self.saveByUid(uid, data)
 
     def saveByUid(self, uid, data):
         """
@@ -73,11 +69,8 @@ class Storage(object):
         """
         log.debug('Storage::saveByUid(). %s', uid)
         try:
-            f = open(self.getStorageFileName(uid), 'a')
-            try:
-                f.write(data + '\n')
-            finally:
-                f.close()
+            with open(self.getStorageFileName(uid), 'ab') as f:
+                f.write(data)
         except Exception as E:
             log.error(E)
 
@@ -106,15 +99,11 @@ class Storage(object):
                 for storageFileName in glob.glob(
                     os.path.join(dirPort, '*' + self.filePostfix)):
                     if (os.path.isfile(storageFileName)):
-                        filedata = {}
-                        f = open(storageFileName, 'r')
-                        try:
-                            filedata['name'] = os.path.basename(
-                              storageFileName),
-                            filedata['contents'] = f.read()
-                        finally:
-                            f.close()
-                        record['data'].append(filedata)
+                        f_data = {}
+                        with open(storageFileName, 'rb') as f:
+                            f_data['name'] = os.path.basename(storageFileName)
+                            f_data['contents'] = f.read()
+                        record['data'].append(f_data)
                 list.append(record)
         return list
 
@@ -126,15 +115,15 @@ class Storage(object):
          @param timestamp: Start timestamp
         """
         try:
-            filename = os.path.join(conf.pathStorage,
-              port, item['name'][0])
-            newname = os.path.join(conf.pathTrash, timestamp,
-              port, item['name'][0])
-            newdir = os.path.dirname(newname)
-            log.debug(newdir)
-            if not os.path.exists(newdir):
-                os.makedirs(newdir)
-            os.rename(filename, newname)
+            uidName = item['name']
+            log.info('Delete data for %s', uidName)
+            filename = os.path.join(conf.pathStorage, port, uidName)
+            newName = os.path.join(conf.pathTrash, timestamp, port, uidName)
+            newDir = os.path.dirname(newName)
+            log.debug(newDir)
+            if not os.path.exists(newDir):
+                os.makedirs(newDir)
+            os.rename(filename, newName)
         except Exception as E:
             log.error(E)
 
@@ -145,15 +134,12 @@ class Storage(object):
          @return (str) Storage file data
         """
         log.debug('Storage::loadByUid(). %s', uid)
-        data = ''
+        data = b''
         try:
             storageFileName = self.getStorageFileName(uid);
             if (os.path.isfile(storageFileName)):
-                f = open(storageFileName, 'r')
-                try:
+                with open(storageFileName, 'rb') as f:
                     data = f.read()
-                finally:
-                    f.close()
         except Exception as E:
             log.error(E)
         return data

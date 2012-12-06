@@ -22,7 +22,7 @@ from urllib.request import urlopen
 class Handler(AbstractHandler):
     """ Globalsat. TR-151 """
 
-    _confSectionName = "naviset.protocolname"
+    _confSectionName = "globalsat.tr151"
     _reportFormat = "RAB27GHKLM"
 
     re_patterns = {
@@ -30,10 +30,10 @@ class Handler(AbstractHandler):
         'field': ',(?P<{field}>{value})',
         'unknownField': '[\w\.]+',
         'report': {
-            'A': '[1-3]',
+            'A': '\d+',
             'B': '\d{6},\d{6}',
-            '2': '[EW]\d{5}\.\d{4}',
-            '7': '[NS]\d{4}\.\d{4}',
+            '2': '[EW]\d+(\.\d+)?',
+            '7': '[NS]\d+(\.\d+)?',
             'G': '\d+(\.\d+)?',
             'H': '\d+(\.\d+)?',
             'K': '\d+',
@@ -195,7 +195,7 @@ class Handler(AbstractHandler):
                    + '' + ','\
                    + '' + ','\
                    + str(data['host'] or get_ip()) + ','\
-                   + '!'
+                   + '89277028368!'
         log.debug('Formatted string result: ' + string)
         message = {
             'result': string,

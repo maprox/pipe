@@ -40,7 +40,7 @@ class Handler(AbstractHandler):
             'L': '\d+',
             'M': '\d+(\.\d+)?',
             'N': '\d+',
-            'R': '\w'
+            'R': '\d+'
         }
     }
 
@@ -195,7 +195,7 @@ class Handler(AbstractHandler):
                    + '' + ','\
                    + '' + ','\
                    + str(data['host'] or get_ip()) + ','\
-                   + '89277028368!'
+                   + '+79277028368!'
         log.debug('Formatted string result: ' + string)
         message = {
             'result': string,

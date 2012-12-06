@@ -191,7 +191,7 @@ class Handler(AbstractHandler):
                    + str(data['port'] or conf.port) + ','\
                    + str(data['gprs']['apn'] or '') + ','\
                    + str(data['gprs']['username'] or '') + ','\
-                   + str(data['gprs']['password'] or '') + ',,,'\
+                   + str(data['gprs']['password'] or '') + ','\
                    + '' + ','\
                    + '' + ','\
                    + str(data['host'] or get_ip()) + ','\

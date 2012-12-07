@@ -25,6 +25,9 @@ class Handler(AbstractHandler):
     _confSectionName = "globalsat.tr151"
     _reportFormat = "RAB27GHKLM"
 
+    #$___,17,1,061212,211240,E05010.1943,N5323.4416,135.8,0.56,313.46,5,1.80!
+    # uid R  A B             2           7          G     H    K      L M   !
+
     re_patterns = {
         'line': '\$(?P<S>\w+){fields}!',
         'field': ',(?P<{field}>{value})',
@@ -36,7 +39,7 @@ class Handler(AbstractHandler):
             '7': '[NS]\d+(\.\d+)?',
             'G': '\d+(\.\d+)?',
             'H': '\d+(\.\d+)?',
-            'K': '\d+',
+            'K': '\d+(\.\d+)?',
             'L': '\d+',
             'M': '\d+(\.\d+)?',
             'N': '\d+',
@@ -238,13 +241,13 @@ class TestCase(unittest.TestCase):
     def test_packetData(self):
         import kernel.pipe as pipe
         h = Handler(pipe.Manager(), None)
-        data = "$355632004245866,1,1,040202,093633,E12129.2252," + \
-            "N2459.8891,00161,0.0100,147,07,2.4!"
+        data = "$353681044879914,17,1,061212,211240,E05010.1943," + \
+            "N5323.4416,135.8,0.56,313.46,5,1.80!"
         rc = h.re_compiled['report']
         m = rc.search(data, 0)
         packet = h.translate(m.groupdict())
-        self.assertEqual(packet['uid'], "355632004245866")
-        self.assertEqual(packet['time'], "2002-02-04T09:36:33.000000")
-        self.assertEqual(packet['altitude'], 161)
-        self.assertEqual(packet['azimuth'], 147)
-        self.assertEqual(packet['longitude'], 121.48708666666667)
+        self.assertEqual(packet['uid'], "353681044879914")
+        self.assertEqual(packet['time'], "2012-12-06T21:12:40.000000")
+        self.assertEqual(packet['altitude'], 135.8)
+        self.assertEqual(packet['azimuth'], 313.46)
+        self.assertEqual(packet['longitude'], 50.169905)

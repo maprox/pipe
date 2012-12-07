@@ -5,12 +5,10 @@
 @copyright 2009-2012, Maprox LLC
 '''
 
-import re
 import socket
 import time
 
 from kernel.logger import log
-from kernel.config import conf
 from lib.storage import storage
 
 try:
@@ -22,19 +20,25 @@ try:
                 data = item['contents']
                 # Connect to server and send data
                 # Create a socket (SOCK_STREAM means a TCP socket)
-                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock = socket.socket(
+                    socket.AF_INET,
+                    socket.SOCK_STREAM
+                )
                 try:
                     sock.connect((host, port))
-                    # В случае внезапного обрыва связи переподключаемся,
-                    # и пытаемся еще раз послать пакет
                     try:
                         sock.send(data)
                     except Exception as E:
-                        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                        # In case of error during data sending
+                        # try to send it again
+                        sock = socket.socket(
+                            socket.AF_INET,
+                            socket.SOCK_STREAM
+                        )
                         sock.connect((host, port))
                         sock.send(data)
 
-                    storage.delete(item, record['port'], timestamp)
+                    storage.delete(item, str(port), timestamp)
                 except Exception as E:
                     log.error(E)
                 finally:

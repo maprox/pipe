@@ -51,6 +51,13 @@ class Storage(object):
             storageFileName = uid
         else:
             storageFileName = base64.b64encode(uid.encode()).decode()
+
+        if not os.path.isdir(self.__path):
+            try:
+                os.makedirs(self.__path, 0o777, True)
+            except:
+                pass
+
         return os.path.join(self.__path, storageFileName + self.filePostfix)
 
     def save(self, uid, data):
@@ -116,9 +123,10 @@ class Storage(object):
         """
         try:
             uidName = item['name']
-            log.info('Delete data for %s', uidName)
             filename = os.path.join(conf.pathStorage, port, uidName)
             newName = os.path.join(conf.pathTrash, timestamp, port, uidName)
+            log.info('Delete data for %s', uidName)
+            log.info('fileName = %s, newName = %s', filename, newName)
             newDir = os.path.dirname(newName)
             log.debug(newDir)
             if not os.path.exists(newDir):

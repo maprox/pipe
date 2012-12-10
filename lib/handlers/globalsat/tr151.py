@@ -156,7 +156,7 @@ class Handler(AbstractHandler):
                 packet['latitude'] = Geo.getLatitude(value)
             # ALTITUDE
             elif char == "G":
-                packet['altitude'] = int(round(value))
+                packet['altitude'] = int(round(float(value)))
             # SPEED (knots)
             elif char == "H":
                 packet['speed'] = 1.852 * float(value)
@@ -171,7 +171,7 @@ class Handler(AbstractHandler):
                 packet['satellitescount'] = int(value)
             # Azimuth - driving direction
             elif char == "K":
-                packet['azimuth'] = int(round(value))
+                packet['azimuth'] = int(round(float(value)))
             # HDOP (Horizontal Dilution of Precision)
             elif char == "M":
                 packet['hdop'] = float(value)
@@ -241,8 +241,10 @@ class TestCase(unittest.TestCase):
     def test_packetData(self):
         import kernel.pipe as pipe
         h = Handler(pipe.Manager(), None)
-        data = "$353681044879914,17,1,061212,211240,E05010.1943," + \
-            "N5323.4416,135.8,0.56,313.46,5,1.80!"
+        #data = "$353681044879914,17,1,061212,211240,E05010.1943," + \
+        #    "N5323.4416,135.8,0.56,313.46,5,1.80!"
+        data = "$353681044879914,10,3,101212,205754,E05011.4152," + \
+            "N5314.3730,137.7,0.16,126.36,8,0.86!"
         rc = h.re_compiled['report']
         m = rc.search(data, 0)
         packet = h.translate(m.groupdict())

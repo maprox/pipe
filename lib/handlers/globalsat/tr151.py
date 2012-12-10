@@ -156,7 +156,7 @@ class Handler(AbstractHandler):
                 packet['latitude'] = Geo.getLatitude(value)
             # ALTITUDE
             elif char == "G":
-                packet['altitude'] = float(value)
+                packet['altitude'] = int(round(value))
             # SPEED (knots)
             elif char == "H":
                 packet['speed'] = 1.852 * float(value)
@@ -171,7 +171,7 @@ class Handler(AbstractHandler):
                 packet['satellitescount'] = int(value)
             # Azimuth - driving direction
             elif char == "K":
-                packet['azimuth'] = float(value)
+                packet['azimuth'] = int(round(value))
             # HDOP (Horizontal Dilution of Precision)
             elif char == "M":
                 packet['hdop'] = float(value)

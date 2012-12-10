@@ -221,7 +221,7 @@ class GlobalsatHandler(AbstractHandler):
                 packet['latitude'] = Geo.getLatitude(value)
             # ALTITUDE
             elif char == "G":
-                packet['altitude'] = float(value)
+                packet['altitude'] = int(round(value))
             # SPEED (knots)
             elif char == "H":
                 packet['speed'] = 1.852 * float(value)
@@ -236,7 +236,7 @@ class GlobalsatHandler(AbstractHandler):
                 packet['satellitescount'] = int(value)
             # Azimuth - driving direction
             elif char == "K":
-                packet['azimuth'] = float(value)
+                packet['azimuth'] = int(round(value))
             # Odometer
             elif char == "i":
                 packet['odometer'] = float(value)

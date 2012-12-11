@@ -101,9 +101,9 @@ class Handler(AbstractHandler):
             log.debug("Raw match found.")
             data_device = m.groupdict()
             packetObserver = self.translate(data_device)
-            packetObserver['__rawdata'] = m.group(0)
             log.info(packetObserver)
             self.uid = packetObserver['uid']
+            self._buffer = m.group(0).encode()
             self.store([packetObserver])
             position += len(m.group(0))
             m = rc.search(data, position)
@@ -197,8 +197,7 @@ class Handler(AbstractHandler):
                    + str(data['gprs']['password'] or '') + ','\
                    + '' + ','\
                    + '' + ','\
-                   + str(data['host'] or get_ip()) + ','\
-                   + '+79277028368!'
+                   + str(data['host'] or get_ip()) + '!'
         log.debug('Formatted string result: ' + string)
         message = {
             'result': string,
@@ -232,7 +231,6 @@ class Handler(AbstractHandler):
 # ===========================================================================
 
 import unittest
-#import time
 class TestCase(unittest.TestCase):
 
     def setUp(self):

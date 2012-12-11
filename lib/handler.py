@@ -20,6 +20,7 @@ class AbstractHandler(object):
     """
      Abstract class for all implemented protocols
     """
+    _buffer = None # buffer of the current dispatch loop (for storage save)
 
     default_options = {}
 
@@ -150,11 +151,10 @@ class AbstractHandler(object):
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)
         else:
-            # ? Error messages should be converted into readable format
             log.error('%s::store():\n %s',
               self.__class__, result.getErrorsList())
             # send data to storage on error to save packets
-            storage.save(packets)
+            storage.save(self.uid if self.uid else 'unknown', self._buffer)
         return result
 
     def translate(self, data):

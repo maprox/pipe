@@ -128,7 +128,6 @@ class Storage(object):
             log.info('Delete data for %s', uidName)
             log.info('fileName = %s, newName = %s', filename, newName)
             newDir = os.path.dirname(newName)
-            log.debug(newDir)
             if not os.path.exists(newDir):
                 os.makedirs(newDir)
             os.rename(filename, newName)
@@ -144,7 +143,7 @@ class Storage(object):
         log.debug('Storage::loadByUid(). %s', uid)
         data = b''
         try:
-            storageFileName = self.getStorageFileName(uid);
+            storageFileName = self.getStorageFileName(uid)
             if (os.path.isfile(storageFileName)):
                 with open(storageFileName, 'rb') as f:
                     data = f.read()

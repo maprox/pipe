@@ -12,7 +12,6 @@ from struct import pack
 from kernel.logger import log
 from kernel.config import conf
 from lib.handler import AbstractHandler
-from kernel.dbmanager import db
 import lib.handlers.naviset.packets as packets
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -24,6 +23,9 @@ class NavisetHandler(AbstractHandler):
     """
      Base handler for Naviset protocol
     """
+
+    # private buffer for headPacket data
+    __headPacketRawData = None
 
     def processData(self, data):
         """
@@ -45,8 +47,12 @@ class NavisetHandler(AbstractHandler):
          @param protocolPacket: Naviset protocol packet
         """
         self.sendAcknowledgement(protocolPacket)
+        if not self.__headPacketRawData:
+            self.__headPacketRawData = b''
+
         if isinstance(protocolPacket, packets.PacketHead):
             log.info('HeadPack is stored.')
+            self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceIMEI
             return
 
@@ -56,7 +62,7 @@ class NavisetHandler(AbstractHandler):
             return
 
         log.info(observerPackets)
-        self._buffer = protocolPacket.rawData
+        self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
 
     def sendCommand(self, command):

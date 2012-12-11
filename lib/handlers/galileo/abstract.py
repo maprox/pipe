@@ -23,6 +23,9 @@ class GalileoHandler(AbstractHandler):
     __imageReceivingConfig = None
     __packNum = 0
 
+    # private buffer for headPacket data
+    __headPacketRawData = None
+
     def processData(self, data):
         """
          Processing of data from socket / storage.
@@ -48,19 +51,24 @@ class GalileoHandler(AbstractHandler):
         """
         observerPackets = self.translate(protocolPacket)
         self.sendAcknowledgement(protocolPacket)
+        if not self.__headPacketRawData:
+            self.__headPacketRawData = b''
 
-        if (protocolPacket.hasTag(0xE1)):
+        if protocolPacket.header == 1:
+            self.__headPacketRawData = protocolPacket.rawdata
+
+        if protocolPacket.hasTag(0xE1):
             log.info('Device answer is "' +
                 protocolPacket.getTag(0xE1).getValue() + '".')
 
-        if (len(observerPackets) > 0):
+        if len(observerPackets) > 0:
             if 'uid' in observerPackets[0]:
                 self.headpack = observerPackets[0]
                 self.uid = self.headpack['uid']
                 log.info('HeadPack is stored.')
                 return
 
-        if (protocolPacket.header == 4):
+        if protocolPacket.header == 4:
             return self.receiveImage(protocolPacket)
 
         log.info('Location packet not found. Exiting...')
@@ -71,7 +79,7 @@ class GalileoHandler(AbstractHandler):
             packet.update(self.headpack)
 
         log.info(observerPackets)
-        self._buffer = protocolPacket.rawdata
+        self._buffer = self.__headPacketRawData + protocolPacket.rawdata
         self.store(observerPackets)
 
     def sendCommand(self, command):
@@ -113,20 +121,20 @@ class GalileoHandler(AbstractHandler):
                 log.debug('Image transfer in progress...')
                 log.debug('Size of chunk is %d bytes', len(packet.body) - 1)
             else:
-                imagedata = b''
-                imageparts = self.__imageReceivingConfig['imageparts']
-                for num in sorted(imageparts.keys()):
-                    imagedata += imageparts[num]
+                imageData = b''
+                imageParts = self.__imageReceivingConfig['imageparts']
+                for num in sorted(imageParts.keys()):
+                    imageData += imageParts[num]
                 self.sendImages([{
                   'mime': 'image/jpeg',
-                  'content': imagedata
+                  'content': imageData
                 }])
                 self.__imageReceivingConfig = None
                 log.debug('Transfer complete.')
                 return
 
-        imagedata = packet.body[1:]
-        config['imageparts'][partnum] = imagedata
+        imageData = packet.body[1:]
+        config['imageparts'][partnum] = imageData
 
     def translate(self, data):
         """

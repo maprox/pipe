@@ -151,11 +151,10 @@ class AbstractHandler(object):
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)
         else:
-            # ? Error messages should be converted into readable format
             log.error('%s::store():\n %s',
               self.__class__, result.getErrorsList())
             # send data to storage on error to save packets
-            storage.save(self.uid, self._buffer)
+            storage.save(self.uid if self.uid else 'unknown', self._buffer)
         return result
 
     def translate(self, data):

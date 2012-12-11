@@ -416,12 +416,12 @@ class GlobalsatHandler(AbstractHandler):
             cs1 = str.upper(data_device['checksum'])
             cs2 = str.upper(self.getChecksum(data_device['line']))
             if (cs1 == cs2):
-                data_observ = self.translate(data_device)
-                log.info(data_observ)
-                self.uid = data_observ['uid']
+                packetObserver = self.translate(data_device)
+                log.info(packetObserver)
+                self.uid = packetObserver['uid']
                 self._buffer = m.group(0).encode()
-                self.store([data_observ])
-                if data_observ['sensors']['sos'] == 1:
+                self.store([packetObserver])
+                if packetObserver['sensors']['sos'] == 1:
                     self.stopSosSignal()
             else:
                 log.error("Incorrect checksum: %s against computed %s",
@@ -610,3 +610,21 @@ class GlobalsatHandler(AbstractHandler):
         ret += ',E1=' + str(data['port'] or '')
 
         return ret
+
+# ===========================================================================
+# TESTS
+# ===========================================================================
+
+import unittest
+class TestCase(unittest.TestCase):
+
+    def setUp(self):
+        pass
+
+    def test_packetDataStoreRestore(self):
+        import lib.handlers.globalsat.tr151 as tr151
+        import kernel.pipe as pipe
+        h = tr151.Handler(pipe.Manager(), None)
+        data = "$353681044879911,17,1,061212,211240,E05010.1943," +\
+               "N5323.4416,135.8,0.56,313.46,5,1.80!"
+        h.processData(data)

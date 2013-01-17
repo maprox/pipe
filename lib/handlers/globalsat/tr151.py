@@ -24,6 +24,7 @@ class Handler(AbstractHandler):
 
     _confSectionName = "globalsat.tr151"
     _reportFormat = "RAB27GHKLM"
+    _smsFormat1 = "RAB27GHKLM"
 
     #$___,17,1,061212,211240,E05010.1943,N5323.4416,135.8,0.56,313.46,5,1.80!
     # uid R  A B             2           7          G     H    K      L M   !
@@ -47,8 +48,16 @@ class Handler(AbstractHandler):
         }
     }
 
+    re_patterns_sms_format1 = {
+        'line': '(?P<S>\w+){fields}!',
+        'field': re_patterns['field'],
+        'unknownField': re_patterns['unknownField'],
+        'report': re_patterns['report']
+    }
+
     re_compiled = {
-        'report': None
+        'report': None,
+        'sms_format1': None
     }
 
     def __init__(self, store, thread):
@@ -58,37 +67,51 @@ class Handler(AbstractHandler):
         AbstractHandler.__init__(self, store, thread)
         self.__compileRegularExpressions()
 
-    def __compileRegularExpressions(self):
+    def __getRegularExpression(self, expression, patterns):
         """
-         Compiling of regular expressions
+         Compiling of regular expression
+         @param expression: Fields expression
+         @param patterns: Dict of fields patterns
         """
-        # Let's start with report format
-        p = self.re_patterns
         fieldsStr = ""
-        for char in self._reportFormat:
-            pattern = p['unknownField']
-            if char in p['report']:
-                pattern = p['report'][char]
+        for char in expression:
+            pattern = patterns['unknownField']
+            if char in patterns['report']:
+                pattern = patterns['report'][char]
                 # We need to avoid digital names of groups
             fieldName = char
             if char.isdigit():
                 fieldName = "d" + char
-            fieldsStr += str.format(p['field'],
+            fieldsStr += str.format(patterns['field'],
                                     field = fieldName, value = pattern)
-        line = str.format(p['line'], fields = fieldsStr)
-        self.re_compiled['report'] = re.compile(line, flags = re.IGNORECASE)
+        return str.format(patterns['line'], fields = fieldsStr)
+
+    def __compileRegularExpressions(self):
+        """
+         Compiling of regular expressions
+        """
+        self.re_compiled['report'] = re.compile(
+            self.__getRegularExpression(self._reportFormat, self.re_patterns),
+            flags = re.IGNORECASE)
+        self.re_compiled['sms_format1'] = re.compile(
+            self.__getRegularExpression(self._smsFormat1,
+                self.re_patterns_sms_format1),
+            flags = re.IGNORECASE)
         return self
 
-    def processData(self, data):
+    def processData(self, data, src = ''):
         """
          Processing of data from socket / storage.
          @param data: Data from socket
+         @param src: Source of data ('' or 'sms')
         """
         initialData = data
 
         # let's work with text data
         data = data.decode('utf-8')
         rc = self.re_compiled['report']
+        if (src == 'sms'):
+            rc = self.re_compiled['sms_format1']
         position = 0
 
         log.debug("Data received:\n%s", data)
@@ -225,6 +248,14 @@ class Handler(AbstractHandler):
         if not current_db.isReadingSettings():
             pass
 
+    def processCommandProcessSms(self, task, data):
+        """
+         Processing of input sms-message
+         @param task: id task
+         @param data: data string
+        """
+        buffer = data['message'].encode('utf-8')
+        return self.processData(buffer, 'sms')
 
 # ===========================================================================
 # TESTS
@@ -239,15 +270,37 @@ class TestCase(unittest.TestCase):
     def test_packetData(self):
         import kernel.pipe as pipe
         h = Handler(pipe.Manager(), None)
-        #data = "$353681044879914,17,1,061212,211240,E05010.1943," + \
-        #    "N5323.4416,135.8,0.56,313.46,5,1.80!"
-        data = "$353681044879914,10,3,101212,205754,E05011.4152," + \
-            "N5314.3730,137.7,0.16,126.36,8,0.86!"
+        data = "$353681044879914,17,1,061212,211240,E05010.1943," + \
+            "N5323.4416,135.8,0.56,313.46,5,1.80!"
         rc = h.re_compiled['report']
         m = rc.search(data, 0)
         packet = h.translate(m.groupdict())
         self.assertEqual(packet['uid'], "353681044879914")
         self.assertEqual(packet['time'], "2012-12-06T21:12:40.000000")
-        self.assertEqual(packet['altitude'], 135.8)
-        self.assertEqual(packet['azimuth'], 313.46)
+        self.assertEqual(packet['altitude'], 136)
+        self.assertEqual(packet['azimuth'], 313)
         self.assertEqual(packet['longitude'], 50.169905)
+
+    def test_packetDataSmsFormat(self):
+        import kernel.pipe as pipe
+        h = Handler(pipe.Manager(), None)
+        data = "??353681041178468,0,1,160113,033435,E05011.4364," + \
+               "N5314.3921,119.9,1.48,23.78,4,6.27!"
+        rc = h.re_compiled['sms_format1']
+        m = rc.search(data, 0)
+        packet = h.translate(m.groupdict())
+        self.assertEqual(packet['uid'], "353681041178468")
+        self.assertEqual(packet['time'], "2013-01-16T03:34:35.000000")
+        self.assertEqual(packet['altitude'], 120)
+        self.assertEqual(packet['azimuth'], 24)
+        self.assertEqual(packet['longitude'], 50.19060666666667)
+
+    def test_packetDataSend(self):
+        import kernel.pipe as pipe
+        h = Handler(pipe.Manager(), None)
+        data = "353681041178468,0,1,160113,033435,E05011.4364,N5314.3921," +\
+               "119.9,1.48,23.78,4,6.27!"
+        #h.processCommandProcessSms(None, {
+        #    'phone': '0000000000000',
+        #    'message': data
+        #})

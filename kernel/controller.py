@@ -5,6 +5,7 @@
 @copyright 2009-2012, Maprox LLC
 '''
 
+import kernel.pipe as pipe
 from kernel.logger import log
 from kernel.dbmanager import db
 from lib.handlers.list import handlersList
@@ -37,12 +38,13 @@ class Controller(object):
         log.debug('Controller::run()')
         # try:
         commands = db.getController().getCommands()
+        store = pipe.Manager()
         for command in commands:
             handler = 'lib.handlers.' \
               + self.__handlerTranslation[command['handler']]
             for HandlerClass in handlersList:
                 if HandlerClass.__module__ == handler:
-                    handler = HandlerClass(False, False)
+                    handler = HandlerClass(store, False)
                     handler.uid = command['uid']
                     function_name = 'processCommand' \
                       + command['action'][0].upper() \

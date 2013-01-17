@@ -99,19 +99,24 @@ class Handler(AbstractHandler):
             flags = re.IGNORECASE)
         return self
 
-    def processData(self, data, src = ''):
+    def processData(self, data, format = 'report'):
         """
          Processing of data from socket / storage.
          @param data: Data from socket
-         @param src: Source of data ('' or 'sms')
+         @param format: Source of data format ('report' or 'sms')
         """
-        initialData = data
+        self.processDataBuffer(data, format)
+        return super(Handler, self).processData(data)
 
+    def processDataBuffer(self, buffer, format = 'report'):
+        """
+         Processing of data from socket / storage.
+         @param buffer: Data from socket
+         @param format: Source of data format ('report' or 'sms')
+        """
         # let's work with text data
-        data = data.decode('utf-8')
-        rc = self.re_compiled['report']
-        if (src == 'sms'):
-            rc = self.re_compiled['sms_format1']
+        data = buffer.decode('utf-8')
+        rc = self.re_compiled[format]
         position = 0
 
         log.debug("Data received:\n%s", data)
@@ -130,8 +135,6 @@ class Handler(AbstractHandler):
             self.store([packetObserver])
             position += len(m.group(0))
             m = rc.search(data, position)
-
-        return super(Handler, self).processData(initialData)
 
     def processError(self, data):
         """
@@ -250,7 +253,7 @@ class Handler(AbstractHandler):
         """
         data = json.loads(data)
         buffer = data['message'].encode('utf-8')
-        self.processData(buffer, 'sms')
+        self.processDataBuffer(buffer, 'sms_format1')
         self.processCloseTask(task)
         return self
 

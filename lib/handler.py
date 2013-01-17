@@ -109,6 +109,18 @@ class AbstractHandler(object):
                 function(command['id'], None)
         return self
 
+    def processCloseTask(selfs, task, result = None):
+        """
+         Close task
+         @param task: Task identifier
+         @param result: Result data to send. [Optional]
+        """
+        message = { 'id_action': task }
+        if result is not None:
+            message['result'] = result
+        log.debug('Close task: ' + conf.pipeFinishUrl + urlencode(message))
+        urlopen(conf.pipeFinishUrl, urlencode(message).encode('utf-8'))
+
     def recv(self):
         """
          Receiving data from socket

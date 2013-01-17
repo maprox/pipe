@@ -502,15 +502,7 @@ class GlobalsatHandler(AbstractHandler):
         string = string + self.parseOptions(options, data)
         string = self.addChecksum(string)
         log.debug('Formatted string result: ' + string)
-
-        message = {
-            'result': string,
-            'id_action': task
-        }
-        log.debug('Formatted string sent: ' \
-            + conf.pipeFinishUrl + urlencode(message))
-        connection = urlopen(conf.pipeFinishUrl,
-          urlencode(message).encode('utf-8'))
+        self.processCloseTask(task, string)
 
     def processCommandReadSettings(self, task, data):
         """
@@ -538,8 +530,9 @@ class GlobalsatHandler(AbstractHandler):
         command = 'GSC,' + self.uid + ',' + data['command']
         command = self.addChecksum(command)
         self.send(command.encode())
-        connection = urlopen(conf.pipeFinishUrl + 'id_action=' + task)
-        answer = connection.read()
+        self.processCloseTask(task)
+        #connection = urlopen(conf.pipeFinishUrl + 'id_action=' + task)
+        #answer = connection.read()
 
     def processCommandSetOption(self, task, data):
         """

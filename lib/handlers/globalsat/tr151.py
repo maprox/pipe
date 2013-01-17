@@ -222,13 +222,7 @@ class Handler(AbstractHandler):
                    + '' + ','\
                    + str(data['host'] or get_ip()) + '!'
         log.debug('Formatted string result: ' + string)
-        message = {
-            'result': string,
-            'id_action': task
-        }
-        log.debug('Formatted string sent: '\
-           + conf.pipeFinishUrl + urlencode(message))
-        urlopen(conf.pipeFinishUrl, urlencode(message).encode('utf-8'))
+        self.processCloseTask(task, string)
 
     def processCommandReadSettings(self, task, data):
         """
@@ -255,7 +249,9 @@ class Handler(AbstractHandler):
          @param data: data string
         """
         buffer = data['message'].encode('utf-8')
-        return self.processData(buffer, 'sms')
+        self.processData(buffer, 'sms')
+        self.processCloseTask(task)
+        return self
 
 # ===========================================================================
 # TESTS

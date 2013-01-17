@@ -248,6 +248,7 @@ class Handler(AbstractHandler):
          @param task: id task
          @param data: data string
         """
+        data = json.loads(data)
         buffer = data['message'].encode('utf-8')
         self.processData(buffer, 'sms')
         self.processCloseTask(task)

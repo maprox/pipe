@@ -173,7 +173,10 @@ class Handler(AbstractHandler):
                 packet['uid'] = value
             # TIME
             elif char == "B":
-                dt = datetime.strptime(value, '%d%m%y,%H%M%S')
+                try:
+                    dt = datetime.strptime(value, '%d%m%y,%H%M%S')
+                except:
+                    dt = datetime.strptime('00', '%y')
                 packet['time'] = dt.strftime('%Y-%m-%dT%H:%M:%S.%f')
             # COORD
             elif char in ("d1", "d2", "d3"):
@@ -251,6 +254,7 @@ class Handler(AbstractHandler):
          @param task: id task
          @param data: data string
         """
+        log.debug(data)
         data = json.loads(data)
         buffer = data['message'].encode('utf-8')
         self.processDataBuffer(buffer, 'sms_format1')
@@ -298,9 +302,8 @@ class TestCase(unittest.TestCase):
     def test_packetDataSend(self):
         import kernel.pipe as pipe
         h = Handler(pipe.Manager(), None)
-        data = "353681041178468,0,1,160113,033435,E05011.4364,N5314.3921," +\
-               "119.9,1.48,23.78,4,6.27!"
-        #h.processCommandProcessSms(None, {
-        #    'phone': '0000000000000',
-        #    'message': data
-        #})
+        data = "353681041178468,13,1,000000,000000,E0,N0,0,0,0,0,0!"
+        h.processCommandProcessSms(None, json.dumps({
+            'phone': '0000000000000', 
+            'message': data
+        }))

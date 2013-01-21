@@ -303,7 +303,7 @@ class TestCase(unittest.TestCase):
         import kernel.pipe as pipe
         h = Handler(pipe.Manager(), None)
         data = "353681041178468,13,1,000000,000000,E0,N0,0,0,0,0,0!"
-        h.processCommandProcessSms(None, json.dumps({
-            'phone': '0000000000000', 
-            'message': data
-        }))
+        #h.processCommandProcessSms(None, json.dumps({
+        #    'phone': '0000000000000', 
+        #    'message': data
+        #}))

@@ -115,7 +115,7 @@ class Handler(AbstractHandler):
          @param format: Source of data format ('report' or 'sms')
         """
         # let's work with text data
-        data = buffer.decode('utf-8')
+        data = buffer.decode()
         rc = self.re_compiled[format]
         position = 0
 
@@ -211,24 +211,21 @@ class Handler(AbstractHandler):
                     packet['sensors']['sos'] = 1
         return packet
 
-    def processCommandFormat(self, task, data):
+    def getInitiationData(self, config):
         """
-         Processing command to form config string
-         @param task: id task
-         @param data: request
+         Returns initialization data for SMS wich will be sent to device
+         @param config: config dict
+         @return: array of dict or dict
         """
-        data = json.loads(data)
-        string = '?7,'\
-                   + str(data['identifier'] or '') + ',7,'\
-                   + str(data['port'] or conf.port) + ','\
-                   + str(data['gprs']['apn'] or '') + ','\
-                   + str(data['gprs']['username'] or '') + ','\
-                   + str(data['gprs']['password'] or '') + ','\
-                   + '' + ','\
-                   + '' + ','\
-                   + str(data['host'] or get_ip()) + '!'
-        log.debug('Formatted string result: ' + string)
-        self.processCloseTask(task, string)
+        return '?7,'\
+           + config['identifier'] + ',7,'\
+           + str(config['port']) + ','\
+           + config['gprs']['apn'] + ','\
+           + config['gprs']['username'] + ','\
+           + config['gprs']['password'] + ','\
+           + '' + ','\
+           + '' + ','\
+           + config['host'] + '!'
 
     def processCommandReadSettings(self, task, data):
         """
@@ -256,7 +253,7 @@ class Handler(AbstractHandler):
         """
         log.debug(data)
         data = json.loads(data)
-        buffer = data['message'].encode('utf-8')
+        buffer = data['message'].encode()
         self.processDataBuffer(buffer, 'sms_format1')
         self.processCloseTask(task)
         return self
@@ -299,11 +296,22 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet['azimuth'], 24)
         self.assertEqual(packet['longitude'], 50.19060666666667)
 
-    def test_packetDataSend(self):
+
+    def test_packetData(self):
         import kernel.pipe as pipe
         h = Handler(pipe.Manager(), None)
-        data = "353681041178468,13,1,000000,000000,E0,N0,0,0,0,0,0!"
-        #h.processCommandProcessSms(None, json.dumps({
-        #    'phone': '0000000000000', 
-        #    'message': data
-        #}))
+        config = h.getInitiationConfig({
+            "identifier": "0123456789012345",
+            "host": "trx.maprox.net",
+            "port": 21200
+        })
+        data = h.getInitiationData(config)
+        self.assertEqual(data,
+            '?7,0123456789012345,7,21200,,,,,,trx.maprox.net!')
+        message = h.getTaskData(321312, data)
+        self.assertEqual(message, {
+            "id_action": 321312,
+            "data": [{
+                 "message": data
+             }]
+        })

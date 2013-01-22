@@ -394,7 +394,7 @@ class GlobalsatHandler(AbstractHandler):
         initialData = data
 
         # let's work with text data
-        data = data.decode('utf-8')
+        data = data.decode()
 
         function_name = self.getFunction(data)
         if function_name != 'processData':
@@ -489,20 +489,35 @@ class GlobalsatHandler(AbstractHandler):
         else:
             log.error("Unknown data format for %s", mu.group('uid'))
 
-    def processCommandFormat(self, task, data):
+    def getInitiationData(self, config):
         """
-         Processing command to form config string
-         @param task: id task
-         @param data: request
+         Returns initialization data for SMS wich will be sent to device
+         @param config: config dict
+         @return: array of dict or dict
         """
-        data = json.loads(data)
-        string = self.commandStart.format(data['identifier'])
-
-        options = self.default_options
-        string = string + self.parseOptions(options, data)
+        string = self.commandStart.format(config['identifier'])
+        string += self.parseOptions(self.default_options, config)
         string = self.addChecksum(string)
-        log.debug('Formatted string result: ' + string)
-        self.processCloseTask(task, string)
+        return string
+
+    def parseOptions(self, options, config):
+        """
+         Converts options to string
+         @param options: options
+         @param config: request data
+         @return: string
+        """
+        ret = ',O3=' + str(self.getRawReportFormat())
+        for key in options:
+            ret += ',' + key + '=' + options[key]
+
+        ret += ',D1=' + str(config['gprs']['apn'] or '')
+        ret += ',D2=' + str(config['gprs']['username'] or '')
+        ret += ',D3=' + str(config['gprs']['password'] or '')
+        ret += ',E0=' + str(config['host'] or '')
+        ret += ',E1=' + str(config['port'] or '')
+
+        return ret
 
     def processCommandReadSettings(self, task, data):
         """
@@ -531,8 +546,6 @@ class GlobalsatHandler(AbstractHandler):
         command = self.addChecksum(command)
         self.send(command.encode())
         self.processCloseTask(task)
-        #connection = urlopen(conf.pipeFinishUrl + 'id_action=' + task)
-        #answer = connection.read()
 
     def processCommandSetOption(self, task, data):
         """
@@ -585,25 +598,6 @@ class GlobalsatHandler(AbstractHandler):
 
         return command
 
-    def parseOptions(self, options, data):
-        """
-         Converts options to string
-         @param options: options
-         @param data: request data
-         @return: string
-        """
-        ret = ',O3=' + str(self.getRawReportFormat())
-        for key in options:
-            ret += ',' + key + '=' + options[key]
-
-        ret += ',D1=' + str(data['gprs']['apn'] or '')
-        ret += ',D2=' + str(data['gprs']['username'] or '')
-        ret += ',D3=' + str(data['gprs']['password'] or '')
-        ret += ',E0=' + str(data['host'] or '')
-        ret += ',E1=' + str(data['port'] or '')
-
-        return ret
-
 # ===========================================================================
 # TESTS
 # ===========================================================================
@@ -614,10 +608,22 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         pass
 
-    def test_packetDataStoreRestore(self):
-        import lib.handlers.globalsat.tr151 as tr151
+    def test_packetData(self):
         import kernel.pipe as pipe
-        h = tr151.Handler(pipe.Manager(), None)
-        data = "$353681044879911,17,1,061212,211240,E05010.1943," +\
-               "N5323.4416,135.8,0.56,313.46,5,1.80!"
-        h.processData(data)
+        h = GlobalsatHandler(pipe.Manager(), None)
+        config = h.getInitiationConfig({
+            "identifier": "0123456789012345",
+            "host": "trx.maprox.net",
+            "port": 21200
+        })
+        data = h.getInitiationData(config)
+        self.assertEqual(data, 'GSS,0123456789012345,3,0,' + \
+            'O3=SPRXYAB27GHKLMmnaefghio,OO=02,V0=0,H2=30,H3=1,H0=3,H1=1,' + \
+            'A1=0,A0=0,D1=,D2=,D3=,E0=trx.maprox.net,E1=21200*56!')
+        message = h.getTaskData(321312, data)
+        self.assertEqual(message, {
+            "id_action": 321312,
+            "data": [{
+                "message": data
+            }]
+        })

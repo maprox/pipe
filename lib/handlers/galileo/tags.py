@@ -215,22 +215,19 @@ class TagString(Tag):
      Tag with string data
     """
 
-    # string encoding
-    _encoding = "utf-8"
-
     def getValueFromRawData(self, rawdata):
         """
          Converts data to raw data
         """
         if (rawdata == None): return None
-        return rawdata.decode(self._encoding)
+        return rawdata.decode()
 
     def getRawDataFromValue(self, value):
         """
          Converts data to raw data
         """
         if (value == None): return None
-        return value.encode(self._encoding)
+        return value.encode()
 
 # ---------------------------------------------------------------------------
 

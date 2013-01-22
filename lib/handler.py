@@ -15,6 +15,7 @@ from kernel.config import conf
 from kernel.dbmanager import db
 from lib.storage import storage
 from urllib.request import urlopen
+from lib.ip import get_ip
 
 class AbstractHandler(object):
     """
@@ -83,8 +84,7 @@ class AbstractHandler(object):
             send['id_action'] = current_db.getSettingsTaskId()
             log.debug('Sending config: ' \
               + conf.pipeSetUrl + urlencode(send))
-            connection = urlopen(conf.pipeSetUrl,
-              urlencode(send).encode('utf-8'))
+            connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
             answer = connection.read()
             log.debug('Config answered: ' + answer.decode())
             result = self.re_success.search(answer.decode(), 0)
@@ -109,17 +109,32 @@ class AbstractHandler(object):
                 function(command['id'], None)
         return self
 
-    def processCloseTask(selfs, task, result = None):
+    def getTaskData(self, task, data = None):
+        """
+         Return close task data
+         @param task: Task identifier
+         @param data: Result data to send. [Optional]
+         @return dict
+        """
+        message = { 'id_action': task }
+        if data is not None:
+            if isinstance(data, str):
+                message['data'] = [{
+                    'message': data
+                }]
+            else:
+                message['data'] = data
+        return message
+
+    def processCloseTask(self, task, data = None):
         """
          Close task
          @param task: Task identifier
          @param result: Result data to send. [Optional]
         """
-        message = { 'id_action': task }
-        if result is not None:
-            message['result'] = result
+        message = self.getTaskData(task, data)
         log.debug('Close task: ' + conf.pipeFinishUrl + urlencode(message))
-        urlopen(conf.pipeFinishUrl, urlencode(message).encode('utf-8'))
+        urlopen(conf.pipeFinishUrl, urlencode(message).encode())
 
     def recv(self):
         """
@@ -212,3 +227,57 @@ class AbstractHandler(object):
             log.error('%s::sendImages():\n %s',
               self.__class__, result.getErrorsList())
 
+    @classmethod
+    def dictCheckItem(cls, data, name, value):
+        """
+         Checks if "name" is in "data" dict. If not, creates it with "value"
+         @param data: input dict
+         @param name: key of dict to check
+         @param value: value of dict item at key "name"
+        """
+        if name not in data: data[name] = value
+
+    def getInitiationConfig(self, rawConfig):
+        """
+         Returns prepared initiation data object
+         @param rawConfig: input json string or dict
+         @return: dict (json) object
+        """
+        data = rawConfig
+        if isinstance(data, str): data = json.loads(data)
+        self.dictCheckItem(data, 'identifier', '')
+        # host and port part of input
+        self.dictCheckItem(data, 'port', str(conf.port))
+        if 'host' not in data:
+            # host has exception calling dictCheckItem cause
+            # it will execute get_ip() even if 'host' is in data
+            data['host'] = str(get_ip())
+        # device part of input
+        self.dictCheckItem(data, 'device', {})
+        self.dictCheckItem(data['device'], 'login', '')
+        self.dictCheckItem(data['device'], 'password', '')
+        # gprs part of input
+        self.dictCheckItem(data, 'gprs', {})
+        self.dictCheckItem(data['gprs'], 'apn', '')
+        self.dictCheckItem(data['gprs'], 'username', '')
+        self.dictCheckItem(data['gprs'], 'password', '')
+        return data
+
+    def getInitiationData(self, config):
+        """
+         Returns initialization data for SMS wich will be sent to device
+         @param config: config dict
+         @return: dict
+        """
+        return None
+
+    def processCommandFormat(self, task, rawConfig):
+        """
+         Processing command to form config string
+         @param task: id task
+         @param rawConfig: request configuration
+        """
+        config = self.getInitiationConfig(rawConfig)
+        buffer = self.getInitiationData(config)
+        if buffer is not None:
+            self.processCloseTask(task, buffer)

@@ -215,14 +215,6 @@ class GalileoHandler(AbstractHandler):
         log.info(data)
         self.sendCommand(data['command'])
 
-    def processCommandFormat(self, task, data):
-        """
-         Processing command to form config string
-         @param task: id task
-         @param data: request
-        """
-        pass
-
     def processCommandReadSettings(self, task, data):
         """
          Sending command to read all of device configuration

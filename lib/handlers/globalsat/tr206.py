@@ -60,3 +60,14 @@ class Handler(GlobalsatHandler):
             elif item['option'] == 'send_mov':
                 command += ',R3=' + val
         return command
+
+# ===========================================================================
+# TESTS
+# ===========================================================================
+
+import unittest
+class TestCase(unittest.TestCase):
+
+    def setUp(self):
+        pass
+

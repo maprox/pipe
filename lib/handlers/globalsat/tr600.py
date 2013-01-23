@@ -77,3 +77,14 @@ class Handler(GlobalsatHandler):
             elif item['option'] == 'voice_call_on_sos':
                 command += ',V0=' + val
         return command
+
+# ===========================================================================
+# TESTS
+# ===========================================================================
+
+import unittest
+class TestCase(unittest.TestCase):
+
+    def setUp(self):
+        pass
+

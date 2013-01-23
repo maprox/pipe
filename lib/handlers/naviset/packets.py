@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from struct import unpack, pack
 import lib.bits as bits
 import lib.crc16 as crc16
+import lib.consts as consts
 
 # ---------------------------------------------------------------------------
 
@@ -27,7 +28,6 @@ class Packet(object):
     __crc = 0
 
     # protected properties
-    _encoding = "utf-8" # string encoding
     _rebuild = True     # flag to rebuild rawData
 
     def __init__(self, data = None):
@@ -219,7 +219,7 @@ class PacketHead(PacketNumbered):
         """
         super(PacketHead, self)._parseBody(body)
         lengthOfIMEI = 15
-        self.__deviceIMEI = body[2:2 + lengthOfIMEI].decode(self._encoding)
+        self.__deviceIMEI = body[2:2 + lengthOfIMEI].decode()
         self.__protocolVersion = unpack("<B", body[-1:])[0]
 
     def _buildBody(self):
@@ -228,7 +228,7 @@ class PacketHead(PacketNumbered):
          @protected
         """
         result = super(PacketHead, self)._buildBody()
-        result += self.__deviceIMEI.encode(self._encoding)
+        result += self.__deviceIMEI.encode()
         result += pack('<B', self.__protocolVersion)
         return result
 

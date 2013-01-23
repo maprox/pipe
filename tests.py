@@ -15,9 +15,13 @@ from lib.handlers.naviset.packets import TestCase as tc4
 from lib.handlers.naviset.abstract import TestCase as tc5
 from lib.handlers.naviset.gt10 import TestCase as tc6
 from lib.handlers.naviset.gt20 import TestCase as tc7
-from lib.handlers.globalsat.tr151 import TestCase as tc8
-from lib.handlers.teltonika.abstract import TestCase as tc9
-from lib.handlers.teltonika.fmxxxx import TestCase as tc10
+from lib.handlers.globalsat.abstract import TestCase as tc8
+from lib.handlers.globalsat.tr151 import TestCase as tc9
+from lib.handlers.globalsat.tr203 import TestCase as tc10
+from lib.handlers.globalsat.tr206 import TestCase as tc11
+from lib.handlers.globalsat.tr600 import TestCase as tc12
+from lib.handlers.teltonika.abstract import TestCase as tc13
+from lib.handlers.teltonika.fmxxxx import TestCase as tc14
 
 if __name__ == '__main__':
     unittest.main()

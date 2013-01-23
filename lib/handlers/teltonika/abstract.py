@@ -12,10 +12,11 @@ from struct import pack
 from kernel.logger import log
 from kernel.config import conf
 from lib.handler import AbstractHandler
+import lib.consts as consts
+import binascii
+from urllib.parse import urlencode
+from urllib.request import urlopen
 #import lib.handlers.teltonika.packets as packets
-#from urllib.parse import urlencode
-#from urllib.request import urlopen
-#from lib.ip import get_ip
 
 # ---------------------------------------------------------------------------
 
@@ -141,33 +142,53 @@ class TeltonikaHandler(AbstractHandler):
         log.info(data)
         self.sendCommand(data['command'])
 
-    def processCommandFormat(self, task, data):
+    @classmethod
+    def packString(cls, value):
+        strLen = len(value)
+        result = pack('>B', strLen)
+        if strLen > 0:
+            result += value.encode()
+        return result
+
+    def getInitiationSmsBuffer(self, data):
         """
-         Processing command to form config string
-         @param task: id task
-         @param data: request
+         Returns initiation sms buffer
+         @param data:
+         @return:
         """
+        # TP-UDH
+        pushSmsPort = 0x07D1 # WDP Port listening for “push” SMS
+        buffer = b'\x06\x05\x04'
+        buffer += pack('>H', pushSmsPort)
+        buffer += b'\x00\x00'
+
+        # TP-UD
+        buffer += self.packString(data['device']['login'])
+        buffer += self.packString(data['device']['password'])
+        buffer += self.packString(data['host'])
+        buffer += pack('>H', data['port'])
+        buffer += self.packString(data['gprs']['apn'])
+        buffer += self.packString(data['gprs']['username'])
+        buffer += self.packString(data['gprs']['password'])
+
+        return buffer
+
+    #def getInitiationData(self, input):
+
+
+    def getInitiationData(self, config):
         """
-        data = json.loads(data)
-        command0 = 'COM3 1234,' \
-            + str(data['host'] or get_ip()) + ',' \
-            + str(data['port'] or conf.port)
-        command1 = 'COM13 1234,1,'+ str(data['gprs']['apn'] or '') \
-            + ',' + str(data['gprs']['username'] or '') \
-            + ',' + str(data['gprs']['password'] or '') \
-            + '#'
-        string = '{"list": ["' + command0 + '", "' + command1 + '"]}'
-        log.debug('Formatted string result: ' + string)
-        message = {
-            'result': string,
-            'id_action': task
-        }
-        log.debug('Formatted string sent: ' \
-            + conf.pipeFinishUrl + urlencode(message))
-        connection = urlopen(conf.pipeFinishUrl,
-            urlencode(message).encode('utf-8'))
+         Returns initialization data for SMS wich will be sent to device
+         @param config: config dict
+         @return: array of dict or dict
         """
-        pass
+        buffer = self.getInitiationSmsBuffer(config)
+        data = [{
+            'message': binascii.hexlify(buffer).decode(),
+            'bin': consts.SMS_BINARY_HEX_STRING,
+            'flash': True
+        }]
+        return data
 
     def processCommandReadSettings(self, task, data):
         """
@@ -193,7 +214,7 @@ class TeltonikaHandler(AbstractHandler):
 # ===========================================================================
 
 import unittest
-#import time
+
 class TestCase(unittest.TestCase):
 
     def setUp(self):
@@ -202,8 +223,20 @@ class TestCase(unittest.TestCase):
     def test_packetData(self):
         import kernel.pipe as pipe
         h = TeltonikaHandler(pipe.Manager(), None)
-        #data = b'\x01"\x00\x03868204000728070\x042\x00\xe0\x00\x00\x00\x00\xe1\x08Photo ok\x137'
-        #protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
-        protocolPackets = []
-        for packet in protocolPackets:
-          self.assertEqual(packet.header, 1)
+        config = h.getInitiationConfig({
+            "identifier": "0123456789012345",
+            "host": "trx.maprox.net",
+            "port": 21200
+        })
+        data = h.getInitiationData(config)
+        self.assertEqual(data, [{
+            'bin': consts.SMS_BINARY_HEX_STRING,
+            'message': '06050407d1000000000e7472782e6d6' + \
+                       '170726f782e6e657452d0000000',
+            'flash': True
+        }])
+        message = h.getTaskData(321312, data)
+        self.assertEqual(message, {
+            "id_action": 321312,
+            "data": data
+        })

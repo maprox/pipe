@@ -130,30 +130,21 @@ class NavisetHandler(AbstractHandler):
         log.info(data)
         self.sendCommand(data['command'])
 
-    def processCommandFormat(self, task, data):
+    def getInitiationData(self, config):
         """
-         Processing command to form config string
-         @param task: id task
-         @param data: request
+         Returns initialization data for SMS wich will be sent to device
+         @param config: config dict
+         @return: array of dict or dict
         """
-        data = json.loads(data)
-        command0 = 'COM3 1234,' \
-            + str(data['host'] or get_ip()) + ',' \
-            + str(data['port'] or conf.port)
-        command1 = 'COM13 1234,1,'+ str(data['gprs']['apn'] or '') \
-            + ',' + str(data['gprs']['username'] or '') \
-            + ',' + str(data['gprs']['password'] or '') \
-            + '#'
-        string = '{"list": ["' + command0 + '", "' + command1 + '"]}'
-        log.debug('Formatted string result: ' + string)
-        message = {
-            'result': string,
-            'id_action': task
-        }
-        log.debug('Formatted string sent: ' \
-            + conf.pipeFinishUrl + urlencode(message))
-        connection = urlopen(conf.pipeFinishUrl,
-            urlencode(message).encode('utf-8'))
+        command0 = 'COM3 1234,' + config['host'] + ',' + str(config['port'])
+        command1 = 'COM13 1234,1,'+ config['gprs']['apn'] \
+            + ',' + config['gprs']['username'] \
+            + ',' + config['gprs']['password'] + '#'
+        return [{
+            "message": command0
+        }, {
+            "message": command1
+        }]
 
     def processCommandReadSettings(self, task, data):
         """
@@ -188,8 +179,19 @@ class TestCase(unittest.TestCase):
     def test_packetData(self):
         import kernel.pipe as pipe
         h = NavisetHandler(pipe.Manager(), None)
-        #data = b'\x01"\x00\x03868204000728070\x042\x00\xe0\x00\x00\x00\x00\xe1\x08Photo ok\x137'
-        #protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
-        protocolPackets = []
-        for packet in protocolPackets:
-          self.assertEqual(packet.header, 1)
+        config = h.getInitiationConfig({
+            "identifier": "0123456789012345",
+            "host": "trx.maprox.net",
+            "port": 21200
+        })
+        data = h.getInitiationData(config)
+        self.assertEqual(data, [{
+            'message': 'COM3 1234,trx.maprox.net,21200'
+        }, {
+            'message': 'COM13 1234,1,,,#'
+        }])
+        message = h.getTaskData(321312, data)
+        self.assertEqual(message, {
+            "id_action": 321312,
+            "data": data
+        })

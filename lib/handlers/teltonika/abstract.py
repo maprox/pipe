@@ -161,7 +161,6 @@ class TeltonikaHandler(AbstractHandler):
         buffer = b'\x06\x05\x04'
         buffer += pack('>H', pushSmsPort)
         buffer += b'\x00\x00'
-
         # TP-UD
         buffer += self.packString(data['device']['login'])
         buffer += self.packString(data['device']['password'])
@@ -170,11 +169,7 @@ class TeltonikaHandler(AbstractHandler):
         buffer += self.packString(data['gprs']['apn'])
         buffer += self.packString(data['gprs']['username'])
         buffer += self.packString(data['gprs']['password'])
-
         return buffer
-
-    #def getInitiationData(self, input):
-
 
     def getInitiationData(self, config):
         """

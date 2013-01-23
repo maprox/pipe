@@ -15,7 +15,7 @@ import lib.crc16 as crc16
 
 class Packet(object):
     """
-     Default naviset protocol packet
+     Default teltonika protocol packet
     """
 
     # private properties

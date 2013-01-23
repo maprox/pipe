@@ -32,4 +32,9 @@ if [ "$1" = 'naviset' ]; then
   ./run_naviset.sh $2 $3 $4 &
 fi
 
+if [ "$1" = 'teltonika' ]; then
+  echo 'Starting Teltonika listener'
+  ./run_teltonika.sh $2 $3 $4 &
+fi
+
 exit 0

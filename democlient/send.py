@@ -90,7 +90,7 @@ def movecar(packet):
                 # Last sleep time
                 lastSleep = 0
                 # Parking start time
-                parkingStartTime = 0;
+                parkingStartTime = 0
                 # Column headers
                 reader = csv.DictReader(
                   open(track, newline='', encoding='utf-8'),

@@ -21,8 +21,10 @@ class Controller(object):
      'tr203': 'globalsat.tr203',
      'tr206': 'globalsat.tr206',
      'tr151': 'globalsat.tr151',
-     'naviset': 'naviset.gt20',
-     'galileo': 'galileo.firmware0119'
+     'naviset-gt10': 'naviset.gt10',
+     'naviset-gt20': 'naviset.gt20',
+     'galileo': 'galileo.firmware0119',
+     'teltonika_fmxxxx': 'teltonika.fmxxxx'
     }
 
     def __init__(self):

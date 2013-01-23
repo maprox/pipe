@@ -15,6 +15,7 @@ from kernel.config import conf
 from kernel.dbmanager import db
 from lib.storage import storage
 from urllib.request import urlopen
+import http.client
 from lib.ip import get_ip
 
 class AbstractHandler(object):
@@ -82,8 +83,7 @@ class AbstractHandler(object):
             config = self.translateConfig(current_db.getSettings())
             send['config'] = json.dumps(config, separators=(',',':'))
             send['id_action'] = current_db.getSettingsTaskId()
-            log.debug('Sending config: ' \
-              + conf.pipeSetUrl + urlencode(send))
+            log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
             connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
             answer = connection.read()
             log.debug('Config answered: ' + answer.decode())
@@ -116,14 +116,14 @@ class AbstractHandler(object):
          @param data: Result data to send. [Optional]
          @return dict
         """
-        message = { 'id_action': task }
+        message = { "id_action": task }
         if data is not None:
+            content = data
             if isinstance(data, str):
-                message['data'] = [{
-                    'message': data
+                content = [{
+                    "message": data
                 }]
-            else:
-                message['data'] = data
+            message['data'] = json.dumps(content)
         return message
 
     def processCloseTask(self, task, data = None):
@@ -133,8 +133,19 @@ class AbstractHandler(object):
          @param result: Result data to send. [Optional]
         """
         message = self.getTaskData(task, data)
-        log.debug('Close task: ' + conf.pipeFinishUrl + urlencode(message))
-        urlopen(conf.pipeFinishUrl, urlencode(message).encode())
+        params = urlencode(message)
+        log.debug('Close task: ' + conf.pipeFinishUrl + params)
+
+        urlParts = re.search('//(.+?)(/.+)', conf.pipeFinishUrl)
+        restHost = urlParts.group(1)
+        restPath = urlParts.group(2)
+
+        conn = http.client.HTTPConnection(restHost, 80)
+        conn.request("POST", restPath, params, {
+            "Content-type": "application/x-www-form-urlencoded",
+            "Accept": "text/plain"
+        })
+        conn.getresponse()
 
     def recv(self):
         """
@@ -153,8 +164,8 @@ class AbstractHandler(object):
             log.debug('Data chunk = %s', data)
             if not data: break
             total_data.append(data)
-            """ I don't know why [if not data: break] is not working, so
-                let's do break here """
+            # I don't know why [if not data: break] is not working,
+            # so let's do break here
             if len(data) < conf.socketPacketLength: break
         log.debug('Total data = %s', total_data)
         return b''.join(total_data)

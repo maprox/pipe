@@ -161,17 +161,7 @@ class GlobalsatHandler(AbstractHandler):
             section = conf[self.confSectionName]
             self.reportFormat = section.get("defaultReportFormat", 
                 self.reportFormat)
-        
         self.reportFormat = self.truncateChecksum(self.reportFormat)
-
-    def getRawReportFormat(self):
-        """
-         Gets the format for report message.
-        """
-        if conf.has_section(self.confSectionName):
-            section = conf[self.confSectionName]
-            return section.get("defaultReportFormat", self.reportFormat)
-        return self.reportFormat
 
     def __compileRegularExpressions(self):
         """
@@ -507,7 +497,7 @@ class GlobalsatHandler(AbstractHandler):
          @param config: request data
          @return: string
         """
-        ret = ',O3=' + str(self.getRawReportFormat())
+        ret = ',O3=' + str(self.reportFormat + '*U!')
         for key in options:
             ret += ',' + key + '=' + options[key]
 
@@ -618,12 +608,12 @@ class TestCase(unittest.TestCase):
         })
         data = h.getInitiationData(config)
         self.assertEqual(data, 'GSS,0123456789012345,3,0,' + \
-            'O3=SPRXYAB27GHKLMmnaefghio,OO=02,V0=0,H2=30,H3=1,H0=3,H1=1,' + \
-            'A1=0,A0=0,D1=,D2=,D3=,E0=trx.maprox.net,E1=21200*56!')
+            'O3=SPRXYAB27GHKLMmnaefghio*U!,OO=02,V0=0,H2=30,H3=1,H0=3,H1=1,' + \
+            'A1=0,A0=0,D1=,D2=,D3=,E0=trx.maprox.net,E1=21200*08!')
         message = h.getTaskData(321312, data)
         self.assertEqual(message, {
             "id_action": 321312,
-            "data": [{
+            "data": json.dumps([{
                 "message": data
-            }]
+            }])
         })

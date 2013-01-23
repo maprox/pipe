@@ -238,5 +238,5 @@ class TestCase(unittest.TestCase):
         message = h.getTaskData(321312, data)
         self.assertEqual(message, {
             "id_action": 321312,
-            "data": data
+            "data": json.dumps(data)
         })

@@ -22,7 +22,7 @@ class Handler(GlobalsatHandler):
         """ Constructor """
         GlobalsatHandler.__init__(self, store, thread)
 
-        """ Options for Globalsat TR-203 """
+        # Options for Globalsat TR-203
         self.default_options.update({
           # 0~65535
           # SMS  0 or 1  = 1 SOS alarm report;

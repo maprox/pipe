@@ -181,7 +181,7 @@ class TeltonikaHandler(AbstractHandler):
         data = [{
             'message': binascii.hexlify(buffer).decode(),
             'bin': consts.SMS_BINARY_HEX_STRING,
-            'flash': True
+            'push': True
         }]
         return data
 
@@ -228,7 +228,7 @@ class TestCase(unittest.TestCase):
             'bin': consts.SMS_BINARY_HEX_STRING,
             'message': '06050407d1000000000e7472782e6d6' + \
                        '170726f782e6e657452d0000000',
-            'flash': True
+            'push': True
         }])
         message = h.getTaskData(321312, data)
         self.assertEqual(message, {

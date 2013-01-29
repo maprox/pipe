@@ -55,7 +55,7 @@ class GalileoHandler(AbstractHandler):
             self.__headPacketRawData = b''
 
         if protocolPacket.header == 1:
-            self.__headPacketRawData = protocolPacket.rawdata
+            self.__headPacketRawData = protocolPacket.rawData
 
         if protocolPacket.hasTag(0xE1):
             log.info('Device answer is "' +
@@ -79,7 +79,7 @@ class GalileoHandler(AbstractHandler):
             packet.update(self.headpack)
 
         log.info(observerPackets)
-        self._buffer = self.__headPacketRawData + protocolPacket.rawdata
+        self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
 
     def sendCommand(self, command):
@@ -94,7 +94,7 @@ class GalileoHandler(AbstractHandler):
         packet.addTag(0x04, self.headpack['uid2'])
         packet.addTag(0xE0, self.__commands_num_seq)
         packet.addTag(0xE1, command)
-        self.send(packet.rawdata)
+        self.send(packet.rawData)
         # save sended command in local dict
         self.__commands[self.__commands_num_seq] = packet
         self.__commands_num_seq += 1 # increase command number sequence

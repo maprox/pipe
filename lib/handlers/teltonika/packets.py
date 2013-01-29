@@ -1,225 +1,48 @@
 # -*- coding: utf8 -*-
 '''
 @project   Maprox <http://www.maprox.net>
-@info      Naviset packets
+@info      Teltonika packets
 @copyright 2012, Maprox LLC
 '''
 
 import time
 from datetime import datetime, timedelta
-from struct import unpack, pack
+from struct import *
 import lib.bits as bits
 import lib.crc16 as crc16
+from lib.packets import *
 
 # ---------------------------------------------------------------------------
 
-class Packet(object):
+class PacketHead(BasePacket):
     """
-     Default teltonika protocol packet
+      Head packet of teltonika messaging protocol
     """
-
-    # private properties
-    __header = 0
-    __length = 0
-    __rawData = None
-    __rawDataTail = None
-    __body = None
-    __crc = 0
-
     # protected properties
-    _rebuild = True     # flag to rebuild rawData
-
-    def __init__(self, data = None):
-        """
-         Constructor
-         @param data: Input binary data
-        """
-        self.rawData = data
+    _fmtHeader = None   # header format
+    _fmtLength = '>H'   # packet length format
+    _fmtChecksum = None # checksum format
+    _deviceImei = 0
 
     @property
-    def header(self):
-        if self._rebuild: self.__build()
-        return self.__header
+    def deviceImei(self):
+        if self._rebuild: self._build()
+        return self._deviceImei
 
-    @header.setter
-    def header(self, value):
-        if (value < 4):
-            self.__header = value
+    @deviceImei.setter
+    def deviceImei(self, value):
+        if (len(value) > 0):
+            self._deviceImei = str(value)
             self._rebuild = True
 
-    @property
-    def length(self):
-        if self._rebuild: self.__build()
-        return self.__length
-
-    @property
-    def rawData(self):
-        if self._rebuild: self.__build()
-        return self.__rawData
-
-    @rawData.setter
-    def rawData(self, value):
-        self._rebuild = False
-        self.__rawData = value
-        self.__parse()
-
-    @property
-    def rawDataTail(self):
-        return self.__rawDataTail
-
-    @property
-    def body(self):
-        if self._rebuild: self.__build()
-        return self.__body
-
-    @body.setter
-    def body(self, value):
-        self.__body = value
-        self._parseBody(value)
-        self._rebuild = True
-
-    @property
-    def crc(self):
-        if self._rebuild: self.__build()
-        return self.__crc
-
-    def __parse(self):
-        """
-         Parses rawData
-        """
-        buffer = self.__rawData
-        if buffer == None: return
-
-        # read header and length
-        length = unpack("<H", buffer[:2])[0]
-        header = length >> 14
-        length = bits.bitClear(length, 15)
-        length = bits.bitClear(length, 14)
-
-        # now let's read packet data
-        # but before this, check body length
-        body = buffer[2:length + 2]
-        if len(body) != length:
-            raise Exception('Body length Is incorrect! ' +
-                str(length) + ' (said) != ' + str(len(body)) + ' (real)')
-
-        crc = unpack("<H", buffer[length + 2:length + 4])[0]
-        crc_data = buffer[:length + 2]
-        crc_calculated = self.getCrc(crc_data)
-        if (crc != crc_calculated):
-            raise Exception('Crc Is incorrect! ' +
-                str(crc) + ' (said) != ' + str(crc_calculated) + ' (real)')
-
-        # apply new data
-        self.__rawDataTail = buffer[length + 4:]
-        self.__rawData = buffer[:length + 4]
-        self.__header = header
-        self.__length = length
-        self.__body = body
-        self.__crc = crc
-
-        # parse packet body
-        self._parseBody(body)
-
-    def __build(self):
-        """
-         Builds rawData from object variables
-         @protected
-        """
-        self.__body = self._buildBody()
-        self._rebuild = False
-        self.__length = len(self.__body)
-        head = self.__length + (self.__header << 14)
-
-        self.__rawData = pack("<H", head)
-        self.__rawData += self.__body
-        self.__crc = crc16.Crc16.calcBinaryString(
-          self.__rawData,
-          crc16.INITIAL_MODBUS
-        )
-        self.__rawData += pack("<H", self.__crc)
-
-    def _parseBody(self, data):
-        """
-         Parses body of the packet
-        """
-        pass
-
-    def _buildBody(self):
-        """
-         Parses body of the packet
-        """
-        return self.__body
-
-    @classmethod
-    def getCrc(cls, buffer):
-        """
-         Calculates CRC (CRC-16 Modbus)
-         @param buffer: binary string
-         @return: True if buffer crc equals to supplied crc value, else False
-        """
-        return crc16.Crc16.calcBinaryString(
-            buffer, crc16.INITIAL_MODBUS)
-
-# ---------------------------------------------------------------------------
-
-class PacketNumbered(Packet):
-    """
-      Packet of naviset messaging protocol with device number in body
-    """
-
-    # private properties
-    __deviceNumber = 0
-
-    def _parseBody(self, body):
+    def _parseBody(self):
         """
          Parses body of the packet
          @param body: Body bytes
          @protected
         """
-        super(PacketNumbered, self)._parseBody(body)
-        self.__deviceNumber = unpack("<H", body[:2])[0]
-
-    def _buildBody(self):
-        """
-         Builds rawData from object variables
-         @protected
-        """
-        result = b''
-        result += pack('<H', self.__deviceNumber)
-        return result
-
-    @property
-    def deviceNumber(self):
-        if self._rebuild: self.__build()
-        return self.__deviceNumber
-
-    @deviceNumber.setter
-    def deviceNumber(self, value):
-        if (0 <= value <= 0xFFFF):
-            self.__deviceNumber = value
-            self._rebuild = True
-
-# ---------------------------------------------------------------------------
-
-class PacketHead(PacketNumbered):
-    """
-      Head packet of naviset messaging protocol
-    """
-    # private properties
-    __deviceIMEI = 0
-    __protocolVersion = None
-
-    def _parseBody(self, body):
-        """
-         Parses body of the packet
-         @param body: Body bytes
-         @protected
-        """
-        super(PacketHead, self)._parseBody(body)
-        lengthOfIMEI = 15
-        self.__deviceIMEI = body[2:2 + lengthOfIMEI].decode()
-        self.__protocolVersion = unpack("<B", body[-1:])[0]
+        self._deviceImei = self.body.decode()
+        return self
 
     def _buildBody(self):
         """
@@ -227,91 +50,24 @@ class PacketHead(PacketNumbered):
          @protected
         """
         result = super(PacketHead, self)._buildBody()
-        result += self.__deviceIMEI.encode()
-        result += pack('<B', self.__protocolVersion)
+        result += self._deviceImei.encode()
         return result
 
-    @property
-    def deviceIMEI(self):
-        if self._rebuild: self.__build()
-        return self.__deviceIMEI
-
-    @deviceIMEI.setter
-    def deviceIMEI(self, value):
-        if (len(value) == 15):
-            self.__deviceIMEI = str(value)
-            self._rebuild = True
-
-    @property
-    def protocolVersion(self):
-        if self._rebuild: self.__build()
-        return self.__protocolVersion
-
-    @protocolVersion.setter
-    def protocolVersion(self, value):
-        if (0 <= value <= 0xFF):
-            self.__protocolVersion = value
-            self._rebuild = True
-
 # ---------------------------------------------------------------------------
 
-class Command():
+class PacketData(BasePacket):
     """
-     A command packet
+      Data packet of teltonika messaging protocol.
     """
-
-    CMD_GET_STATUS = 0
-    CMD_GET_IMEI = 1
-    CMD_CHANGE_NUMBER = 2
-    CMD_CHANGE_PASSWORD = 3
-
-# ---------------------------------------------------------------------------
-
-class PacketAnswer(Packet):
-    """
-      Data packet of naviset messaging protocol
-    """
-
-    # private properties
-    __command = 0
-
-    def _parseBody(self, body):
-        """
-         Parses body of the packet
-         @param body: Body bytes
-         @protected
-        """
-        super(PacketAnswer, self)._parseBody(body)
-        self.__command = Command.CMD_GET_STATUS
-
-    def _buildBody(self):
-        """
-         Builds rawData from object variables
-         @protected
-        """
-        result = super(PacketAnswer, self)._buildBody()
-        result += pack('<B', self.__command)
-        return result
+    _fmtHeader = '>l'   # header format
+    _fmtLength = '>l'   # packet length format
+    _fmtChecksum = '>H' # checksum format
+    _AvlDataArray = None
 
     @property
-    def command(self):
-        if self._rebuild: self.__build()
-        return self.__command
-
-    @command.setter
-    def command(self, value):
-        pass
-
-# ---------------------------------------------------------------------------
-
-class PacketData(PacketNumbered):
-    """
-      Data packet of naviset messaging protocol
-    """
-    # private properties
-    __dataStructure = 0
-    __itemsData = None
-    __items = None
+    def AvlDataArray(self):
+        if self._rebuild: self._build()
+        return self._AvlDataArray
 
     def __init__(self, data = None):
         """
@@ -319,22 +75,26 @@ class PacketData(PacketNumbered):
          @param data: Binary data of data packet
          @return: PacketData instance
         """
-        self.__items = []
         super(PacketData, self).__init__(data)
 
-    def _parseBody(self, body):
+    def _parseHeader(self):
+        """
+         Parses rawData
+        """
+        zeroes = 0x00000000
+        if (self._header != zeroes):
+            raise Exception('Incorrect data packet! ' +\
+                str(self._header) + ' (given) != ' + \
+                str(zeroes) + ' (must be)')
+
+    def _parseBody(self):
         """
          Parses body of the packet
          @param body: Body bytes
          @protected
         """
-        super(PacketData, self)._parseBody(body)
-        self.__dataStructure = unpack('<H', body[2:4])[0]
-        self.__itemsData = body[4:]
-        self.__items = PacketDataItem.getDataItemsFromBuffer(
-            self.__itemsData,
-            self.__dataStructure
-        )
+        super(PacketData, self)._parseBody()
+        self._AvlDataArray = AvlDataArray(self._body)
 
     def _buildBody(self):
         """
@@ -342,149 +102,286 @@ class PacketData(PacketNumbered):
          @protected
         """
         result = super(PacketData, self)._buildBody()
-        result += pack('<H', self.__dataStructure)
+        result += AvlDataArray.rawData
         return result
 
-    @property
-    def items(self):
-        return self.__items
+    def getChecksum(self, buffer):
+        """
+         Calculates CRC (CRC-16 Modbus)
+         @param buffer: binary string
+         @return: True if buffer crc equals to supplied crc value, else False
+        """
+        data = self._head + self._body
+        return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
 
 # ---------------------------------------------------------------------------
 
-class PacketDataItem:
+class AvlDataArray(SolidBinaryPacket):
     """
       Item of data packet of naviset messaging protocol
     """
     # private properties
-    __rawData = None
-    __rawDataTail = None
-    __dataStructure = 0
-    __number = 0
-    __params = None
-    __additional = 0
+    _itemsCount = 0
+    _items = None
+    _codecId = 0
 
-    def __init__(self, data = None, ds = 0):
-        """
-         Constructor
-         @param data: Binary data for packet item
-         @param ds: Data structure word
-         @return: PacketDataItem instance
-        """
-        super(PacketDataItem, self).__init__()
-        self.__rawData = data
-        self.__dataStructure = ds
-        self.__params = {}
-        self.__parse()
+    @property
+    def items(self):
+        return self._items
 
-    @classmethod
-    def getAdditionalDataLength(cls, ds = None):
-        """
-         Returns length of additional data buffer
-         according to ds parameter
-         @param ds: Data structure definition (2 byte)
-         @return: Size of additional data buffer in bytes
-        """
-        # exit if dataStructure is empty
-        if (ds == None) or (ds == 0):
-            return 0
+    @property
+    def codecId(self):
+        if self._rebuild: self._build()
+        return self._codecId
 
-        dsMap = {
-             0: 1,
-             1: 4,
-             2: 1,
-             3: 2,
-             4: 4,
-             5: 4,
-             6: 4,
-             7: 4,
-             8: 4,
-             9: 4,
-            10: 6,
-            11: 4,
-            12: 4,
-            13: 2,
-            14: 4,
-            15: 8
+    @codecId.setter
+    def codecId(self, value):
+        self._codecId = value
+        self._rebuild = True
+
+    def _parseHead(self):
+        """
+         Parses packet's head
+         @return: self
+        """
+        buffer = self._rawData
+        # get codecId
+        fmt = '>B'
+        fmtLength = calcsize(fmt)
+        self._codecId = unpack(fmt,
+            buffer[self._offset:self._offset + fmtLength])[0]
+        self._offset += 1
+        # get count of items
+        self._itemsCount = unpack(fmt,
+            buffer[self._offset:self._offset + fmtLength])[0]
+        self._offset += 1
+        # body
+        self._body = self._rawData[self._offset:-1]
+        # retrieving Avl data items
+        self._items = AvlData.getAvlDataListFromBuffer(self._body)
+        self._tail = self._rawData[-1:]
+        # last byte must be equal to self._itemsCount
+        lastByte = unpack(fmt, self._tail)[0]
+        if lastByte != self._itemsCount:
+            raise Exception('Incorrect count of items in AVL data array! ' +\
+                str(self._itemsCount) + ' (head) != ' +\
+                str(lastByte) + ' (tail)')
+        return self
+
+# ---------------------------------------------------------------------------
+
+class AvlData(BinaryPacket):
+    """
+      Item of data packet of naviset messaging protocol
+    """
+    # protected properties
+    _timestamp = None
+    _priority = None
+    _longitude = None
+    _latitude = None
+    _altitude =  None
+    _angle = None
+    _satellitesCount = None
+    _speed = None
+    _ioElement = None
+
+    @property
+    def timestamp(self):
+        if self._rebuild: self._build()
+        return self._timestamp
+
+    @timestamp.setter
+    def timestamp(self, value):
+        self._timestamp = value
+        self._rebuild = True
+
+    @property
+    def datetime(self):
+        if self._rebuild: self._build()
+        return datetime.utcfromtimestamp(self._timestamp / 1000)
+
+    @datetime.setter
+    def datetime(self, value):
+        self._timestamp = int(value.strftime("%s"))
+        self._rebuild = True
+
+    @property
+    def priority(self):
+        if self._rebuild: self._build()
+        return self._priority
+
+    @priority.setter
+    def priority(self, value):
+        self._priority = value
+        self._rebuild = True
+
+    @property
+    def longitude(self):
+        if self._rebuild: self._build()
+        return self._longitude
+
+    @longitude.setter
+    def longitude(self, value):
+        self._longitude = value
+        self._rebuild = True
+
+    @property
+    def latitude(self):
+        if self._rebuild: self._build()
+        return self._latitude
+
+    @latitude.setter
+    def latitude(self, value):
+        self._latitude = value
+        self._rebuild = True
+
+    @property
+    def altitude(self):
+        if self._rebuild: self._build()
+        return self._altitude
+
+    @altitude.setter
+    def altitude(self, value):
+        self._altitude = value
+        self._rebuild = True
+
+    @property
+    def angle(self):
+        if self._rebuild: self._build()
+        return self._angle
+
+    @angle.setter
+    def angle(self, value):
+        self._angle = value
+        self._rebuild = True
+
+    @property
+    def satellitesCount(self):
+        if self._rebuild: self._build()
+        return self._satellitesCount
+
+    @satellitesCount.setter
+    def satellitesCount(self, value):
+        self._satellitesCount = value
+        self._rebuild = True
+
+    @property
+    def speed(self):
+        if self._rebuild: self._build()
+        return self._speed
+
+    @speed.setter
+    def speed(self, value):
+        self._speed = value
+        self._rebuild = True
+
+    @property
+    def ioElement(self):
+        if self._rebuild: self._build()
+        return self._ioElement
+
+    @ioElement.setter
+    def ioElement(self, value):
+        self._ioElement = value
+        self._rebuild = True
+
+    def _parseBody(self):
+        """
+         Parses packet's head
+         @return: self
+        """
+        super(AvlData, self)._parseBody()
+        self._body = self._rawData
+        self._timestamp = self.readFrom('>Q')
+        self._priority = self.readFrom('>B')
+        precision = 10000000
+        self._longitude = self.readFrom('>l') / precision
+        self._latitude = self.readFrom('>l') / precision
+        self._altitude = self.readFrom('>H')
+        self._angle = self.readFrom('>H')
+        self._satellitesCount = self.readFrom('>B')
+        self._speed = self.readFrom('>H')
+
+        # get ioElement
+        eventIoId = self.readFrom('>B')
+        items = []
+        ioTotalCount = self.readFrom('>B')
+        ioOneByteCount = self.readFrom('>B')
+        cnt = 0
+        while cnt < ioOneByteCount:
+            items.append({
+                'id': self.readFrom('>B'),
+                'value': self.readFrom('>B')
+            })
+            cnt += 1
+        ioTwoByteCount = self.readFrom('>B')
+        cnt = 0
+        while cnt < ioTwoByteCount:
+            items.append({
+                'id': self.readFrom('>B'),
+                'value': self.readFrom('>H')
+            })
+            cnt += 1
+        ioFourByteCount = self.readFrom('>B')
+        cnt = 0
+        while cnt < ioFourByteCount:
+            items.append({
+                'id': self.readFrom('>B'),
+                'value': self.readFrom('>L')
+            })
+            cnt += 1
+        ioEightByteCount = self.readFrom('>B')
+        cnt = 0
+        while cnt < ioEightByteCount:
+            items.append({
+                'id': self.readFrom('>B'),
+                'value': self.readFrom('>Q')
+            })
+            cnt += 1
+
+        self._ioElement = {
+            # Event IO ID – if data is acquired on event – this field
+            # defines which IO property has changed and generated an event.
+            # If data cause is not event – the value is 0.
+            'eventIoId': eventIoId,
+            # List of IO elements
+            'items': items
         }
-        size = 0
-        for key in dsMap:
-            if bits.bitTest(ds, key):
-                size += dsMap[key]
-        return size
+        return self
 
     @classmethod
-    def getDataItemsFromBuffer(cls, data = None, ds = None):
+    def getAvlDataListFromBuffer(cls, data = None):
         """
-         Returns an array of PacketDataItem instances from data
+         Returns an array of AvlData instances from data
          @param data: Input binary data
-         @return: array of PacketDataItem instances (empty array if not found)
+         @return: array of AvlData instances (empty array if no AvlData found)
         """
         items = []
         while True:
-            item = cls(data, ds)
+            item = AvlData(data)
             data = item.rawDataTail
             items.append(item)
-            if len(data) == 0: break
+            if (len(data) == 0): break
         return items
 
-    def convertCoordinate(self, coord):
-        result = str(coord)
-        result = result[:2] + '.' + result[2:]
-        return float(result)
+# ---------------------------------------------------------------------------
 
-    def __parse(self):
+class TeltonikaConfiguration(BasePacket):
+    """
+      Item of data packet of naviset messaging protocol
+    """
+    _fmtLength = '>H'   # packet length format
+    _packetId = 0
+    _items = None
+
+    def _parseLength(self):
         """
-         Parses body of the packet
-         @param body: Body bytes
-         @protected
+         Parses packet length data.
+         If return None, then offset is shifted to calcsize(self._fmtLength)
+         otherwise to the returned value
+         @return:
         """
-        buffer = self.__rawData
-        length = self.length
-        if buffer == None: return
-        if len(buffer) < length: return
 
-        self.__number = unpack("<H", buffer[:2])[0]
-        self.__params['time'] = datetime.fromtimestamp(
-            unpack("<L", buffer[2:6])[0]) #- timedelta(hours=4)
-        self.__params['satellitescount'] = unpack("<B", buffer[6:7])[0]
-        self.__params['latitude'] = self.convertCoordinate(
-            unpack("<L", buffer[7:11])[0])
-        self.__params['longitude'] = self.convertCoordinate(
-            unpack("<L", buffer[11:15])[0])
-        self.__params['speed'] = unpack("<H", buffer[15:17])[0] / 10
-        self.__params['azimuth'] = int(round(
-            unpack("<H", buffer[17:19])[0] / 10))
-        self.__params['altitude'] = unpack("<H", buffer[19:21])[0]
-        self.__params['hdop'] = unpack("<B", buffer[21:22])[0] / 10
-        self.__additional = buffer[22:length]
-
-        # apply new data
-        self.__rawDataTail = buffer[length:]
-        self.__rawData = buffer[:length]
-
-    @property
-    def length(self):
-        return 22 + self.getAdditionalDataLength(self.__dataStructure)
-
-    @property
-    def rawData(self):
-        return self.__rawData
-
-    @property
-    def rawDataTail(self):
-        return self.__rawDataTail
-
-    @property
-    def number(self):
-        return self.__number
-
-    @property
-    def params(self):
-        return self.__params
-
-    @property
-    def additional(self):
-        return self.__additional
 
 # ---------------------------------------------------------------------------
 
@@ -509,31 +406,17 @@ class PacketFactory:
         return packets
 
     @classmethod
-    def getClass(cls, number):
-        """
-         Returns a tag class by number
-        """
-        classes = {
-            0: PacketHead,
-            1: PacketData,
-            2: PacketAnswer
-        }
-        if (not (number in classes)):
-            return None
-        return classes[number]
-
-    @classmethod
     def getInstance(cls, data = None):
         """
           Returns a tag instance by its number
+          @return: BasePacket instance
         """
         if data == None: return
-
+        CLASS = PacketHead
         # read header and length
-        length = unpack("<H", data[:2])[0]
-        number = length >> 14
-
-        CLASS = cls.getClass(number)
+        length = unpack(">H", data[:2])[0]
+        if length == 0:
+            CLASS = PacketData
         if not CLASS:
             raise Exception('Packet %s is not found' % number)
         return CLASS(data)
@@ -549,101 +432,68 @@ class TestCase(unittest.TestCase):
         pass
 
     def test_headPacket(self):
-        packet = PacketFactory.getInstance(
-          b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9')
+        packet = PacketFactory.getInstance(b'\x00\x0f012896001609129')
         self.assertEqual(isinstance(packet, PacketHead), True)
         self.assertEqual(isinstance(packet, PacketData), False)
-        self.assertEqual(packet.header, 0)
-        self.assertEqual(packet.length, 18)
-        self.assertEqual(packet.body, b'\x01\x00012896001609129\x06')
-        self.assertEqual(packet.crc, 47519)
+        self.assertEqual(packet.length, 15)
+        self.assertEqual(packet.body, b'012896001609129')
+        self.assertEqual(packet.deviceImei, '012896001609129')
 
-    def test_setPacketBody(self):
-        packet = PacketFactory.getInstance(
-          b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9')
-        self.assertEqual(packet.length, 18)
-        self.assertEqual(isinstance(packet, PacketHead), True)
-        packet.body = b'\x22\x00012896001609129\x05'
-        self.assertEqual(packet.length, 18)
-        self.assertEqual(packet.deviceNumber, 34)
-        self.assertEqual(packet.deviceIMEI, '012896001609129')
-        self.assertEqual(packet.protocolVersion, 5)
-        self.assertEqual(packet.rawData, b'\x12\x00\x22\x00012896001609129\x05$6')
+    def test_AvlDataArray(self):
+        data = b'\x08\x04\x00\x00\x01\x13\xfc\x20\x8d\xff\x00\x0f\x14\xf6' + \
+            b'\x50\x20\x9c\xca\x80\x00\x6f\x00\xd6\x04\x00\x04\x00\x04\x03' + \
+            b'\x01\x01\x15\x03\x16\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x00' + \
+            b'\x00\x01\x13\xfc\x17\x61\x0b\x00\x0f\x14\xff\xe0\x20\x9c\xc5' + \
+            b'\x80\x00\x6e\x00\xc0\x05\x00\x01\x00\x04\x03\x01\x01\x15\x03' + \
+            b'\x16\x01\x00\x01\x46\x00\x00\x01\x5e\x00\x00\x00\x01\x13\xfc' + \
+            b'\x28\x49\x45\x00\x0f\x15\x0f\x00\x20\x9c\xd2\x00\x00\x95\x01' + \
+            b'\x08\x04\x00\x00\x00\x04\x03\x01\x01\x15\x00\x16\x03\x00\x01' + \
+            b'\x46\x00\x00\x01\x5d\x00\x00\x00\x01\x13\xfc\x26\x7c\x5b\x00' + \
+            b'\x0f\x15\x0a\x50\x20\x9c\xcc\xc0\x00\x93\x00\x68\x04\x00\x00' + \
+            b'\x00\x04\x03\x01\x01\x15\x00\x16\x03\x00\x01\x46\x00\x00\x01' + \
+            b'\x5b\x00\x04'
+        avl = AvlDataArray(data)
+        self.assertEqual(avl.codecId, 8)
+        self.assertEqual(len(avl.items), 4)
+        item = avl.items[0]
+        self.assertEqual(item.datetime.
+            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2007-07-25T06:46:38.335000')
+        self.assertEqual(item.priority, 0)
+        self.assertEqual(item.longitude, 25.3032016)
+        self.assertEqual(item.latitude, 54.7146368)
+        self.assertEqual(item.altitude, 111)
+        self.assertEqual(item.angle, 214)
+        self.assertEqual(item.satellitesCount, 4)
+        self.assertEqual(item.speed, 4)
+        self.assertEqual(item.ioElement, {
+            'eventIoId': 0,
+            'items': [{'id': 1,  'value': 1},
+                      {'id': 21, 'value': 3},
+                      {'id': 22, 'value': 3},
+                      {'id': 70, 'value': 349}]
+        })
 
-    def test_packetTail(self):
-        packets = PacketFactory.getPacketsFromBuffer(
-          b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9' +
-          b'\x12\x00\x22\x00012896001609129\x05$6')
-        self.assertEqual(len(packets), 2)
+    def test_PacketData(self):
+        data = b'\x00\x00\x00\x00\x00\x00\x00\x2c\x08\x01\x00\x00\x01\x13' + \
+               b'\xfc\x20\x8d\xff\x00\x0f\x14\xf6\x50\x20\x9c\xca\x80\x00' + \
+               b'\x6f\x00\xd6\x04\x00\x04\x00\x04\x03\x01\x01\x15\x03\x16' + \
+               b'\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x01\x00\x00'
+        packet = PacketData(data)
+        avl = packet.AvlDataArray
+        self.assertEqual(avl.codecId, 8)
+        self.assertEqual(len(avl.items), 1)
 
-    def test_dataPacket(self):
-        packets = PacketFactory.getPacketsFromBuffer(
-          b'\xe2C\x01\x00\x00\x00\x00\x00s\x01\xaaP\x10HfR\x034\x91=\x02' +
-          b'\x00\x00\x00\x00\x00\x00\xff\x01\x00s\x01\xaaP\x10HfR\x034\x91' +
-          b'=\x02\x00\x00\x00\x00\x00\x00\xff\x02\x00\x8f\x02\xaaP\x068fR' +
-          b'\x03\x18\x91=\x02\x01\x00\x00\x00\xb0\x00\x1c\x03\x00\xae\x02' +
-          b'\xaaP\x07\xfceR\x03t\x91=\x02\x03\x00\x00\x00\x9c\x00\x1a\x04' +
-          b'\x00\xbd\x02\xaaP\x07\xfceR\x03\x84\x91=\x02\x00\x007\x04\xa3' +
-          b'\x00\x1a\x05\x00\'\x03\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00' +
-          b'\x00\xa3\x00\x0b\x06\x00\xa0\x03\xaaP\t\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00\x00\x00\xa2\x00\r\x07\x00\x19\x04\xaaP\n\xfceR\x03\x84' +
-          b'\x91=\x02\x00\x00X\n\xa0\x00\x0b\x08\x00\x92\x04\xaaP\x0b\xfceR' +
-          b'\x03\x84\x91=\x02\x00\x00\x00\x00\x9c\x00\n\t\x00\x0b\x05\xaaP' +
-          b'\n\xfceR\x03\x84\x91=\x02\x00\x00+\n\x9a\x00\n\n\x00\x84\x05\xaa' +
-          b'P\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xb9\t\x99\x00\t\x0b\x00\xfd' +
-          b'\x05\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x98\x00\n' +
-          b'\x0c\x00v\x06\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x99' +
-          b'\x00\x0b\r\x00\xef\x06\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00' +
-          b'\xe4\x08\x98\x00\x08\x0e\x00h\x07\xaaP\t\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00H\n\x98\x00\n\x0f\x00\xe1\x07\xaaP\x0c\xfceR\x03\x84\x91' +
-          b'=\x02\x00\x008\x0c\x98\x00\x08\x10\x00Z\x08\xaaP\x0b\xfceR\x03' +
-          b'\x84\x91=\x02\x00\x00\x00\x00\x98\x00\n\x11\x00\xd3\x08\xaaP' +
-          b'\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xe5\t\x98\x00\t\x12\x00L\t' +
-          b'\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x93\x00\x08\x13' +
-          b'\x00\xc5\t\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\\\n\x93\x00' +
-          b'\x08\x14\x00>\n\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00' +
-          b'\x93\x00\t\x15\x00\xb7\n\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
-          b'\xad\x04\x92\x00\t\x16\x000\x0b\xaaP\x0b\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00\x00\x00\x93\x00\t\x17\x00\xa9\x0b\xaaP\r\xfceR\x03\x84' +
-          b'\x91=\x02\x00\x00\xd6\x03\x93\x00\x08\x18\x00"\x0c\xaaP\x0c\xfc' +
-          b'eR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\x08\x19\x00\x9b\x0c' +
-          b'\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\n\x1a\x00' +
-          b'\x14\r\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\x0b' +
-          b'\x1b\x00\x8d\r\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x95' +
-          b'\x00\x0c\x1c\x00\x06\x0e\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
-          b'\x00\x00\x95\x00\n\x1d\x00\x7f\x0e\xaaP\n\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00k\x03\x95\x00\x0b\x1e\x00\xf8\x0e\xaaP\n\xfceR\x03\x84' +
-          b'\x91=\x02\x00\x00\x00\x00\x97\x00\n\x1f\x00q\x0f\xaaP\t\xfceR' +
-          b'\x03\x84\x91=\x02\x00\x00\x00\x00\x97\x00\r \x00\xea\x0f\xaaP' +
-          b'\x0c\xfceR\x03\x84\x91=\x02\x00\x00~\x04\x96\x00\n!\x00c\x10' +
-          b'\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x96\x00\x0b"\x00' +
-          b'\xdc\x10\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x96' +
-          b'\x00\x0e#\x00U\x11\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00V\t' +
-          b'\x96\x00\x0c$\x00\xce\x11\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
-          b'\x00\x00\x97\x00\n%\x00G\x12\xaaP\x0c\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00\xec\t\x97\x00\n&\x00\xc0\x12\xaaP\x0c\xfceR\x03\x84' +
-          b'\x91=\x02\x00\x00\x00\x00\x97\x00\n\'\x009\x13\xaaP\n\xfceR\x03' +
-          b'\x84\x91=\x02\x00\x00\x00\x00\x97\x00\n(\x00\xb2\x13\xaaP\n\xfc' +
-          b'eR\x03\x84\x91=\x02\x00\x00\x00\x00\x97\x00\x0c)\x00+\x14\xaaP' +
-          b'\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x98\x00\t*\x00\xa4' +
-          b'\x14\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x99\x00' +
-          b'\x12+\x00\x1d\x15\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xad' +
-          b'\x06\x9b\x00\t,\x00\x96\x15\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00' +
-          b'\x00\x00\x00\x9b\x00\n\x98+')
-        self.assertEqual(len(packets), 1)
-        packet = packets[0]
-        self.assertEqual(isinstance(packet, PacketData), True)
-        self.assertEqual(len(packet.items), 45)
-        packetItem = packet.items[3]
-        self.assertEqual(isinstance(packetItem, PacketDataItem), True)
-        self.assertEqual(packetItem.params['speed'], 0.3)
-        self.assertEqual(packetItem.params['latitude'], 55.731708)
-        self.assertEqual(packetItem.params['longitude'], 37.589364)
-        self.assertEqual(packetItem.params['satellitescount'], 7)
-        self.assertEqual(packetItem.params['time'].
-            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2012-11-19T13:58:06.000000')
-        packetItem2 = packet.items[6]
-        self.assertEqual(packetItem2.params['speed'], 0)
-        self.assertEqual(packetItem2.params['satellitescount'], 9)
-        self.assertEqual(packetItem2.number, 6)
-        self.assertEqual(packetItem2.additional, b'')
+    def test_readConfigurationPacket(self):
+        data = b'\x00\x92\x8c\x00\x1b\x03\xe8\x00\x01\x30\x03\xf2\x00\x01' + \
+               b'\x31\x03\xf3\x00\x02\x32\x30\x03\xf4\x00\x02\x31\x30\x03' + \
+               b'\xfc\x00\x01\x30\x04\x06\x00\x01\x30\x04\x07\x00\x01\x30' + \
+               b'\x04\x08\x00\x01\x30\x04\x09\x00\x01\x30\x04\x0a\x00\x01' + \
+               b'\x30\x04\x10\x00\x01\x30\x04\x11\x00\x01\x30\x04\x12\x00' + \
+               b'\x01\x30\x04\x13\x00\x01\x30\x04\x14\x00\x01\x30\x04\x1a' +\
+               b'\x00\x01\x30\x04\x1b\x00\x01\x30\x04\x1c\x00\x01\x30\x04' +\
+               b'\x1d\x00\x01\x30\x04\x1e\x00\x01\x30\x04\x24\x00\x01\x30' +\
+               b'\x04\x25\x00\x01\x30\x04\x26\x00\x01\x30\x04\x27\x00\x01' +\
+               b'\x30\x04\x28\x00\x01\x30\x0c\xbd\x00\x0c\x2b\x33\x37\x30' +\
+               b'\x34\x34\x34\x34\x34\x34\x34\x34'
+        packet = TeltonikaConfiguration(data)
+        self.assertEqual(packet.length, 146)

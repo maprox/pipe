@@ -53,7 +53,7 @@ class NavisetHandler(AbstractHandler):
         if isinstance(protocolPacket, packets.PacketHead):
             log.info('HeadPack is stored.')
             self.__headPacketRawData = protocolPacket.rawData
-            self.uid = protocolPacket.deviceIMEI
+            self.uid = protocolPacket.deviceImei
             return
 
         observerPackets = self.translate(protocolPacket)

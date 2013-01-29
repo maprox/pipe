@@ -14,9 +14,7 @@ from kernel.config import conf
 from lib.handler import AbstractHandler
 import lib.consts as consts
 import binascii
-from urllib.parse import urlencode
-from urllib.request import urlopen
-#import lib.handlers.teltonika.packets as packets
+import lib.handlers.teltonika.packets as packets
 
 # ---------------------------------------------------------------------------
 
@@ -35,11 +33,9 @@ class TeltonikaHandler(AbstractHandler):
          @param packnum: Number of socket packet (defaults to 0)
          @return: self
         """
-        """
         protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
         for protocolPacket in protocolPackets:
             self.processProtocolPacket(protocolPacket)
-        """
 
         return super(TeltonikaHandler, self).processData(data)
 
@@ -49,16 +45,16 @@ class TeltonikaHandler(AbstractHandler):
          @type protocolPacket: packets.Packet
          @param protocolPacket: Naviset protocol packet
         """
-        """
-        self.sendAcknowledgement(protocolPacket)
         if not self.__headPacketRawData:
             self.__headPacketRawData = b''
 
         if isinstance(protocolPacket, packets.PacketHead):
             log.info('HeadPack is stored.')
             self.__headPacketRawData = protocolPacket.rawData
-            self.uid = protocolPacket.deviceIMEI
+            self.uid = protocolPacket.deviceImei
             return
+
+        self.sendAcknowledgement(protocolPacket)
 
         observerPackets = self.translate(protocolPacket)
         if len(observerPackets) == 0:
@@ -68,8 +64,6 @@ class TeltonikaHandler(AbstractHandler):
         log.info(observerPackets)
         self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
-        """
-        pass
 
     def sendCommand(self, command):
         """
@@ -92,7 +86,6 @@ class TeltonikaHandler(AbstractHandler):
          Translate gps-tracker data to observer pipe format
          @param protocolPacket: Naviset protocol packet
         """
-        """
         list = []
         if (protocolPacket == None): return list
         if not isinstance(protocolPacket, packets.PacketData):
@@ -109,8 +102,6 @@ class TeltonikaHandler(AbstractHandler):
             #packet['sensors']['extbattery_low'] = value['extbattery_low']
             #packet['sensors']['analog_input0'] = value
         return list
-        """
-        pass
 
     def sendAcknowledgement(self, packet):
         """

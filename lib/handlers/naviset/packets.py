@@ -2,168 +2,57 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Naviset packets
-@copyright 2012, Maprox LLC
+@copyright 2013, Maprox LLC
 '''
 
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from struct import unpack, pack
 import lib.bits as bits
 import lib.crc16 as crc16
+from lib.packets import *
 
 # ---------------------------------------------------------------------------
 
-class Packet(object):
+class NavisetPacket(BasePacket):
     """
      Default naviset protocol packet
     """
 
-    # private properties
-    __header = 0
-    __length = 0
-    __rawData = None
-    __rawDataTail = None
-    __body = None
-    __crc = 0
-
     # protected properties
-    _rebuild = True     # flag to rebuild rawData
+    _fmtHeader = None   # header format
+    _fmtLength = '<H'   # packet length format
+    _fmtChecksum = '<H' # checksum format
 
-    def __init__(self, data = None):
-        """
-         Constructor
-         @param data: Input binary data
-        """
-        self.rawData = data
-
-    @property
-    def header(self):
-        if self._rebuild: self.__build()
-        return self.__header
-
-    @header.setter
-    def header(self, value):
-        if (value < 4):
-            self.__header = value
-            self._rebuild = True
-
-    @property
-    def length(self):
-        if self._rebuild: self.__build()
-        return self.__length
-
-    @property
-    def rawData(self):
-        if self._rebuild: self.__build()
-        return self.__rawData
-
-    @rawData.setter
-    def rawData(self, value):
-        self._rebuild = False
-        self.__rawData = value
-        self.__parse()
-
-    @property
-    def rawDataTail(self):
-        return self.__rawDataTail
-
-    @property
-    def body(self):
-        if self._rebuild: self.__build()
-        return self.__body
-
-    @body.setter
-    def body(self, value):
-        self.__body = value
-        self._parseBody(value)
-        self._rebuild = True
-
-    @property
-    def crc(self):
-        if self._rebuild: self.__build()
-        return self.__crc
-
-    def __parse(self):
-        """
-         Parses rawData
-        """
-        buffer = self.__rawData
-        if buffer == None: return
-
+    def _parseLength(self):
         # read header and length
-        length = unpack("<H", buffer[:2])[0]
-        header = length >> 14
-        length = bits.bitClear(length, 15)
-        length = bits.bitClear(length, 14)
+        head = unpack(self._fmtLength, self._head)[0]
+        head = bits.bitClear(head, 15)
+        head = bits.bitClear(head, 14)
+        self._length = head
+        self._header = head >> 14
 
-        # now let's read packet data
-        # but before this, check body length
-        body = buffer[2:length + 2]
-        if len(body) != length:
-            raise Exception('Body length Is incorrect! ' +
-                str(length) + ' (said) != ' + str(len(body)) + ' (real)')
-
-        crc = unpack("<H", buffer[length + 2:length + 4])[0]
-        crc_data = buffer[:length + 2]
-        crc_calculated = self.getCrc(crc_data)
-        if (crc != crc_calculated):
-            raise Exception('Crc Is incorrect! ' +
-                str(crc) + ' (said) != ' + str(crc_calculated) + ' (real)')
-
-        # apply new data
-        self.__rawDataTail = buffer[length + 4:]
-        self.__rawData = buffer[:length + 4]
-        self.__header = header
-        self.__length = length
-        self.__body = body
-        self.__crc = crc
-
-        # parse packet body
-        self._parseBody(body)
-
-    def __build(self):
+    def _buildHead(self):
         """
          Builds rawData from object variables
          @protected
         """
-        self.__body = self._buildBody()
-        self._rebuild = False
-        self.__length = len(self.__body)
-        head = self.__length + (self.__header << 14)
+        length = len(self._body)
+        data = length + (self._header << 14)
+        return pack(self._fmtLength, data)
 
-        self.__rawData = pack("<H", head)
-        self.__rawData += self.__body
-        self.__crc = crc16.Crc16.calcBinaryString(
-          self.__rawData,
-          crc16.INITIAL_MODBUS
-        )
-        self.__rawData += pack("<H", self.__crc)
-
-    def _parseBody(self, data):
-        """
-         Parses body of the packet
-        """
-        pass
-
-    def _buildBody(self):
-        """
-         Parses body of the packet
-        """
-        return self.__body
-
-    @classmethod
-    def getCrc(cls, buffer):
+    def calculateChecksum(self):
         """
          Calculates CRC (CRC-16 Modbus)
          @param buffer: binary string
          @return: True if buffer crc equals to supplied crc value, else False
         """
-        return crc16.Crc16.calcBinaryString(
-            buffer, crc16.INITIAL_MODBUS)
+        data = self._head + self._body
+        return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
 
 # ---------------------------------------------------------------------------
 
-class PacketNumbered(Packet):
+class PacketNumbered(NavisetPacket):
     """
       Packet of naviset messaging protocol with device number in body
     """
@@ -171,14 +60,14 @@ class PacketNumbered(Packet):
     # private properties
     __deviceNumber = 0
 
-    def _parseBody(self, body):
+    def _parseBody(self):
         """
          Parses body of the packet
          @param body: Body bytes
          @protected
         """
-        super(PacketNumbered, self)._parseBody(body)
-        self.__deviceNumber = unpack("<H", body[:2])[0]
+        super(PacketNumbered, self)._parseBody()
+        self.__deviceNumber = unpack("<H", self._body[:2])[0]
 
     def _buildBody(self):
         """
@@ -191,7 +80,7 @@ class PacketNumbered(Packet):
 
     @property
     def deviceNumber(self):
-        if self._rebuild: self.__build()
+        if self._rebuild: self._build()
         return self.__deviceNumber
 
     @deviceNumber.setter
@@ -207,19 +96,19 @@ class PacketHead(PacketNumbered):
       Head packet of naviset messaging protocol
     """
     # private properties
-    __deviceIMEI = 0
+    __deviceImei = 0
     __protocolVersion = None
 
-    def _parseBody(self, body):
+    def _parseBody(self):
         """
          Parses body of the packet
          @param body: Body bytes
          @protected
         """
-        super(PacketHead, self)._parseBody(body)
+        super(PacketHead, self)._parseBody()
         lengthOfIMEI = 15
-        self.__deviceIMEI = body[2:2 + lengthOfIMEI].decode()
-        self.__protocolVersion = unpack("<B", body[-1:])[0]
+        self.__deviceImei = self._body[2:2 + lengthOfIMEI].decode()
+        self.__protocolVersion = unpack("<B", self._body[-1:])[0]
 
     def _buildBody(self):
         """
@@ -227,24 +116,24 @@ class PacketHead(PacketNumbered):
          @protected
         """
         result = super(PacketHead, self)._buildBody()
-        result += self.__deviceIMEI.encode()
+        result += self.__deviceImei.encode()
         result += pack('<B', self.__protocolVersion)
         return result
 
     @property
-    def deviceIMEI(self):
-        if self._rebuild: self.__build()
-        return self.__deviceIMEI
+    def deviceImei(self):
+        if self._rebuild: self._build()
+        return self.__deviceImei
 
-    @deviceIMEI.setter
-    def deviceIMEI(self, value):
+    @deviceImei.setter
+    def deviceImei(self, value):
         if (len(value) == 15):
-            self.__deviceIMEI = str(value)
+            self.__deviceImei = str(value)
             self._rebuild = True
 
     @property
     def protocolVersion(self):
-        if self._rebuild: self.__build()
+        if self._rebuild: self._build()
         return self.__protocolVersion
 
     @protocolVersion.setter
@@ -267,7 +156,7 @@ class Command():
 
 # ---------------------------------------------------------------------------
 
-class PacketAnswer(Packet):
+class PacketAnswer(NavisetPacket):
     """
       Data packet of naviset messaging protocol
     """
@@ -275,13 +164,13 @@ class PacketAnswer(Packet):
     # private properties
     __command = 0
 
-    def _parseBody(self, body):
+    def _parseBody(self):
         """
          Parses body of the packet
          @param body: Body bytes
          @protected
         """
-        super(PacketAnswer, self)._parseBody(body)
+        super(PacketAnswer, self)._parseBody()
         self.__command = Command.CMD_GET_STATUS
 
     def _buildBody(self):
@@ -295,7 +184,7 @@ class PacketAnswer(Packet):
 
     @property
     def command(self):
-        if self._rebuild: self.__build()
+        if self._rebuild: self._build()
         return self.__command
 
     @command.setter
@@ -322,15 +211,15 @@ class PacketData(PacketNumbered):
         self.__items = []
         super(PacketData, self).__init__(data)
 
-    def _parseBody(self, body):
+    def _parseBody(self):
         """
          Parses body of the packet
          @param body: Body bytes
          @protected
         """
-        super(PacketData, self)._parseBody(body)
-        self.__dataStructure = unpack('<H', body[2:4])[0]
-        self.__itemsData = body[4:]
+        super(PacketData, self)._parseBody()
+        self.__dataStructure = unpack('<H', self._body[2:4])[0]
+        self.__itemsData = self._body[4:]
         self.__items = PacketDataItem.getDataItemsFromBuffer(
             self.__itemsData,
             self.__dataStructure
@@ -444,7 +333,7 @@ class PacketDataItem:
         if len(buffer) < length: return
 
         self.__number = unpack("<H", buffer[:2])[0]
-        self.__params['time'] = datetime.fromtimestamp(
+        self.__params['time'] = datetime.utcfromtimestamp(
             unpack("<L", buffer[2:6])[0]) #- timedelta(hours=4)
         self.__params['satellitescount'] = unpack("<B", buffer[6:7])[0]
         self.__params['latitude'] = self.convertCoordinate(
@@ -556,19 +445,21 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.header, 0)
         self.assertEqual(packet.length, 18)
         self.assertEqual(packet.body, b'\x01\x00012896001609129\x06')
-        self.assertEqual(packet.crc, 47519)
+        self.assertEqual(packet.checksum, 47519)
 
     def test_setPacketBody(self):
         packet = PacketFactory.getInstance(
           b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9')
         self.assertEqual(packet.length, 18)
         self.assertEqual(isinstance(packet, PacketHead), True)
+        self.assertEqual(packet.checksum, 47519)
         packet.body = b'\x22\x00012896001609129\x05'
         self.assertEqual(packet.length, 18)
         self.assertEqual(packet.deviceNumber, 34)
-        self.assertEqual(packet.deviceIMEI, '012896001609129')
+        self.assertEqual(packet.deviceImei, '012896001609129')
         self.assertEqual(packet.protocolVersion, 5)
         self.assertEqual(packet.rawData, b'\x12\x00\x22\x00012896001609129\x05$6')
+        self.assertEqual(packet.checksum, 13860)
 
     def test_packetTail(self):
         packets = PacketFactory.getPacketsFromBuffer(
@@ -641,7 +532,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packetItem.params['longitude'], 37.589364)
         self.assertEqual(packetItem.params['satellitescount'], 7)
         self.assertEqual(packetItem.params['time'].
-            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2012-11-19T13:58:06.000000')
+            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2012-11-19T09:58:06.000000')
         packetItem2 = packet.items[6]
         self.assertEqual(packetItem2.params['speed'], 0)
         self.assertEqual(packetItem2.params['satellitescount'], 9)

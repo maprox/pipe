@@ -22,8 +22,8 @@ class BasePacket(object):
     # private properties
     __header = 0
     __length = 0
-    __rawdata = None
-    __rawdatatail = None
+    __rawData = None
+    __rawDataTail = None
     __body = None
     __crc = 0
     __convert = True
@@ -39,7 +39,7 @@ class BasePacket(object):
         packets = []
         while True:
             packet = cls(data)
-            data = packet.rawdatatail
+            data = packet.rawDataTail
             packets.append(packet)
             if (len(data) == 0): break
         return packets
@@ -49,7 +49,7 @@ class BasePacket(object):
          Constructor
          @param data: Input binary data
         """
-        self.rawdata = data
+        self.rawData = data
 
     def isHalved(self, header):
         """
@@ -86,18 +86,18 @@ class BasePacket(object):
         self.rebuild()
 
     @property
-    def rawdatatail(self):
-        return self.__rawdatatail
+    def rawDataTail(self):
+        return self.__rawDataTail
 
     @property
-    def rawdata(self):
+    def rawData(self):
         if self.__convert: self.__build()
-        return self.__rawdata
+        return self.__rawData
 
-    @rawdata.setter
-    def rawdata(self, value):
+    @rawData.setter
+    def rawData(self, value):
         self.__convert = False
-        self.__rawdata = value
+        self.__rawData = value
         self.__parse()
 
     @property
@@ -121,9 +121,9 @@ class BasePacket(object):
 
     def __parse(self):
         """
-         Parses rawdata
+         Parses rawData
         """
-        buffer = self.__rawdata
+        buffer = self.__rawData
         if buffer == None: return
 
         # read header and length
@@ -145,8 +145,8 @@ class BasePacket(object):
             raise Exception('Body length Is incorrect!');
 
         # apply new data
-        self.__rawdatatail = buffer[length + 5:]
-        self.__rawdata = buffer[:length + 5]
+        self.__rawDataTail = buffer[length + 5:]
+        self.__rawData = buffer[:length + 5]
         self.__archive = archive
         self.__header = header
         self.__length = length
@@ -158,7 +158,7 @@ class BasePacket(object):
 
     def __build(self):
         """
-         Builds rawdata from object variables
+         Builds rawData from object variables
          @protected
         """
         self.__body = self._buildBody()
@@ -170,13 +170,13 @@ class BasePacket(object):
             if self.__archive:
                 length = bits.bitSet(self.__length, 15)
 
-        self.__rawdata = pack("<BH", self.__header, length)
-        self.__rawdata += self.__body
+        self.__rawData = pack("<BH", self.__header, length)
+        self.__rawData += self.__body
         self.__crc = crc16.Crc16.calcBinaryString(
-          self.__rawdata,
+          self.__rawData,
           crc16.INITIAL_MODBUS
         )
-        self.__rawdata += pack("<H", self.__crc)
+        self.__rawData += pack("<H", self.__crc)
 
     def _parseBody(self, data):
         """
@@ -269,7 +269,7 @@ class Packet(BasePacket):
 
     def _buildBody(self):
         """
-         Builds rawdata from object variables
+         Builds rawData from object variables
          @protected
         """
         if self.tags and (len(self.tags) > 0):
@@ -333,7 +333,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.crc, 36996)
         packet.header = 15
         packet.body = b'\x00\x00'
-        self.assertEqual(packet.rawdata, b'\x0F\x02\x00\x00\x00q\xb9')
+        self.assertEqual(packet.rawData, b'\x0F\x02\x00\x00\x00q\xb9')
         self.assertEqual(packet.length, 2)
 
     def test_defaultPacket(self):
@@ -352,7 +352,7 @@ class TestCase(unittest.TestCase):
         tagslist.append(tags.Tag.getInstance(0xE0, b'\xFA\x72\x50\x25'))
         tagslist.append(tags.Tag.getInstance(0xE1, b'Makephoto 1'))
         packet.tags = tagslist
-        self.assertEqual(packet.rawdata, b'\x01&\x00\x032345545456444445' +
+        self.assertEqual(packet.rawData, b'\x01&\x00\x032345545456444445' +
           b'\x04\x03\x04\xe0\xfarP%\xe1\x0bMakephoto 1\xbc\xb5')
 
     def test_answerPacketPhoto(self):

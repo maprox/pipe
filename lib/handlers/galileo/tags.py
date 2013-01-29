@@ -114,7 +114,7 @@ class Tag(object):
 
     def getRawDataFromValue(self, value):
         """
-         Converts rawdata to value
+         Converts rawData to value
         """
         return value
 
@@ -198,7 +198,7 @@ class TagDateTime(TagNumberLong):
         """
         if (rawdata == None): return None
         timestamp = super(TagDateTime, self).getValueFromRawData(rawdata)
-        return datetime.fromtimestamp(timestamp)
+        return datetime.utcfromtimestamp(timestamp)
 
     def getRawDataFromValue(self, value):
         """
@@ -936,8 +936,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(tag.getValue(), 1027)
 
     def test_tag32(self):
-        tag = Tag.getInstance(32, b'\x13\x04\xAF\x4F') # 2012-05-13 04:45:07
-        self.assertEqual(tag.getValue(), datetime(2012, 5, 13, 4, 45, 7))
+        tag = Tag.getInstance(32, b'\x13\x04\xAF\x4F') # 2012-05-13 00:45:07
+        self.assertEqual(tag.getValue(), datetime(2012, 5, 13, 0, 45, 7))
 
     def test_tag48(self):
         tag = Tag.getInstance(48, b'\x07\xC0\x0E\x32\x03\xB8\xD7\x2D\x05')

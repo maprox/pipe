@@ -22,11 +22,11 @@ class DatabaseAbstract(object):
     def __init__(self):
         """ Constructor. Inits redis connection """
         if conf.redisPassword:
-            self._store = redis.StrictRedis(password=conf.redisPassword, \
-              host=conf.redisHost, port=conf.redisPort, db=0)
+            self._store = redis.StrictRedis(password=conf.redisPassword,
+                host=conf.redisHost, port=conf.redisPort, db=0)
         else:
-            self._store = redis.StrictRedis(host=conf.redisHost, \
-              port=conf.redisPort, db=0)
+            self._store = redis.StrictRedis(host=conf.redisHost,
+                port=conf.redisPort, db=0)
 
     def getCommands(self):
         """ Reads command from redis """

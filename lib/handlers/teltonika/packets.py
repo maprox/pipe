@@ -175,104 +175,17 @@ class AvlData(BinaryPacket):
       Item of data packet of naviset messaging protocol
     """
     # protected properties
-    _timestamp = None
-    _priority = None
-    _longitude = None
-    _latitude = None
-    _altitude =  None
-    _angle = None
-    _satellitesCount = None
-    _speed = None
+    _params = None
     _ioElement = None
 
     @property
-    def timestamp(self):
+    def params(self):
         if self._rebuild: self._build()
-        return self._timestamp
+        return self._params
 
-    @timestamp.setter
-    def timestamp(self, value):
-        self._timestamp = value
-        self._rebuild = True
-
-    @property
-    def datetime(self):
-        if self._rebuild: self._build()
-        return datetime.utcfromtimestamp(self._timestamp / 1000)
-
-    @datetime.setter
-    def datetime(self, value):
-        self._timestamp = int(value.strftime("%s"))
-        self._rebuild = True
-
-    @property
-    def priority(self):
-        if self._rebuild: self._build()
-        return self._priority
-
-    @priority.setter
-    def priority(self, value):
-        self._priority = value
-        self._rebuild = True
-
-    @property
-    def longitude(self):
-        if self._rebuild: self._build()
-        return self._longitude
-
-    @longitude.setter
-    def longitude(self, value):
-        self._longitude = value
-        self._rebuild = True
-
-    @property
-    def latitude(self):
-        if self._rebuild: self._build()
-        return self._latitude
-
-    @latitude.setter
-    def latitude(self, value):
-        self._latitude = value
-        self._rebuild = True
-
-    @property
-    def altitude(self):
-        if self._rebuild: self._build()
-        return self._altitude
-
-    @altitude.setter
-    def altitude(self, value):
-        self._altitude = value
-        self._rebuild = True
-
-    @property
-    def angle(self):
-        if self._rebuild: self._build()
-        return self._angle
-
-    @angle.setter
-    def angle(self, value):
-        self._angle = value
-        self._rebuild = True
-
-    @property
-    def satellitesCount(self):
-        if self._rebuild: self._build()
-        return self._satellitesCount
-
-    @satellitesCount.setter
-    def satellitesCount(self, value):
-        self._satellitesCount = value
-        self._rebuild = True
-
-    @property
-    def speed(self):
-        if self._rebuild: self._build()
-        return self._speed
-
-    @speed.setter
-    def speed(self, value):
-        self._speed = value
+    @params.setter
+    def params(self, value):
+        self._params = value
         self._rebuild = True
 
     @property
@@ -285,6 +198,11 @@ class AvlData(BinaryPacket):
         self._ioElement = value
         self._rebuild = True
 
+    def convertCoordinate(self, coord):
+        result = str(coord)
+        result = result[:2] + '.' + result[2:]
+        return float(result)
+
     def _parseBody(self):
         """
          Parses packet's head
@@ -292,15 +210,17 @@ class AvlData(BinaryPacket):
         """
         super(AvlData, self)._parseBody()
         self._body = self._rawData
-        self._timestamp = self.readFrom('>Q')
-        self._priority = self.readFrom('>B')
-        precision = 10000000
-        self._longitude = self.readFrom('>l') / precision
-        self._latitude = self.readFrom('>l') / precision
-        self._altitude = self.readFrom('>H')
-        self._angle = self.readFrom('>H')
-        self._satellitesCount = self.readFrom('>B')
-        self._speed = self.readFrom('>H')
+
+        self._params = {}
+        self._params['time'] = datetime.utcfromtimestamp(
+            self.readFrom('>Q') / 1000)
+        self._params['priority'] = self.readFrom('>B')
+        self._params['longitude'] = self.convertCoordinate(self.readFrom('>l'))
+        self._params['latitude'] = self.convertCoordinate(self.readFrom('>l'))
+        self._params['altitude'] = self.readFrom('>H')
+        self._params['azimuth'] = self.readFrom('>H')
+        self._params['satellitescount'] = self.readFrom('>B')
+        self._params['speed'] = self.readFrom('>H')
 
         # get ioElement
         eventIoId = self.readFrom('>B')
@@ -452,6 +372,19 @@ class TeltonikaConfiguration(BasePacket):
         for param in self._params:
             self._body += param.rawData
         return super(TeltonikaConfiguration, self)._buildHead()
+
+    def isCorrectAnswer(self, buffer):
+        """
+         Returns true if tracker answer is correct
+         @param buffer: str
+         @return: True if answer is correct
+        """
+        if len(buffer) < 3:
+            return False
+        packetId = unpack('>B', buffer[:1])[0]
+        packetLength = unpack('>H', buffer[1:3])[0]
+        return (packetId == self.packetId) and \
+               (packetLength == self.length)
 
 # ---------------------------------------------------------------------------
 
@@ -630,7 +563,7 @@ class PacketFactory:
     @classmethod
     def getInstance(cls, data = None):
         """
-          Returns a tag instance by its number
+          Returns a packet instance by its number
           @return: BasePacket instance
         """
         if data == None: return
@@ -678,15 +611,15 @@ class TestCase(unittest.TestCase):
         self.assertEqual(avl.codecId, 8)
         self.assertEqual(len(avl.items), 4)
         item = avl.items[0]
-        self.assertEqual(item.datetime.
+        self.assertEqual(item.params['time'].
             strftime('%Y-%m-%dT%H:%M:%S.%f'), '2007-07-25T06:46:38.335000')
-        self.assertEqual(item.priority, 0)
-        self.assertEqual(item.longitude, 25.3032016)
-        self.assertEqual(item.latitude, 54.7146368)
-        self.assertEqual(item.altitude, 111)
-        self.assertEqual(item.angle, 214)
-        self.assertEqual(item.satellitesCount, 4)
-        self.assertEqual(item.speed, 4)
+        self.assertEqual(item.params['priority'], 0)
+        self.assertEqual(item.params['longitude'], 25.3032016)
+        self.assertEqual(item.params['latitude'], 54.7146368)
+        self.assertEqual(item.params['altitude'], 111)
+        self.assertEqual(item.params['azimuth'], 214)
+        self.assertEqual(item.params['satellitescount'], 4)
+        self.assertEqual(item.params['speed'], 4)
         self.assertEqual(item.ioElement, {
             'eventIoId': 0,
             'items': [{'id': 1,  'value': 1},
@@ -739,8 +672,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.length, 0)
         packet.addParam(12, 'SAMPLE')
         self.assertGreater(packet.length, 0)
-        packet.packetId = 1
+        packet.packetId = 15
         packet.addParam(1024, '1024')
         self.assertEqual(packet.rawData,
-            b'\x00\x15\x01\x00\x02\x00\x0c\x00\x06SAMPLE\x04\x00\x00\x041024')
-
+            b'\x00\x15\x0F\x00\x02\x00\x0c\x00\x06SAMPLE\x04\x00\x00\x041024')
+        self.assertTrue(packet.isCorrectAnswer(b'\x0F\x00\x15'))

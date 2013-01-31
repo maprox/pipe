@@ -77,6 +77,7 @@ class DatabaseHandler(DatabaseAbstract):
         self.set('task', task)
         self.set('reading', 1)
         self.set('start', time.time())
+        self.remove('data')
 
     def finishSettingsRead(self):
         """ Marks data as ready """
@@ -100,3 +101,34 @@ class DatabaseHandler(DatabaseAbstract):
 
     def _settingsKey(self):
         return 'tracker_setting' + self._uid
+
+# ===========================================================================
+# TESTS
+# ===========================================================================
+
+import unittest
+class TestCase(unittest.TestCase):
+
+    def setUp(self):
+        self._db = DatabaseHandler('UnitTest')
+
+    def test_storeUse(self):
+        try:
+            db = self._db
+            db.set('sample', 'WELCOME!')
+        except:
+            print('\nRedis server is not running?\n')
+            return
+        self.assertEqual(db.get('sample'), b'WELCOME!')
+        db.set('task', 10202)
+        self.assertEqual(db.get('task'), b'10202')
+        t = time.time()
+        db.set('task', t)
+        self.assertEqual(db.get('task'), str(t).encode())
+        db.startReadingSettings(22222)
+        db.remove('data')
+        db.addSettings('TEMPLATE')
+        self.assertEqual(db.getSettings(), 'TEMPLATE')
+        self.assertFalse(db.isSettingsReady())
+        self.assertEqual(db.get('task'), b'22222')
+        db.deleteSettings()

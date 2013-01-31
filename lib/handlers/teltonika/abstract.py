@@ -7,10 +7,13 @@
 
 
 import json
+import binascii
 from struct import pack
+from lib.ip import get_ip
 
 from kernel.logger import log
 from kernel.config import conf
+from kernel.dbmanager import db
 from lib.handler import AbstractHandler
 import lib.consts as consts
 import binascii
@@ -41,9 +44,9 @@ class TeltonikaHandler(AbstractHandler):
 
     def processProtocolPacket(self, protocolPacket):
         """
-         Process naviset packet.
+         Process teltonika packet.
          @type protocolPacket: packets.Packet
-         @param protocolPacket: Naviset protocol packet
+         @param protocolPacket: Teltonika protocol packet
         """
         if not self.__headPacketRawData:
             self.__headPacketRawData = b''
@@ -52,9 +55,19 @@ class TeltonikaHandler(AbstractHandler):
             log.info('HeadPack is stored.')
             self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
+
+        if self.uid is None:
+            return log.error('HeadPack is not found!')
+
+        # try to configure this tracker
+        if self.configure():
             return
 
+        # sends the acknowledgment
         self.sendAcknowledgement(protocolPacket)
+
+        if isinstance(protocolPacket, packets.PacketHead):
+            return
 
         observerPackets = self.translate(protocolPacket)
         if len(observerPackets) == 0:
@@ -64,6 +77,21 @@ class TeltonikaHandler(AbstractHandler):
         log.info(observerPackets)
         self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
+
+    def configure(self):
+        current_db = db.get(self.uid)
+        if not current_db.has('config'):
+            return False
+        data = current_db.get('config')
+        self.send(data)
+        log.debug('Configuration data sent: ' + data)
+        config = packets.TeltonikaConfiguration(data)
+        answer = b''
+        try:
+            answer = self.recv()
+        except Exception as E:
+            log.error(E)
+        return config.isCorrectAnswer(answer)
 
     def sendCommand(self, command):
         """
@@ -84,7 +112,7 @@ class TeltonikaHandler(AbstractHandler):
     def translate(self, protocolPacket):
         """
          Translate gps-tracker data to observer pipe format
-         @param protocolPacket: Naviset protocol packet
+         @param protocolPacket: Teltonika protocol packet
         """
         list = []
         if (protocolPacket == None): return list
@@ -96,24 +124,18 @@ class TeltonikaHandler(AbstractHandler):
             packet = {'uid': self.uid}
             packet.update(item.params)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            packet['hdop'] = 1 # temporarily manual value of hdop
             list.append(packet)
-            #packet['sensors']['acc'] = value['acc']
-            #packet['sensors']['sos'] = value['sos']
-            #packet['sensors']['extbattery_low'] = value['extbattery_low']
-            #packet['sensors']['analog_input0'] = value
         return list
 
     def sendAcknowledgement(self, packet):
         """
          Sends acknowledgement to the socket
-         @param packet: a L{packets.Packet} subclass
-        """
+         @param packet: a L{packets.BasePacket} subclass
         """
         buf = self.getAckPacket(packet)
-        log.info("Send acknowledgement, crc = %d" % packet.crc)
+        log.info("Send acknowledgement: h" + binascii.hexlify(buf).decode())
         return self.send(buf)
-        """
-        pass
 
     @classmethod
     def getAckPacket(cls, packet):
@@ -121,7 +143,10 @@ class TeltonikaHandler(AbstractHandler):
          Returns acknowledgement buffer value
          @param packet: a L{packets.Packet} subclass
         """
-        return b'\x01' + pack('<H', packet.crc)
+        if isinstance(packet, packets.PacketHead):
+            return b'\x01'
+        else:
+            return pack('>L', len(packet.AvlDataArray.items))
 
     def processCommandExecute(self, task, data):
         """
@@ -168,6 +193,12 @@ class TeltonikaHandler(AbstractHandler):
          @param config: config dict
          @return: array of dict or dict
         """
+        # create config packet and save it to the database
+        packet = self.getConfigurationPacket(config)
+        current_db = db.get(config['identifier'])
+        current_db.set('config', packet.rawData)
+        log.info(packet.rawData)
+        # create push-sms for configuration
         buffer = self.getInitiationSmsBuffer(config)
         data = [{
             'message': binascii.hexlify(buffer).decode(),
@@ -176,13 +207,31 @@ class TeltonikaHandler(AbstractHandler):
         }]
         return data
 
+    def getConfigurationPacket(self, config):
+        """
+         Returns Teltonika configuration packet
+         @param config: config dict
+         @return:
+        """
+        packet = packets.TeltonikaConfiguration()
+        packet.packetId = 1
+        packet.addParam(packets.CFG_TARGET_SERVER_IP_ADDRESS, str(get_ip()))
+        packet.addParam(packets.CFG_TARGET_SERVER_PORT, str(config['port']))
+        packet.addParam(packets.CFG_APN_NAME, config['gprs']['apn'])
+        packet.addParam(packets.CFG_APN_USERNAME, config['gprs']['username'])
+        packet.addParam(packets.CFG_APN_PASSWORD, config['gprs']['password'])
+        packet.addParam(packets.CFG_SMS_LOGIN, config['device']['login'])
+        packet.addParam(packets.CFG_SMS_PASSWORD, config['device']['password'])
+        return packet
+
     def processCommandReadSettings(self, task, data):
         """
          Sending command to read all of device configuration
          @param task: id task
          @param data: data string
         """
-        pass
+        log.error('Teltonika::processCommandReadSettings NOT IMPLEMENTED')
+        self.processCloseTask(task, None)
 
     def processCommandSetOption(self, task, data):
         """
@@ -190,25 +239,24 @@ class TeltonikaHandler(AbstractHandler):
          @param task: id task
          @param data: data dict()
         """
-        #current_db = db.get(self.uid)
-        #if not current_db.isReadingSettings():
-        #    pass
-        pass
+        log.error('Teltonika::processCommandSetOption NOT IMPLEMENTED')
+        self.processCloseTask(task, None)
 
 # ===========================================================================
 # TESTS
 # ===========================================================================
 
 import unittest
+import kernel.pipe as pipe
 
 class TestCase(unittest.TestCase):
 
     def setUp(self):
+        self.handler = TeltonikaHandler(pipe.Manager(), None)
         pass
 
     def test_packetData(self):
-        import kernel.pipe as pipe
-        h = TeltonikaHandler(pipe.Manager(), None)
+        h = self.handler
         config = h.getInitiationConfig({
             "identifier": "0123456789012345",
             "host": "trx.maprox.net",
@@ -226,3 +274,15 @@ class TestCase(unittest.TestCase):
             "id_action": 321312,
             "data": json.dumps(data)
         })
+
+    def test_packetAcknowledgement(self):
+        h = self.handler
+        data = b'\x00\x00\x00\x00\x00\x00\x00\x2c\x08\x01\x00\x00\x01\x13' +\
+               b'\xfc\x20\x8d\xff\x00\x0f\x14\xf6\x50\x20\x9c\xca\x80\x00' +\
+               b'\x6f\x00\xd6\x04\x00\x04\x00\x04\x03\x01\x01\x15\x03\x16' +\
+               b'\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x01\x00\x00'
+        packet = packets.PacketData(data)
+        self.assertEqual(h.getAckPacket(packet), b'\x00\x00\x00\x01')
+        packet = packets.PacketFactory.getInstance(b'\x00\x0f012896001609129')
+        self.assertEqual(h.getAckPacket(packet), b'\x01')
+

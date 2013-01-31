@@ -368,19 +368,241 @@ class AvlData(BinaryPacket):
 
 class TeltonikaConfiguration(BasePacket):
     """
-      Item of data packet of naviset messaging protocol
+      Item of data packet of teltonika fmxxxx configuration packet
     """
     _fmtLength = '>H'   # packet length format
     _packetId = 0
-    _items = None
+    _params = None
+    _paramsMap = None
 
-    def _parseLength(self):
+    @property
+    def packetId(self):
+        if self._rebuild: self._build()
+        return self._packetId
+
+    @packetId.setter
+    def packetId(self, value):
+        self._packetId = value
+        self._rebuild = True
+
+    @property
+    def params(self):
+        return self._params
+
+    @params.setter
+    def params(self, value):
+        self._params = value
+        self._rebuild = True
+
+    def _parseBody(self):
         """
-         Parses packet length data.
-         If return None, then offset is shifted to calcsize(self._fmtLength)
-         otherwise to the returned value
          @return:
         """
+        self._offset = len(self._head)
+        self._packetId = self.readFrom('>B')
+        paramCount = self.readFrom('>H')
+        self._params = TeltonikaConfigurationParam.getParamsFromBuffer(
+            self._body[3:], paramCount)
+        self._paramsMap = {}
+        for param in self._params:
+            self._paramsMap[param.id] = param
+
+    def getParamById(self, id):
+        """
+         Returns parameter by its identifier
+         @param id: int - param id
+         @return: str
+        """
+        if (self._paramsMap is not None) and (id in self._paramsMap):
+            return self._paramsMap[id]
+        return None
+
+    def addParamInstance(self, param):
+        """
+         Adds a param instance to the configuration packet
+         @param param: TeltonikaConfigurationParam instance
+         @return: self
+        """
+        if self._params is None:
+            self._params = []
+        self._params.append(param)
+        self._rebuild = True
+        return self
+
+    def addParam(self, id, value):
+        """
+         Adds a param by its id and value
+         @param id: int
+         @param value: str
+         @return: self
+        """
+        return self.addParamInstance(
+            TeltonikaConfigurationParam.getInstance(id, value))
+
+    def _buildHead(self):
+        """
+         Builds body of the packet
+         @return: str
+        """
+        if self._params is None:
+            self._params = []
+        self._body = b''
+        self._body += pack('>B', self._packetId)
+        self._body += pack('>H', len(self._params))
+        for param in self._params:
+            self._body += param.rawData
+        return super(TeltonikaConfiguration, self)._buildHead()
+
+# ---------------------------------------------------------------------------
+
+class TeltonikaConfigurationParam(BasePacket):
+    """
+      Item of data packet of naviset messaging protocol
+    """
+    _fmtHeader = '>H'   # packet length format
+    _fmtLength = '>H'   # packet length format
+
+    @property
+    def id(self):
+        if self._rebuild: self._build()
+        return self._header
+
+    @id.setter
+    def id(self, value):
+        self._header = value
+        self._rebuild = True
+
+    @property
+    def value(self):
+        if self._rebuild: self._build()
+        return self._body.decode()
+
+    @value.setter
+    def value(self, value):
+        self._body = value.encode()
+        self._rebuild = True
+
+    @classmethod
+    def getParamsFromBuffer(cls, buffer = None, itemsCount = None):
+        """
+         Returns an array of TeltonikaConfigurationParam instances from data
+         @param buffer: Input binary data
+         @param itemsCount: Count of items in the buffer
+         @return: array of TeltonikaConfigurationParam instances (empty array if no param found)
+        """
+        params = []
+        index = 0
+        while (itemsCount is None) or (index < itemsCount):
+            item = TeltonikaConfigurationParam(buffer)
+            buffer = item.rawDataTail
+            params.append(item)
+            if (len(buffer) == 0): break
+            index += 1
+        return params
+
+    @classmethod
+    def getInstance(cls, id, value):
+        instance = cls()
+        instance.id = id
+        instance.value = value
+        return instance
+
+# ---------------------------------------------------------------------------
+# Configuration param identifier constants
+
+CFG_DEEP_SLEEP_MODE = 1000
+CFG_ANALOG_INPUT_VALUE_RANGE = 1001
+CFG_STOP_DETECTION_SOURCE = 1002
+CFG_SORTING = 1010
+CFG_ACTIVE_DATA_LINK_TIMEOUT = 1011
+CFG_GPRS_CONTENT_ACTIVATION = 1240
+CFG_APN_NAME = 1242
+CFG_APN_USERNAME = 1243
+CFG_APN_PASSWORD = 1244
+CFG_TARGET_SERVER_IP_ADDRESS = 1245
+CFG_TARGET_SERVER_PORT = 1246
+CFG_PROTOCOL = 1247
+CFG_SMS_LOGIN = 1252
+CFG_SMS_PASSWORD = 1253
+CFG_SMS_DATA_SENDING_SETTINGS = 1250
+CFG_SMS_DATA_SEND_WEEK_TIME_SCHEDULE = 1273
+CFG_AUTHORIZED_PHONE_NUMBER_0 = 1260
+CFG_AUTHORIZED_PHONE_NUMBER_1 = 1261
+CFG_AUTHORIZED_PHONE_NUMBER_2 = 1262
+CFG_AUTHORIZED_PHONE_NUMBER_3 = 1263
+CFG_AUTHORIZED_PHONE_NUMBER_4 = 1264
+CFG_AUTHORIZED_PHONE_NUMBER_5 = 1265
+CFG_AUTHORIZED_PHONE_NUMBER_6 = 1266
+CFG_AUTHORIZED_PHONE_NUMBER_7 = 1267
+CFG_AUTHORIZED_PHONE_NUMBER_8 = 1268
+CFG_AUTHORIZED_PHONE_NUMBER_9 = 1269
+CFG_OPERATOR_LIST = 1271
+# VEHICLE ON STOP
+CFG_VEHICLE_ON_STOP_MIN_PERIOD = 1540
+CFG_VEHICLE_ON_STOP_MIN_SAVED_RECORDS = 1543
+CFG_VEHICLE_ON_STOP_SEND_PERIOD = 1544
+CFG_VEHICLE_ON_STOP_GPRS_WEEK_TIME = 1545
+# VEHICLE MOVING
+CFG_VEHICLE_MOVING_MIN_PERIOD = 1550
+CFG_VEHICLE_MOVING_MIN_DISTANCE = 1551
+CFG_VEHICLE_MOVING_MIN_ANGLE = 1552
+CFG_VEHICLE_MOVING_MIN_SAVED_RECORDS = 1553
+CFG_VEHICLE_MOVING_SEND_PERIOD = 1554
+CFG_VEHICLE_MOVING_GPRS_WEEK_TIME = 1555
+# ROAMING VEHICLE ON STOP
+CFG_ROAMING_VEHICLE_ON_STOP_MIN_PERIOD = 1560
+CFG_ROAMING_VEHICLE_ON_STOP_MIN_SAVED_RECORDS = 1563
+CFG_ROAMING_VEHICLE_ON_STOP_SEND_PERIOD = 1564
+CFG_ROAMING_VEHICLE_ON_STOP_GPRS_WEEK_TIME = 1565
+# ROAMING VEHICLE MOVING
+CFG_ROAMING_VEHICLE_MOVING_MIN_PERIOD = 1570
+CFG_ROAMING_VEHICLE_MOVING_MIN_DISTANCE = 1571
+CFG_ROAMING_VEHICLE_MOVING_MIN_ANGLE = 1572
+CFG_ROAMING_VEHICLE_MOVING_MIN_SAVED_RECORDS = 1573
+CFG_ROAMING_VEHICLE_MOVING_SEND_PERIOD = 1574
+CFG_ROAMING_VEHICLE_MOVING_GPRS_WEEK_TIME = 1575
+# UNKNOWN NETWORK VEHICLE ON STOP
+CFG_UNKNOWN_NETWORK_VEHICLE_ON_STOP_MIN_PERIOD = 1580
+CFG_UNKNOWN_NETWORK_VEHICLE_ON_STOP_MIN_SAVED_RECORDS = 1583
+CFG_UNKNOWN_NETWORK_VEHICLE_ON_STOP_SEND_PERIOD = 1584
+CFG_UNKNOWN_NETWORK_VEHICLE_ON_STOP_GPRS_WEEK_TIME = 1585
+# UNKNOWN NETWORK VEHICLE MOVING
+CFG_UNKNOWN_NETWORK_VEHICLE_MOVING_MIN_PERIOD = 1590
+CFG_UNKNOWN_NETWORK_VEHICLE_MOVING_MIN_DISTANCE = 1591
+CFG_UNKNOWN_NETWORK_VEHICLE_MOVING_MIN_ANGLE = 1592
+CFG_UNKNOWN_NETWORK_VEHICLE_MOVING_MIN_SAVED_RECORDS = 1593
+CFG_UNKNOWN_NETWORK_VEHICLE_MOVING_SEND_PERIOD = 1594
+CFG_UNKNOWN_NETWORK_VEHICLE_MOVING_GPRS_WEEK_TIME = 1595
+# FEATURES PARAMETERS
+CFG_DIGITAL_OUTPUT_1_USAGE_SCENARIOS = 1600
+CFG_MAX_ACCELERATION_FORCE = 1602
+CFG_MAX_BREAKING_FORCE = 1603
+CFG_MAX_CORNERING_ANGLE = 1604
+CFG_MAX_ALLOWED_SPEED = 1605
+CFG_DIGITAL_OUTPUT_2_USAGE_SCENARIOS = 1601
+CFG_TRIP = 1280
+CFG_START_SPEED = 1281
+CFG_IGNITION_OFF_TIMEOUT = 1282
+CFG_TRIP_CONTINUOUS_DISTANCE_COUNTING = 1283
+# GEOFENCING
+CFG_FRAME_BORDER = 1020
+CFG_GEOFENCE_ZONE_1_SHAPE = 1030
+CFG_GEOFENCE_ZONE_1_PRIORITY = 1031
+CFG_GEOFENCE_ZONE_1_GENERATE_EVENT = 1032
+CFG_GEOFENCE_ZONE_1_LONGITUDE_X_1 = 1033
+CFG_GEOFENCE_ZONE_1_LATITUDE_Y_1 = 1034
+CFG_GEOFENCE_ZONE_1_LONGITUDE_X_2 = 1035
+CFG_GEOFENCE_ZONE_1_LATITUDE_Y_2 = 1036
+# ... SKIPPED ZONE_2 (104*), 3 (105*), 4 (106*), 5 (107*)
+CFG_AUTOGEOFENCING_ENABLED = 1101
+CFG_AUTOGEOFENCING_ACTIVATION_TIMEOUT = 1102
+CFG_AUTOGEOFENCING_DEACTIVATE_BY = 1100
+CFG_AUTOGEOFENCING_EVENT_PRIORITY = 1103
+CFG_AUTOGEOFENCING_EVENT_GENERATING = 1104
+CFG_AUTOGEOFENCING_RADIUS = 1105
+# iButton List (ID=1610-1659)
+CFG_IBUTTON_FIRST = 1610
+CFG_IBUTTON_LAST = 1659
 
 
 # ---------------------------------------------------------------------------
@@ -493,7 +715,32 @@ class TestCase(unittest.TestCase):
                b'\x00\x01\x30\x04\x1b\x00\x01\x30\x04\x1c\x00\x01\x30\x04' +\
                b'\x1d\x00\x01\x30\x04\x1e\x00\x01\x30\x04\x24\x00\x01\x30' +\
                b'\x04\x25\x00\x01\x30\x04\x26\x00\x01\x30\x04\x27\x00\x01' +\
-               b'\x30\x04\x28\x00\x01\x30\x0c\xbd\x00\x0c\x2b\x33\x37\x30' +\
-               b'\x34\x34\x34\x34\x34\x34\x34\x34'
+               b'\x30\x04\x28\x00\x01\x30\x0c\xbd\x00\x0c+37044444444'
         packet = TeltonikaConfiguration(data)
         self.assertEqual(packet.length, 146)
+        self.assertEqual(packet.packetId, 140)
+        self.assertEqual(len(packet.params), 26)
+        self.assertEqual(packet.getParamById(12), None)
+        param = packet.getParamById(3261)
+        self.assertEqual(param.value, '+37044444444')
+        packet.addParam(12, 'SAMPLE')
+        newParam = TeltonikaConfigurationParam()
+        newParam.id = 255
+        newParam.value = 'WELCOME TO THE TELTONIKA!'
+        packet.addParamInstance(newParam)
+        self.assertEqual(newParam.rawData,
+            b'\x00\xff\x00\x19WELCOME TO THE TELTONIKA!')
+        self.assertEqual(len(packet.params), 28)
+        self.assertEqual(packet.length, 185)
+
+    def test_createConfigurationPacket(self):
+        packet = TeltonikaConfiguration()
+        self.assertIsNone(packet.rawData)
+        self.assertEqual(packet.length, 0)
+        packet.addParam(12, 'SAMPLE')
+        self.assertGreater(packet.length, 0)
+        packet.packetId = 1
+        packet.addParam(1024, '1024')
+        self.assertEqual(packet.rawData,
+            b'\x00\x15\x01\x00\x02\x00\x0c\x00\x06SAMPLE\x04\x00\x00\x041024')
+

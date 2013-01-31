@@ -128,7 +128,10 @@ class SolidBinaryPacket(object):
          Builds raw data of the packet
          @return: rawData binstring
         """
-        return self._head + self._body + self._tail
+        head = self._head if self._head is not None else b''
+        body = self._body if self._body is not None else b''
+        tail = self._tail if self._tail is not None else b''
+        return head + body + tail
 
     def readFrom(self, fmt, buffer = None):
         """
@@ -313,19 +316,35 @@ class BasePacket(BinaryPacket):
 
     def _buildHead(self):
         """
-         Builds rawData from object variables
+         Builds buffer's head
          @protected
         """
         data = b''
         if self._fmtHeader is not None:
+            if self._header is None:
+                self._header = 0
             data += pack(str(self._fmtHeader), self._header)
         if self._fmtLength is not None:
-            data += pack(str(self._fmtLength), self._length)
+            data += pack(str(self._fmtLength), self._buildCalculateLength())
         return data
 
     def _buildTail(self):
+        """
+         Builds buffer's tail
+         @protected
+        """
         data = b''
         if self._fmtChecksum is not None:
             self._checksum = self.calculateChecksum()
             data = pack(str(self._fmtChecksum), self._checksum)
         return data
+
+    def _buildCalculateLength(self):
+        """
+         Calculates length of the packet
+         @return: int
+        """
+        self._length = 0
+        if self._body is not None:
+            self._length = len(self._body)
+        return self._length

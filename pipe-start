@@ -37,4 +37,9 @@ if [ "$1" = 'teltonika' ]; then
   ./run_teltonika.sh $2 $3 $4 &
 fi
 
+if [ "$1" = 'teltonika_config' ]; then
+  echo 'Starting Teltonika config server'
+  ./run_teltonika_config.sh $2 $3 $4 &
+fi
+
 exit 0

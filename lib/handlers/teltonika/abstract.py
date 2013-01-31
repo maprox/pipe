@@ -84,7 +84,7 @@ class TeltonikaHandler(AbstractHandler):
             return False
         data = current_db.get('config')
         self.send(data)
-        log.debug('Configuration data sent: ' + data)
+        log.debug(data)
         config = packets.TeltonikaConfiguration(data)
         answer = b''
         try:
@@ -180,7 +180,7 @@ class TeltonikaHandler(AbstractHandler):
         # TP-UD
         buffer += self.packString(data['device']['login'])
         buffer += self.packString(data['device']['password'])
-        buffer += self.packString(data['host'])
+        buffer += self.packString(str(get_ip()))
         buffer += pack('>H', data['port'])
         buffer += self.packString(data['gprs']['apn'])
         buffer += self.packString(data['gprs']['username'])

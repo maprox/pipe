@@ -522,6 +522,7 @@ class GlobalsatHandler(AbstractHandler):
             command = self.addChecksum(command)
             log.debug('Command sent: ' + command)
             current_db.startReadingSettings(task)
+            log.debug('Task number: ' + task)
             self.send(command.encode())
 
     def processCommandExecute(self, task, data):

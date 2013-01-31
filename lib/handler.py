@@ -87,9 +87,9 @@ class AbstractHandler(object):
             connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
             answer = connection.read()
             log.debug('Config answered: ' + answer.decode())
-            result = self.re_success.search(answer.decode(), 0)
-            if result:
-                current_db.deleteSettings()
+            #result = self.re_success.search(answer.decode(), 0)
+            #if result:
+            current_db.deleteSettings()
         return self
 
     def processRequest(self, data):

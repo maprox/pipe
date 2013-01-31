@@ -292,3 +292,12 @@ class AbstractHandler(object):
         buffer = self.getInitiationData(config)
         if buffer is not None:
             self.processCloseTask(task, buffer)
+
+    def processCommandProcessSms(self, task, data):
+        """
+         Processing of input sms-message
+         @param task: id task
+         @param data: data string
+        """
+        self.processCloseTask(task)
+        return self

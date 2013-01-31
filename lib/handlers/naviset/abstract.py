@@ -136,7 +136,7 @@ class NavisetHandler(AbstractHandler):
          @param config: config dict
          @return: array of dict or dict
         """
-        command0 = 'COM3 1234,' + config['host'] + ',' + str(config['port'])
+        command0 = 'COM3 1234,' + str(get_ip()) + ',' + str(config['port'])
         command1 = 'COM13 1234,1,'+ config['gprs']['apn'] \
             + ',' + config['gprs']['username'] \
             + ',' + config['gprs']['password'] + '#'

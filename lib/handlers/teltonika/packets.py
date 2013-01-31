@@ -537,7 +537,6 @@ CFG_AUTOGEOFENCING_RADIUS = 1105
 CFG_IBUTTON_FIRST = 1610
 CFG_IBUTTON_LAST = 1659
 
-
 # ---------------------------------------------------------------------------
 
 class PacketFactory:

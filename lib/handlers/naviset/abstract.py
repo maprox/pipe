@@ -109,7 +109,7 @@ class NavisetHandler(AbstractHandler):
          @param packet: a L{packets.Packet} subclass
         """
         buf = self.getAckPacket(packet)
-        log.info("Send acknowledgement, crc = %d" % packet.crc)
+        log.info("Send acknowledgement, checksum = %d" % packet.checksum)
         return self.send(buf)
 
     @classmethod
@@ -118,7 +118,7 @@ class NavisetHandler(AbstractHandler):
          Returns acknowledgement buffer value
          @param packet: a L{packets.Packet} subclass
         """
-        return b'\x01' + pack('<H', packet.crc)
+        return b'\x01' + pack('<H', packet.checksum)
 
     def processCommandExecute(self, task, data):
         """

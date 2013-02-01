@@ -10,11 +10,8 @@ import json
 from struct import pack
 
 from kernel.logger import log
-from kernel.config import conf
 from lib.handler import AbstractHandler
 import lib.handlers.naviset.packets as packets
-from urllib.parse import urlencode
-from urllib.request import urlopen
 from lib.ip import get_ip
 
 # ---------------------------------------------------------------------------
@@ -186,7 +183,7 @@ class TestCase(unittest.TestCase):
         })
         data = h.getInitiationData(config)
         self.assertEqual(data, [{
-            'message': 'COM3 1234,trx.maprox.net,21200'
+            'message': 'COM3 1234,' + str(get_ip()) + ',21200'
         }, {
             'message': 'COM13 1234,1,,,#'
         }])

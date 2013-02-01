@@ -5,10 +5,8 @@
 @copyright 2012, Maprox LLC
 '''
 
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from struct import *
-import lib.bits as bits
 import lib.crc16 as crc16
 from lib.packets import *
 
@@ -59,23 +57,15 @@ class PacketData(BasePacket):
     """
       Data packet of teltonika messaging protocol.
     """
-    _fmtHeader = '>l'   # header format
-    _fmtLength = '>l'   # packet length format
-    _fmtChecksum = '>H' # checksum format
+    _fmtHeader = '>L'   # header format
+    _fmtLength = '>L'   # packet length format
+    _fmtChecksum = '>L' # checksum format
     _AvlDataArray = None
 
     @property
     def AvlDataArray(self):
         if self._rebuild: self._build()
         return self._AvlDataArray
-
-    def __init__(self, data = None):
-        """
-         Constructor
-         @param data: Binary data of data packet
-         @return: PacketData instance
-        """
-        super(PacketData, self).__init__(data)
 
     def _parseHeader(self):
         """
@@ -105,14 +95,13 @@ class PacketData(BasePacket):
         result += AvlDataArray.rawData
         return result
 
-    def getChecksum(self, buffer):
+    def calculateChecksum(self):
         """
          Calculates CRC (CRC-16 Modbus)
          @param buffer: binary string
          @return: True if buffer crc equals to supplied crc value, else False
         """
-        data = self._head + self._body
-        return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
+        return crc16.Crc16.calcBinaryString(self._body, crc16.INITIAL_DF1)
 
 # ---------------------------------------------------------------------------
 
@@ -412,7 +401,7 @@ class TeltonikaConfigurationParam(BasePacket):
 
     @value.setter
     def value(self, value):
-        self._body = value.encode()
+        self._body = str(value).encode()
         self._rebuild = True
 
     @classmethod
@@ -631,7 +620,7 @@ class TestCase(unittest.TestCase):
         data = b'\x00\x00\x00\x00\x00\x00\x00\x2c\x08\x01\x00\x00\x01\x13' + \
                b'\xfc\x20\x8d\xff\x00\x0f\x14\xf6\x50\x20\x9c\xca\x80\x00' + \
                b'\x6f\x00\xd6\x04\x00\x04\x00\x04\x03\x01\x01\x15\x03\x16' + \
-               b'\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x01\x00\x00'
+               b'\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x01\x00\x00\xcf\x77'
         packet = PacketData(data)
         avl = packet.AvlDataArray
         self.assertEqual(avl.codecId, 8)

@@ -84,13 +84,15 @@ class TeltonikaHandler(AbstractHandler):
             return False
         data = current_db.get('config')
         self.send(data)
-        log.debug(data)
+        log.debug('Configuration data sent = %s', data)
         config = packets.TeltonikaConfiguration(data)
         answer = b''
         try:
+            log.debug('Waiting for the answer from device...')
             answer = self.recv()
         except Exception as E:
             log.error(E)
+        current_db.remove('config')
         return config.isCorrectAnswer(answer)
 
     def sendCommand(self, command):
@@ -222,6 +224,8 @@ class TeltonikaHandler(AbstractHandler):
         packet.addParam(packets.CFG_APN_PASSWORD, config['gprs']['password'])
         packet.addParam(packets.CFG_SMS_LOGIN, config['device']['login'])
         packet.addParam(packets.CFG_SMS_PASSWORD, config['device']['password'])
+        packet.addParam(packets.CFG_GPRS_CONTENT_ACTIVATION, 1) # Enable
+        packet.addParam(packets.CFG_OPERATOR_LIST, '25002') # MegaFON
         return packet
 
     def processCommandReadSettings(self, task, data):

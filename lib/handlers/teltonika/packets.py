@@ -723,6 +723,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(avl.codecId, 8)
         item = avl.items[0]
         self.assertEqual(item.ioElement, {
-
+            'eventIoId': 0,
+            'items': []
         })
 

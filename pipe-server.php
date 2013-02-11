@@ -333,7 +333,6 @@ function serviceTest($params)
 	}
 }
 
-
 /**
  * Performs installation of service
  */

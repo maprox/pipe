@@ -20,6 +20,17 @@ define('WORKING_DIR', __DIR__ . '/');
 include WORKING_DIR . 'shell-common.php';
 
 /**
+ * Performs installation of service
+ */
+function doInstall()
+{
+	shell_exec('sudo ln -s ' . __FILE__ . ' /etc/init.d/pipe-demo');
+	shell_exec('sudo chmod +x ' . __FILE__);
+	shell_exec('sudo update-rc.d pipe-demo defaults');
+	print "Installation complete\n";
+}
+
+/**
  * Service start
  */
 function serviceStart()
@@ -75,6 +86,9 @@ if (is_array($params['input']) && !empty($params['input'][0]))
 
 switch ($command)
 {
+	case 'install':
+		doInstall();
+		break;	
 	case 'start':
 		serviceStart();
 		break;
@@ -92,5 +106,6 @@ switch ($command)
 		break;
 	default:
 		$file = basename(__FILE__, '.php');
-		print "Usage: service $file {start|stop|restart|reload|force-reload|status}\n";
+		print "Usage: service $file {start|stop|restart|reload|force-reload|status}\n" .
+			"Install: php " . $params['name'] . " install\n";
 }

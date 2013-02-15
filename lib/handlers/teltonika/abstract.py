@@ -226,6 +226,14 @@ class TeltonikaHandler(AbstractHandler):
         packet.addParam(packets.CFG_SMS_PASSWORD, config['device']['password'])
         packet.addParam(packets.CFG_GPRS_CONTENT_ACTIVATION, 1) # Enable
         packet.addParam(packets.CFG_OPERATOR_LIST, '25002') # MegaFON
+        # on stop config
+        packet.addParam(packets.CFG_VEHICLE_ON_STOP_MIN_PERIOD, 60) # seconds
+        packet.addParam(packets.CFG_VEHICLE_ON_STOP_MIN_SAVED_RECORDS, 1)
+        packet.addParam(packets.CFG_VEHICLE_ON_STOP_SEND_PERIOD, 180) # seconds
+        # moving config
+        packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_PERIOD, 20) # seconds
+        packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_SAVED_RECORDS, 1)
+        packet.addParam(packets.CFG_VEHICLE_MOVING_SEND_PERIOD, 60) # seconds
         return packet
 
     def processCommandReadSettings(self, task, data):

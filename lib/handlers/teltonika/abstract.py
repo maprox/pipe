@@ -224,16 +224,19 @@ class TeltonikaHandler(AbstractHandler):
         packet.addParam(packets.CFG_APN_PASSWORD, config['gprs']['password'])
         packet.addParam(packets.CFG_SMS_LOGIN, config['device']['login'])
         packet.addParam(packets.CFG_SMS_PASSWORD, config['device']['password'])
+        packet.addParam(packets.CFG_STOP_DETECTION_SOURCE,
+            packets.CFG_STOP_DETECTION_VAL_MOVEMENT_SENSOR)
+        packet.addParam(packets.CFG_SORTING, packets.CFG_SORTING_ASC)
         packet.addParam(packets.CFG_GPRS_CONTENT_ACTIVATION, 1) # Enable
         packet.addParam(packets.CFG_OPERATOR_LIST, '25002') # MegaFON
         # on stop config
-        packet.addParam(packets.CFG_VEHICLE_ON_STOP_MIN_PERIOD, 60) # seconds
         packet.addParam(packets.CFG_VEHICLE_ON_STOP_MIN_SAVED_RECORDS, 1)
+        packet.addParam(packets.CFG_VEHICLE_ON_STOP_MIN_PERIOD, 120) # seconds
         packet.addParam(packets.CFG_VEHICLE_ON_STOP_SEND_PERIOD, 180) # seconds
         # moving config
-        packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_PERIOD, 20) # seconds
         packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_SAVED_RECORDS, 1)
-        packet.addParam(packets.CFG_VEHICLE_MOVING_SEND_PERIOD, 60) # seconds
+        packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_PERIOD, 10) # seconds
+        packet.addParam(packets.CFG_VEHICLE_MOVING_SEND_PERIOD, 20) # seconds
         return packet
 
     def processCommandReadSettings(self, task, data):

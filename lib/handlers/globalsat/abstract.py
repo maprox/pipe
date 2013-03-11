@@ -58,7 +58,7 @@ class GlobalsatHandler(AbstractHandler):
        #'Q': '',
         'R': '\w',
         'S': '\w+',
-       #'T': '',
+        'T': '\w+',
        #'U': '',
        #'V': '',
        #'W': '',
@@ -72,7 +72,7 @@ class GlobalsatHandler(AbstractHandler):
         'i': '\d+',
         'm': '\d+',
         'n': '(\w+|\d+%)',
-        'o': '\d+',
+        'o': '\d+'
        #'s': ''
       },
       'search_config': 'GSs,(?P<uid>\w+),(?P<status>\d+),(?P<order>\d+),(?P<data>.*)\*[a-f\d]{1,2}\!',

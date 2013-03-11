@@ -39,6 +39,8 @@ class Handler(GlobalsatHandler):
             send['voice_phone_3'] = options['V9']
         if 'V0' in options:
             send['voice_call_on_sos'] = options['V0']
+        if 'S8' in options:
+            send['send_by_angle'] = options['S8']
 
         return send
 
@@ -76,6 +78,8 @@ class Handler(GlobalsatHandler):
                 command += ',V9=' + val
             elif item['option'] == 'voice_call_on_sos':
                 command += ',V0=' + val
+            elif item['option'] == 'send_by_angle':
+                command += ',S8=' + val
         return command
 
 # ===========================================================================

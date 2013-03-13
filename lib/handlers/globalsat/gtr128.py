@@ -74,5 +74,24 @@ import unittest
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        pass
+        import kernel.pipe as pipe
+        self.handler = Handler(pipe.Manager(), None)
 
+    def test_inputData(self):
+        h = self.handler
+        data = 'GSr,012896007472407,0000,8,8080,8080,3,130313,084744,' + \
+               'E03739.6939,N5547.2671,134,10.92,264,9,1.0,13660mV,0,0,21*77!'
+        rc = h.re_compiled['report']
+        m = rc.search(data, 0)
+        self.assertIsNotNone(m)
+        packet = h.translate(m.groupdict())
+        self.assertEqual(packet['uid'], "012896007472407")
+
+    def test_bufferData(self):
+        h = self.handler
+        data = 'GSb,012896007472407,0040,j,2080,1,010109,000049,' + \
+               'E00000.0000,N0000.0000,0,0.00,0,0,0.0,0,50%,0,0,' + \
+               '0,0,0,00,00,00,00,*1d!'
+        rc = h.re_compiled['report']
+        m = rc.search(data, 0)
+        self.assertIsNone(m)

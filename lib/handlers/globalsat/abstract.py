@@ -53,7 +53,7 @@ class GlobalsatHandler(AbstractHandler):
         'L': '\d+',
         'M': '\d+(\.\d+)?',
         'N': '\d+',
-        'P': '[0-9A-F]{2}',
+        'P': '[0-9A-F]{2,}',
        #'Z': '',
        #'Q': '',
         'R': '\w',
@@ -371,7 +371,7 @@ class GlobalsatHandler(AbstractHandler):
         data_type = data.split(",")[0]
         if data_type == 'GSs':
             return "processSettings"
-        elif data_type == 'GSr':
+        elif data_type == 'GSr' or data_type == 'GSb':
             return "processData"
         else:
             raise NotImplementedError("Unknown data type " + data_type)

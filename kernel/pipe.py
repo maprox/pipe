@@ -34,7 +34,7 @@ class Manager(Store):
                 # if one packet
                 packets.append(obj)
             else:
-                return answer
+                return result
             # Let's create url_data object
             url_data = {'data' : json.dumps({
               'key': conf.pipeKey,

@@ -7,3 +7,6 @@
 
 from kernel.controller import Controller
 Controller().run() # let's go!
+
+from kernel.controller import CameraChecker
+CameraChecker().run() # temp camera check

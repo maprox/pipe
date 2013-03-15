@@ -5,10 +5,8 @@
 @copyright 2012, Maprox LLC
 '''
 
-import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from struct import *
-import lib.bits as bits
 import lib.crc16 as crc16
 from lib.packets import *
 
@@ -59,23 +57,15 @@ class PacketData(BasePacket):
     """
       Data packet of teltonika messaging protocol.
     """
-    _fmtHeader = '>l'   # header format
-    _fmtLength = '>l'   # packet length format
-    _fmtChecksum = '>H' # checksum format
+    _fmtHeader = '>L'   # header format
+    _fmtLength = '>L'   # packet length format
+    _fmtChecksum = '>L' # checksum format
     _AvlDataArray = None
 
     @property
     def AvlDataArray(self):
         if self._rebuild: self._build()
         return self._AvlDataArray
-
-    def __init__(self, data = None):
-        """
-         Constructor
-         @param data: Binary data of data packet
-         @return: PacketData instance
-        """
-        super(PacketData, self).__init__(data)
 
     def _parseHeader(self):
         """
@@ -105,14 +95,13 @@ class PacketData(BasePacket):
         result += AvlDataArray.rawData
         return result
 
-    def getChecksum(self, buffer):
+    def calculateChecksum(self):
         """
          Calculates CRC (CRC-16 Modbus)
          @param buffer: binary string
          @return: True if buffer crc equals to supplied crc value, else False
         """
-        data = self._head + self._body
-        return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
+        return crc16.Crc16.calcBinaryString(self._body, crc16.INITIAL_DF1)
 
 # ---------------------------------------------------------------------------
 
@@ -175,104 +164,17 @@ class AvlData(BinaryPacket):
       Item of data packet of naviset messaging protocol
     """
     # protected properties
-    _timestamp = None
-    _priority = None
-    _longitude = None
-    _latitude = None
-    _altitude =  None
-    _angle = None
-    _satellitesCount = None
-    _speed = None
+    _params = None
     _ioElement = None
 
     @property
-    def timestamp(self):
+    def params(self):
         if self._rebuild: self._build()
-        return self._timestamp
+        return self._params
 
-    @timestamp.setter
-    def timestamp(self, value):
-        self._timestamp = value
-        self._rebuild = True
-
-    @property
-    def datetime(self):
-        if self._rebuild: self._build()
-        return datetime.utcfromtimestamp(self._timestamp / 1000)
-
-    @datetime.setter
-    def datetime(self, value):
-        self._timestamp = int(value.strftime("%s"))
-        self._rebuild = True
-
-    @property
-    def priority(self):
-        if self._rebuild: self._build()
-        return self._priority
-
-    @priority.setter
-    def priority(self, value):
-        self._priority = value
-        self._rebuild = True
-
-    @property
-    def longitude(self):
-        if self._rebuild: self._build()
-        return self._longitude
-
-    @longitude.setter
-    def longitude(self, value):
-        self._longitude = value
-        self._rebuild = True
-
-    @property
-    def latitude(self):
-        if self._rebuild: self._build()
-        return self._latitude
-
-    @latitude.setter
-    def latitude(self, value):
-        self._latitude = value
-        self._rebuild = True
-
-    @property
-    def altitude(self):
-        if self._rebuild: self._build()
-        return self._altitude
-
-    @altitude.setter
-    def altitude(self, value):
-        self._altitude = value
-        self._rebuild = True
-
-    @property
-    def angle(self):
-        if self._rebuild: self._build()
-        return self._angle
-
-    @angle.setter
-    def angle(self, value):
-        self._angle = value
-        self._rebuild = True
-
-    @property
-    def satellitesCount(self):
-        if self._rebuild: self._build()
-        return self._satellitesCount
-
-    @satellitesCount.setter
-    def satellitesCount(self, value):
-        self._satellitesCount = value
-        self._rebuild = True
-
-    @property
-    def speed(self):
-        if self._rebuild: self._build()
-        return self._speed
-
-    @speed.setter
-    def speed(self, value):
-        self._speed = value
+    @params.setter
+    def params(self, value):
+        self._params = value
         self._rebuild = True
 
     @property
@@ -285,6 +187,11 @@ class AvlData(BinaryPacket):
         self._ioElement = value
         self._rebuild = True
 
+    def convertCoordinate(self, coord):
+        result = str(coord)
+        result = result[:2] + '.' + result[2:]
+        return float(result)
+
     def _parseBody(self):
         """
          Parses packet's head
@@ -292,15 +199,17 @@ class AvlData(BinaryPacket):
         """
         super(AvlData, self)._parseBody()
         self._body = self._rawData
-        self._timestamp = self.readFrom('>Q')
-        self._priority = self.readFrom('>B')
-        precision = 10000000
-        self._longitude = self.readFrom('>l') / precision
-        self._latitude = self.readFrom('>l') / precision
-        self._altitude = self.readFrom('>H')
-        self._angle = self.readFrom('>H')
-        self._satellitesCount = self.readFrom('>B')
-        self._speed = self.readFrom('>H')
+
+        self._params = {}
+        self._params['time'] = datetime.utcfromtimestamp(
+            self.readFrom('>Q') / 1000)
+        self._params['priority'] = self.readFrom('>B')
+        self._params['longitude'] = self.convertCoordinate(self.readFrom('>l'))
+        self._params['latitude'] = self.convertCoordinate(self.readFrom('>l'))
+        self._params['altitude'] = self.readFrom('>H')
+        self._params['azimuth'] = self.readFrom('>H')
+        self._params['satellitescount'] = self.readFrom('>B')
+        self._params['speed'] = self.readFrom('>H')
 
         # get ioElement
         eventIoId = self.readFrom('>B')
@@ -453,6 +362,19 @@ class TeltonikaConfiguration(BasePacket):
             self._body += param.rawData
         return super(TeltonikaConfiguration, self)._buildHead()
 
+    def isCorrectAnswer(self, buffer):
+        """
+         Returns true if tracker answer is correct
+         @param buffer: str
+         @return: True if answer is correct
+        """
+        if len(buffer) < 3:
+            return False
+        packetId = unpack('>B', buffer[:1])[0]
+        packetLength = unpack('>H', buffer[1:3])[0]
+        return (packetId == self.packetId) and \
+               (packetLength == self.length)
+
 # ---------------------------------------------------------------------------
 
 class TeltonikaConfigurationParam(BasePacket):
@@ -479,7 +401,7 @@ class TeltonikaConfigurationParam(BasePacket):
 
     @value.setter
     def value(self, value):
-        self._body = value.encode()
+        self._body = str(value).encode()
         self._rebuild = True
 
     @classmethod
@@ -508,12 +430,17 @@ class TeltonikaConfigurationParam(BasePacket):
         return instance
 
 # ---------------------------------------------------------------------------
-# Configuration param identifier constants
+# Configuration param identifier constants                    # DEFAULT VALUE
 
 CFG_DEEP_SLEEP_MODE = 1000
 CFG_ANALOG_INPUT_VALUE_RANGE = 1001
-CFG_STOP_DETECTION_SOURCE = 1002
-CFG_SORTING = 1010
+CFG_STOP_DETECTION_SOURCE = 1002                              # 0
+CFG_STOP_DETECTION_VAL_IGNITION = 0
+CFG_STOP_DETECTION_VAL_MOVEMENT_SENSOR = 1
+CFG_STOP_DETECTION_VAL_GPS = 2
+CFG_SORTING = 1010                                            # 0
+CFG_SORTING_DESC = 0
+CFG_SORTING_ASC = 1
 CFG_ACTIVE_DATA_LINK_TIMEOUT = 1011
 CFG_GPRS_CONTENT_ACTIVATION = 1240
 CFG_APN_NAME = 1242
@@ -538,16 +465,16 @@ CFG_AUTHORIZED_PHONE_NUMBER_8 = 1268
 CFG_AUTHORIZED_PHONE_NUMBER_9 = 1269
 CFG_OPERATOR_LIST = 1271
 # VEHICLE ON STOP
-CFG_VEHICLE_ON_STOP_MIN_PERIOD = 1540
-CFG_VEHICLE_ON_STOP_MIN_SAVED_RECORDS = 1543
-CFG_VEHICLE_ON_STOP_SEND_PERIOD = 1544
+CFG_VEHICLE_ON_STOP_MIN_PERIOD = 1540                         # 600
+CFG_VEHICLE_ON_STOP_MIN_SAVED_RECORDS = 1543                  # 10
+CFG_VEHICLE_ON_STOP_SEND_PERIOD = 1544                        # 600
 CFG_VEHICLE_ON_STOP_GPRS_WEEK_TIME = 1545
 # VEHICLE MOVING
-CFG_VEHICLE_MOVING_MIN_PERIOD = 1550
-CFG_VEHICLE_MOVING_MIN_DISTANCE = 1551
-CFG_VEHICLE_MOVING_MIN_ANGLE = 1552
-CFG_VEHICLE_MOVING_MIN_SAVED_RECORDS = 1553
-CFG_VEHICLE_MOVING_SEND_PERIOD = 1554
+CFG_VEHICLE_MOVING_MIN_PERIOD = 1550                          # 1200
+CFG_VEHICLE_MOVING_MIN_DISTANCE = 1551                        # 1000
+CFG_VEHICLE_MOVING_MIN_ANGLE = 1552                           # 30
+CFG_VEHICLE_MOVING_MIN_SAVED_RECORDS = 1553                   # 10
+CFG_VEHICLE_MOVING_SEND_PERIOD = 1554                         # 600
 CFG_VEHICLE_MOVING_GPRS_WEEK_TIME = 1555
 # ROAMING VEHICLE ON STOP
 CFG_ROAMING_VEHICLE_ON_STOP_MIN_PERIOD = 1560
@@ -604,7 +531,6 @@ CFG_AUTOGEOFENCING_RADIUS = 1105
 CFG_IBUTTON_FIRST = 1610
 CFG_IBUTTON_LAST = 1659
 
-
 # ---------------------------------------------------------------------------
 
 class PacketFactory:
@@ -630,7 +556,7 @@ class PacketFactory:
     @classmethod
     def getInstance(cls, data = None):
         """
-          Returns a tag instance by its number
+          Returns a packet instance by its number
           @return: BasePacket instance
         """
         if data == None: return
@@ -678,15 +604,15 @@ class TestCase(unittest.TestCase):
         self.assertEqual(avl.codecId, 8)
         self.assertEqual(len(avl.items), 4)
         item = avl.items[0]
-        self.assertEqual(item.datetime.
+        self.assertEqual(item.params['time'].
             strftime('%Y-%m-%dT%H:%M:%S.%f'), '2007-07-25T06:46:38.335000')
-        self.assertEqual(item.priority, 0)
-        self.assertEqual(item.longitude, 25.3032016)
-        self.assertEqual(item.latitude, 54.7146368)
-        self.assertEqual(item.altitude, 111)
-        self.assertEqual(item.angle, 214)
-        self.assertEqual(item.satellitesCount, 4)
-        self.assertEqual(item.speed, 4)
+        self.assertEqual(item.params['priority'], 0)
+        self.assertEqual(item.params['longitude'], 25.3032016)
+        self.assertEqual(item.params['latitude'], 54.7146368)
+        self.assertEqual(item.params['altitude'], 111)
+        self.assertEqual(item.params['azimuth'], 214)
+        self.assertEqual(item.params['satellitescount'], 4)
+        self.assertEqual(item.params['speed'], 4)
         self.assertEqual(item.ioElement, {
             'eventIoId': 0,
             'items': [{'id': 1,  'value': 1},
@@ -699,7 +625,7 @@ class TestCase(unittest.TestCase):
         data = b'\x00\x00\x00\x00\x00\x00\x00\x2c\x08\x01\x00\x00\x01\x13' + \
                b'\xfc\x20\x8d\xff\x00\x0f\x14\xf6\x50\x20\x9c\xca\x80\x00' + \
                b'\x6f\x00\xd6\x04\x00\x04\x00\x04\x03\x01\x01\x15\x03\x16' + \
-               b'\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x01\x00\x00'
+               b'\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x01\x00\x00\xcf\x77'
         packet = PacketData(data)
         avl = packet.AvlDataArray
         self.assertEqual(avl.codecId, 8)
@@ -739,8 +665,70 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.length, 0)
         packet.addParam(12, 'SAMPLE')
         self.assertGreater(packet.length, 0)
-        packet.packetId = 1
+        packet.packetId = 15
         packet.addParam(1024, '1024')
         self.assertEqual(packet.rawData,
-            b'\x00\x15\x01\x00\x02\x00\x0c\x00\x06SAMPLE\x04\x00\x00\x041024')
+            b'\x00\x15\x0F\x00\x02\x00\x0c\x00\x06SAMPLE\x04\x00\x00\x041024')
+        self.assertTrue(packet.isCorrectAnswer(b'\x0F\x00\x15'))
+
+    def test_teltonikaData(self):
+        data = b'\x00\x00\x00\x00\x00\x00\x02\xf1\x08\x19\x00\x00\x01<' +\
+               b'\x95@\xd8\xbe\x00\x16BE\xe0!#,\xc0\x01#\x00\x00\x07\x00' +\
+               b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x957\xadz\x00' +\
+               b'\x16BE\xe0!#,\xc0\x01\x1c\x00\x00\x07\x00\x00\x00\x00' +\
+               b'\x00\x00\x00\x00\x00\x00\x01<\x95\'\x19\xa6\x00\x16B=' +\
+               b'\xa0!#.\xc0\x00\xf6\x00\x00\x08\x00\x00\x00\x00\x00\x00' +\
+               b'\x00\x00\x00\x00\x01<\x95\x1d\xeff\x00\x16B=\xa0!#.\xc0' +\
+               b'\x01\x07\x00\x00\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00' +\
+               b'\x00\x01<\x95\x14\xc7\xa6\x00\x16B=\xa0!#.\xc0\x00' +\
+               b'\xe4\x00\x00\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00' +\
+               b'\x00\x01<\x95\x0b\x9cb\x00\x16B=\xa0!#.\xc0\x00\xbe\x00' +\
+               b'\x00\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<' +\
+               b'\x95\x02t\xa2\x00\x16B=\xa0!#.\xc0\x00\xf1\x00\x00\x06' +\
+               b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x94\xf9L' +\
+               b'\xe2\x00\x16B=\xa0!#.\xc0\x00\xf0\x00\x00\x06\x00\x00' +\
+               b'\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x94\xf0%"\x00\x16' +\
+               b'B=\xa0!#.\xc0\x01\x0b\x00\x00\x08\x00\x00\x00\x00\x00' +\
+               b'\x00\x00\x00\x00\x00\x01<\x94\xe6\xfa\x10\x00\x16B=\xa0' +\
+               b'!#.\xc0\x00\xf3\x00\x00\x07\x00\x00\x00\x00\x00\x00\x00' +\
+               b'\x00\x00\x00\x01<\x94\xdd\xd2P\x00\x16B=\xa0!#.\xc0\x00' +\
+               b'\xef\x00\x00\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00' +\
+               b'\x00\x01<\x94\xd4\xaa\x90\x00\x16B=\xa0!#.\xc0\x00\xef' +\
+               b'\x00\x00\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +\
+               b'\x01<\x94\xcb\x82\xd0\x00\x16B=\xa0!#.\xc0\x00\xd3\x00' +\
+               b'\x00\x08\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<' +\
+               b'\x94\xc2Z\xfc\x00\x16B=\xa0!#.\xc0\x00\xdf\x00\x00\x08' +\
+               b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x94\xb93<' +\
+               b'\x00\x16B=\xa0!#.\xc0\x00\xe1\x00\x00\x08\x00\x00\x00' +\
+               b'\x00\x00\x00\x00\x00\x00\x00\x01<\x94\xb0\x0br\x00\x16' +\
+               b'B4\x80!#(\xc0\x00\xf6\x00\x00\t\x00\x00\x00\x00\x00\x00' +\
+               b'\x00\x00\x00\x00\x01<\x94\xa6\xe3\xb2\x00\x16B4\x80!#(' +\
+               b'\xc0\x00\xf0\x00\x00\x08\x00\x00\x00\x00\x00\x00\x00' +\
+               b'\x00\x00\x00\x01<\x94\x9c)\xcc\x00\x16B8\x80!#6\x80\x00' +\
+               b'\xf1\x00\x00\t\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +\
+               b'\x01<\x94\x93\x02\x0c\x00\x16B8\x80!#6\x80\x01\x0f\x00' +\
+               b'\x00\x06\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<' +\
+               b'\x94\x89\xdaL\x00\x16B8\x80!#6\x80\x00\xbf\x00\x00\t\x00' +\
+               b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x94y\x82\xbe' +\
+               b'\x00\x16B;\xe0!#1\x00\x00\xb0\x00\x00\x08\x00\x00\x00' +\
+               b'\x00\x00\x00\x00\x00\x00\x00\x01<\x94pZ\xfe\x00\x16B;' +\
+               b'\xe0!#1\x00\x00\xe0\x00\x00\x07\x00\x00\x00\x00\x00\x00' +\
+               b'\x00\x00\x00\x00\x01<\x94g/t\x00\x16B;\xe0!#1\x00\x00' +\
+               b'\xfe\x00\x00\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +\
+               b'\x01<\x94^\x03\xf4\x00\x16B;\xe0!#1\x00\x00\xfa\x00\x00' +\
+               b'\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x94T' +\
+               b'\xdc4\x00\x16B7\x80!#2@\x01\x18\x00\x00\x08\x00\x00\x00' +\
+               b'\x00\x00\x00\x00\x00\x19\x00\x00\x1bb'
+        packets = PacketFactory.getPacketsFromBuffer(data)
+        self.assertEqual(len(packets), 1)
+        packet = packets[0]
+        self.assertTrue(isinstance(packet, PacketData))
+        avl = packet.AvlDataArray
+        self.assertEqual(len(avl.items), 25)
+        self.assertEqual(avl.codecId, 8)
+        item = avl.items[0]
+        self.assertEqual(item.ioElement, {
+            'eventIoId': 0,
+            'items': []
+        })
 

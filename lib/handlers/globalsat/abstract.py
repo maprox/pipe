@@ -53,12 +53,12 @@ class GlobalsatHandler(AbstractHandler):
         'L': '\d+',
         'M': '\d+(\.\d+)?',
         'N': '\d+',
-        'P': '[0-9A-F]{2}',
+        'P': '[0-9A-F]{2,}',
        #'Z': '',
        #'Q': '',
         'R': '\w',
         'S': '\w+',
-       #'T': '',
+        'T': '\w+',
        #'U': '',
        #'V': '',
        #'W': '',
@@ -72,7 +72,7 @@ class GlobalsatHandler(AbstractHandler):
         'i': '\d+',
         'm': '\d+',
         'n': '(\w+|\d+%)',
-        'o': '\d+',
+        'o': '\d+'
        #'s': ''
       },
       'search_config': 'GSs,(?P<uid>\w+),(?P<status>\d+),(?P<order>\d+),(?P<data>.*)\*[a-f\d]{1,2}\!',
@@ -371,7 +371,7 @@ class GlobalsatHandler(AbstractHandler):
         data_type = data.split(",")[0]
         if data_type == 'GSs':
             return "processSettings"
-        elif data_type == 'GSr':
+        elif data_type == 'GSr' or data_type == 'GSb':
             return "processData"
         else:
             raise NotImplementedError("Unknown data type " + data_type)
@@ -522,6 +522,7 @@ class GlobalsatHandler(AbstractHandler):
             command = self.addChecksum(command)
             log.debug('Command sent: ' + command)
             current_db.startReadingSettings(task)
+            #log.debug('Task number: ' + str(task))
             self.send(command.encode())
 
     def processCommandExecute(self, task, data):

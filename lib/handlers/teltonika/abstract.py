@@ -6,11 +6,14 @@
 '''
 
 
-import json
+import os
+import binascii
 from struct import pack
+from lib.ip import get_ip
 
 from kernel.logger import log
 from kernel.config import conf
+from kernel.dbmanager import db
 from lib.handler import AbstractHandler
 import lib.consts as consts
 import binascii
@@ -41,9 +44,9 @@ class TeltonikaHandler(AbstractHandler):
 
     def processProtocolPacket(self, protocolPacket):
         """
-         Process naviset packet.
+         Process teltonika packet.
          @type protocolPacket: packets.Packet
-         @param protocolPacket: Naviset protocol packet
+         @param protocolPacket: Teltonika protocol packet
         """
         if not self.__headPacketRawData:
             self.__headPacketRawData = b''
@@ -52,9 +55,19 @@ class TeltonikaHandler(AbstractHandler):
             log.info('HeadPack is stored.')
             self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
+
+        if not self.uid:
+            return log.error('HeadPack is not found!')
+
+        # try to configure this tracker
+        if self.configure():
             return
 
+        # sends the acknowledgment
         self.sendAcknowledgement(protocolPacket)
+
+        if isinstance(protocolPacket, packets.PacketHead):
+            return
 
         observerPackets = self.translate(protocolPacket)
         if len(observerPackets) == 0:
@@ -64,6 +77,23 @@ class TeltonikaHandler(AbstractHandler):
         log.info(observerPackets)
         self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
+
+    def configure(self):
+        current_db = db.get(self.uid)
+        if not current_db.has('config'):
+            return False
+        data = current_db.get('config')
+        self.send(data)
+        log.debug('Configuration data sent = %s', data)
+        config = packets.TeltonikaConfiguration(data)
+        answer = b''
+        try:
+            log.debug('Waiting for the answer from device...')
+            answer = self.recv()
+        except Exception as E:
+            log.error(E)
+        current_db.remove('config')
+        return config.isCorrectAnswer(answer)
 
     def sendCommand(self, command):
         """
@@ -84,36 +114,30 @@ class TeltonikaHandler(AbstractHandler):
     def translate(self, protocolPacket):
         """
          Translate gps-tracker data to observer pipe format
-         @param protocolPacket: Naviset protocol packet
+         @param protocolPacket: Teltonika protocol packet
         """
         list = []
         if (protocolPacket == None): return list
         if not isinstance(protocolPacket, packets.PacketData):
             return list
-        if (len(protocolPacket.items) == 0):
+        if (len(protocolPacket.AvlDataArray.items) == 0):
             return list
-        for item in protocolPacket.items:
+        for item in protocolPacket.AvlDataArray.items:
             packet = {'uid': self.uid}
             packet.update(item.params)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            packet['hdop'] = 1 # temporarily manual value of hdop
             list.append(packet)
-            #packet['sensors']['acc'] = value['acc']
-            #packet['sensors']['sos'] = value['sos']
-            #packet['sensors']['extbattery_low'] = value['extbattery_low']
-            #packet['sensors']['analog_input0'] = value
         return list
 
     def sendAcknowledgement(self, packet):
         """
          Sends acknowledgement to the socket
-         @param packet: a L{packets.Packet} subclass
-        """
+         @param packet: a L{packets.BasePacket} subclass
         """
         buf = self.getAckPacket(packet)
-        log.info("Send acknowledgement, crc = %d" % packet.crc)
+        log.info("Send acknowledgement: h" + binascii.hexlify(buf).decode())
         return self.send(buf)
-        """
-        pass
 
     @classmethod
     def getAckPacket(cls, packet):
@@ -121,7 +145,10 @@ class TeltonikaHandler(AbstractHandler):
          Returns acknowledgement buffer value
          @param packet: a L{packets.Packet} subclass
         """
-        return b'\x01' + pack('<H', packet.crc)
+        if isinstance(packet, packets.PacketHead):
+            return b'\x01'
+        else:
+            return pack('>L', len(packet.AvlDataArray.items))
 
     def processCommandExecute(self, task, data):
         """
@@ -144,7 +171,7 @@ class TeltonikaHandler(AbstractHandler):
     def getInitiationSmsBuffer(self, data):
         """
          Returns initiation sms buffer
-         @param data:
+         @param data: dict
          @return:
         """
         # TP-UDH
@@ -155,19 +182,60 @@ class TeltonikaHandler(AbstractHandler):
         # TP-UD
         buffer += self.packString(data['device']['login'])
         buffer += self.packString(data['device']['password'])
-        buffer += self.packString(data['host'])
+        buffer += self.packString(str(get_ip()))
         buffer += pack('>H', data['port'])
         buffer += self.packString(data['gprs']['apn'])
         buffer += self.packString(data['gprs']['username'])
         buffer += self.packString(data['gprs']['password'])
         return buffer
 
-    def getInitiationData(self, config):
+    def getConfigurationSmsParts(self, data, config):
         """
-         Returns initialization data for SMS wich will be sent to device
-         @param config: config dict
-         @return: array of dict or dict
+         Returns initiation sms buffer
+         @param data: dict
+         @param config: Teltonika configuration packet buffer
+         @return:
         """
+        parts = []
+        authLength = len(data['device']['login'] + data['device']['password'])
+        headLength = 12 + authLength
+        partLength = consts.SMS_BINARY_MAX_LENGTH - headLength
+        partsCount = 1 + int(len(config) / partLength)
+        # create configuration sms parts
+        pushSmsPort = 0x07D1 # WDP Port listening for “push” SMS
+        # TP-UDH
+        header = b'\x06\x05\x04'
+        header += pack('>H', pushSmsPort)
+        header += b'\x00\x00'
+        # TP-UD
+        header += self.packString(data['device']['login'])
+        header += self.packString(data['device']['password'])
+        header += os.urandom(1) # transferId
+        header += pack('>B', partsCount)
+        # create configuration sms parts
+        index = 0
+        offset = 0
+        while index < partsCount:
+            buffer = header
+            buffer += pack('>B', index) # current part number
+            buffer += config[offset:offset + partLength]
+            parts.append(buffer)
+            index += 1
+            offset += partLength
+        return parts
+
+    def getPushSmsData(self, config):
+        """
+         Creates push sms data (1st config method)
+         @param config:
+         @return:
+        """
+        # create config packet and save it to the database
+        packet = self.getConfigurationPacket(config)
+        current_db = db.get(config['identifier'])
+        current_db.set('config', packet.rawData)
+        log.info(packet.rawData)
+        # create push-sms for configuration
         buffer = self.getInitiationSmsBuffer(config)
         data = [{
             'message': binascii.hexlify(buffer).decode(),
@@ -176,13 +244,71 @@ class TeltonikaHandler(AbstractHandler):
         }]
         return data
 
+    def getConfigSmsData(self, config):
+        """
+         Creates config sms data (2nd config method)
+         @param config:
+         @return:
+        """
+        # create config packet and save it to the database
+        packet = self.getConfigurationPacket(config)
+        log.info(packet.rawData)
+        # create push-sms for configuration
+        parts = self.getConfigurationSmsParts(config, packet.rawData)
+        data = []
+        for buffer in parts:
+            data.append({
+                'message': binascii.hexlify(buffer).decode(),
+                'bin': consts.SMS_BINARY_HEX_STRING
+            })
+        return data
+
+    def getInitiationData(self, config):
+        """
+         Returns initialization data for SMS wich will be sent to device
+         @param config: config dict
+         @return: array of dict or dict
+        """
+        return self.getConfigSmsData(config)
+
+    def getConfigurationPacket(self, config):
+        """
+         Returns Teltonika configuration packet
+         @param config: config dict
+         @return:
+        """
+        packet = packets.TeltonikaConfiguration()
+        packet.packetId = 1
+        packet.addParam(packets.CFG_TARGET_SERVER_IP_ADDRESS, str(get_ip()))
+        packet.addParam(packets.CFG_TARGET_SERVER_PORT, str(config['port']))
+        packet.addParam(packets.CFG_APN_NAME, config['gprs']['apn'])
+        packet.addParam(packets.CFG_APN_USERNAME, config['gprs']['username'])
+        packet.addParam(packets.CFG_APN_PASSWORD, config['gprs']['password'])
+        packet.addParam(packets.CFG_SMS_LOGIN, config['device']['login'])
+        packet.addParam(packets.CFG_SMS_PASSWORD, config['device']['password'])
+        packet.addParam(packets.CFG_STOP_DETECTION_SOURCE,
+            packets.CFG_STOP_DETECTION_VAL_MOVEMENT_SENSOR)
+        packet.addParam(packets.CFG_SORTING, packets.CFG_SORTING_ASC)
+        packet.addParam(packets.CFG_GPRS_CONTENT_ACTIVATION, 1) # Enable
+        packet.addParam(packets.CFG_OPERATOR_LIST, '25002') # MegaFON
+        # on stop config
+        packet.addParam(packets.CFG_VEHICLE_ON_STOP_MIN_SAVED_RECORDS, 1)
+        packet.addParam(packets.CFG_VEHICLE_ON_STOP_MIN_PERIOD, 120) # seconds
+        packet.addParam(packets.CFG_VEHICLE_ON_STOP_SEND_PERIOD, 180) # seconds
+        # moving config
+        packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_SAVED_RECORDS, 1)
+        packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_PERIOD, 10) # seconds
+        packet.addParam(packets.CFG_VEHICLE_MOVING_SEND_PERIOD, 20) # seconds
+        return packet
+
     def processCommandReadSettings(self, task, data):
         """
          Sending command to read all of device configuration
          @param task: id task
          @param data: data string
         """
-        pass
+        log.error('Teltonika::processCommandReadSettings NOT IMPLEMENTED')
+        self.processCloseTask(task, None)
 
     def processCommandSetOption(self, task, data):
         """
@@ -190,39 +316,52 @@ class TeltonikaHandler(AbstractHandler):
          @param task: id task
          @param data: data dict()
         """
-        #current_db = db.get(self.uid)
-        #if not current_db.isReadingSettings():
-        #    pass
-        pass
+        log.error('Teltonika::processCommandSetOption NOT IMPLEMENTED')
+        self.processCloseTask(task, None)
 
 # ===========================================================================
 # TESTS
 # ===========================================================================
 
 import unittest
+import kernel.pipe as pipe
 
 class TestCase(unittest.TestCase):
 
     def setUp(self):
+        self.handler = TeltonikaHandler(pipe.Manager(), None)
         pass
 
-    def test_packetData(self):
-        import kernel.pipe as pipe
-        h = TeltonikaHandler(pipe.Manager(), None)
-        config = h.getInitiationConfig({
+    def test_packetAcknowledgement(self):
+        h = self.handler
+        data = b'\x00\x00\x00\x00\x00\x00\x00\x2c\x08\x01\x00\x00\x01\x13' +\
+               b'\xfc\x20\x8d\xff\x00\x0f\x14\xf6\x50\x20\x9c\xca\x80\x00' +\
+               b'\x6f\x00\xd6\x04\x00\x04\x00\x04\x03\x01\x01\x15\x03\x16' +\
+               b'\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x01\x00\x00\xcf\x77'
+        packet = packets.PacketData(data)
+        self.assertEqual(h.getAckPacket(packet), b'\x00\x00\x00\x01')
+        packet = packets.PacketFactory.getInstance(b'\x00\x0f012896001609129')
+        self.assertEqual(h.getAckPacket(packet), b'\x01')
+
+    def test_getConfigurationSmsParts(self):
+        h = self.handler
+        configInitial = h.getInitiationConfig({
             "identifier": "0123456789012345",
             "host": "trx.maprox.net",
             "port": 21200
         })
-        data = h.getInitiationData(config)
-        self.assertEqual(data, [{
-            'bin': consts.SMS_BINARY_HEX_STRING,
-            'message': '06050407d1000000000e7472782e6d6' + \
-                       '170726f782e6e657452d0000000',
-            'push': True
-        }])
-        message = h.getTaskData(321312, data)
-        self.assertEqual(message, {
-            "id_action": 321312,
-            "data": json.dumps(data)
-        })
+        config = b'\x00\x92\x8c\x00\x1b\x03\xe8\x00\x01\x30\x03\xf2\x00\x01' +\
+                 b'\x31\x03\xf3\x00\x02\x32\x30\x03\xf4\x00\x02\x31\x30\x03' +\
+                 b'\xfc\x00\x01\x30\x04\x06\x00\x01\x30\x04\x07\x00\x01\x30' +\
+                 b'\x04\x08\x00\x01\x30\x04\x09\x00\x01\x30\x04\x0a\x00\x01' +\
+                 b'\x30\x04\x10\x00\x01\x30\x04\x11\x00\x01\x30\x04\x12\x00' +\
+                 b'\x01\x30\x04\x13\x00\x01\x30\x04\x14\x00\x01\x30\x04\x1a' +\
+                 b'\x00\x01\x30\x04\x1b\x00\x01\x30\x04\x1c\x00\x01\x30\x04' +\
+                 b'\x1d\x00\x01\x30\x04\x1e\x00\x01\x30\x04\x24\x00\x01\x30' +\
+                 b'\x04\x25\x00\x01\x30\x04\x26\x00\x01\x30\x04\x27\x00\x01' +\
+                 b'\x30\x04\x28\x00\x01\x30\x0c\xbd\x00\x0c+37044444444'
+        #config = h.getConfigurationPacket(configInitial).rawData
+        parts = h.getConfigurationSmsParts(configInitial, config)
+        self.assertEqual(len(parts), 2)
+        self.assertEqual(len(parts[0]), consts.SMS_BINARY_MAX_LENGTH)
+        self.assertEqual(len(parts[1]), 32)

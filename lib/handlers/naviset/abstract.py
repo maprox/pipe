@@ -10,11 +10,8 @@ import json
 from struct import pack
 
 from kernel.logger import log
-from kernel.config import conf
 from lib.handler import AbstractHandler
 import lib.handlers.naviset.packets as packets
-from urllib.parse import urlencode
-from urllib.request import urlopen
 from lib.ip import get_ip
 
 # ---------------------------------------------------------------------------
@@ -109,7 +106,7 @@ class NavisetHandler(AbstractHandler):
          @param packet: a L{packets.Packet} subclass
         """
         buf = self.getAckPacket(packet)
-        log.info("Send acknowledgement, crc = %d" % packet.crc)
+        log.info("Send acknowledgement, checksum = %d" % packet.checksum)
         return self.send(buf)
 
     @classmethod
@@ -118,7 +115,7 @@ class NavisetHandler(AbstractHandler):
          Returns acknowledgement buffer value
          @param packet: a L{packets.Packet} subclass
         """
-        return b'\x01' + pack('<H', packet.crc)
+        return b'\x01' + pack('<H', packet.checksum)
 
     def processCommandExecute(self, task, data):
         """
@@ -136,7 +133,7 @@ class NavisetHandler(AbstractHandler):
          @param config: config dict
          @return: array of dict or dict
         """
-        command0 = 'COM3 1234,' + config['host'] + ',' + str(config['port'])
+        command0 = 'COM3 1234,' + str(get_ip()) + ',' + str(config['port'])
         command1 = 'COM13 1234,1,'+ config['gprs']['apn'] \
             + ',' + config['gprs']['username'] \
             + ',' + config['gprs']['password'] + '#'
@@ -186,7 +183,7 @@ class TestCase(unittest.TestCase):
         })
         data = h.getInitiationData(config)
         self.assertEqual(data, [{
-            'message': 'COM3 1234,trx.maprox.net,21200'
+            'message': 'COM3 1234,' + str(get_ip()) + ',21200'
         }, {
             'message': 'COM13 1234,1,,,#'
         }])

@@ -87,9 +87,9 @@ class AbstractHandler(object):
             connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
             answer = connection.read()
             log.debug('Config answered: ' + answer.decode())
-            result = self.re_success.search(answer.decode(), 0)
-            if result:
-                current_db.deleteSettings()
+            #result = self.re_success.search(answer.decode(), 0)
+            #if result:
+            current_db.deleteSettings()
         return self
 
     def processRequest(self, data):
@@ -292,3 +292,12 @@ class AbstractHandler(object):
         buffer = self.getInitiationData(config)
         if buffer is not None:
             self.processCloseTask(task, buffer)
+
+    def processCommandProcessSms(self, task, data):
+        """
+         Processing of input sms-message
+         @param task: id task
+         @param data: data string
+        """
+        self.processCloseTask(task)
+        return self

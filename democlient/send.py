@@ -52,7 +52,7 @@ except Exception as E:
 maxSleep = 600
 
 # Max parking time
-maxParkingTime = 300
+maxParkingTime = 600
 
 # Min parking speed
 minParkingSpeed = 1

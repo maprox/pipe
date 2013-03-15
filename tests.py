@@ -20,6 +20,7 @@ from lib.handlers.globalsat.tr151 import TestCase as tc9
 from lib.handlers.globalsat.tr203 import TestCase as tc10
 from lib.handlers.globalsat.tr206 import TestCase as tc11
 from lib.handlers.globalsat.tr600 import TestCase as tc12
+from lib.handlers.globalsat.gtr128 import TestCase as tc12a
 from lib.handlers.teltonika.abstract import TestCase as tc13
 from lib.handlers.teltonika.fmxxxx import TestCase as tc14
 from lib.handlers.teltonika.packets import TestCase as tc15

@@ -29,6 +29,8 @@ class NavisetPacket(BasePacket):
         head = unpack(self._fmtLength, self._head)[0]
         head = bits.bitClear(head, 15)
         head = bits.bitClear(head, 14)
+        head = bits.bitClear(head, 13)
+        head = bits.bitClear(head, 12)
         self._length = head
         self._header = head >> 14
 
@@ -538,3 +540,14 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packetItem2.params['satellitescount'], 9)
         self.assertEqual(packetItem2.number, 6)
         self.assertEqual(packetItem2.additional, b'')
+
+    def test_headPacket2(self):
+        packet = PacketFactory.getInstance(
+          b'\x13\x10\x01\x00868204003057949\x0e\x04\xa0\xf7')
+        self.assertEqual(isinstance(packet, PacketHead), True)
+        self.assertEqual(isinstance(packet, PacketData), False)
+        self.assertEqual(packet.header, 0)
+        self.assertEqual(packet.length, 19)
+        self.assertEqual(packet.body, b'\x01\x00868204003057949\x0e\x04')
+        self.assertEqual(packet.checksum, 63392)
+

@@ -315,7 +315,7 @@ class PacketDataItem:
             item = cls(data, ds)
             data = item.rawDataTail
             items.append(item)
-            if len(data) == 0: break
+            if data is None or len(data) == 0: break
         return items
 
     def convertCoordinate(self, coord):

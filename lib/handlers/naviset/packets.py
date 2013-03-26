@@ -14,7 +14,26 @@ from lib.packets import *
 
 # ---------------------------------------------------------------------------
 
-class NavisetPacket(BasePacket):
+class NavisetBase(BasePacket):
+    """
+     Base class for naviset packet.
+    """
+
+    # protected properties
+    _fmtChecksum = '<H' # checksum format
+
+    def calculateChecksum(self):
+        """
+         Calculates CRC (CRC-16 Modbus)
+         @param buffer: binary string
+         @return: True if buffer crc equals to supplied crc value, else False
+        """
+        data = self._head + self._body
+        return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
+
+# ---------------------------------------------------------------------------
+
+class NavisetPacket(NavisetBase):
     """
      Default naviset protocol packet
     """
@@ -22,7 +41,6 @@ class NavisetPacket(BasePacket):
     # protected properties
     _fmtHeader = None   # header format
     _fmtLength = '<H'   # packet length format
-    _fmtChecksum = '<H' # checksum format
 
     def _parseLength(self):
         # read header and length
@@ -42,15 +60,6 @@ class NavisetPacket(BasePacket):
         length = len(self._body)
         data = length + (self._header << 14)
         return pack(self._fmtLength, data)
-
-    def calculateChecksum(self):
-        """
-         Calculates CRC (CRC-16 Modbus)
-         @param buffer: binary string
-         @return: True if buffer crc equals to supplied crc value, else False
-        """
-        data = self._head + self._body
-        return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
 
 # ---------------------------------------------------------------------------
 
@@ -146,15 +155,78 @@ class PacketHead(PacketNumbered):
 
 # ---------------------------------------------------------------------------
 
-class Command():
+class Command(NavisetBase):
     """
      A command packet
     """
 
-    CMD_GET_STATUS = 0
-    CMD_GET_IMEI = 1
-    CMD_CHANGE_NUMBER = 2
-    CMD_CHANGE_PASSWORD = 3
+    # protected properties
+    _fmtHeader = '<H'   # header format
+    _fmtLength = None   # packet length format
+
+    _header = b'\x02'
+    _number = 0
+
+    @property
+    def number(self):
+        if self._rebuild: self._build()
+        return self._number
+
+    def _parseLength(self):
+        # read header and command number
+        unpacked = unpack('<BB', self._head)
+        self._header = unpacked[0]
+        self._number = unpacked[1]
+        headerCode = 0x02
+        if (self._header != headerCode):
+            raise Exception('Incorrect command packet! ' +\
+                            str(self._header) + ' (given) != ' +\
+                            str(headerCode) + ' (must be)')
+
+    def _build(self):
+        """
+         Builds rawData from object variables
+         @return: self
+        """
+        print('sample')
+        self._rebuild = False
+        self._head = self._buildHead()
+        self._body = self._buildBody()
+        self._tail = self._buildTail()
+        self._rawData = self._buildRawData()
+        return self
+
+    def _buildHead(self):
+        data = b''
+        data += super(Command, self)._buildHead()
+        print('TEST')
+        return data
+
+# ---------------------------------------------------------------------------
+
+class CommandGetDeviceStatus(Command):
+    """
+     Command for getting
+    """
+    _number = 1
+
+    def __init__(self):
+        super(CommandGetDeviceStatus, self).__init__()
+        self._rebuild = True
+
+        #self.
+
+    def _buildBody(self):
+        """
+         Builds rawData from object variables
+         @protected
+        """
+        result = super(CommandGetDeviceStatus, self)._buildBody()
+        print('TESTS')
+        #result += self.__deviceImei.encode()
+        #result += pack('<B', self.__protocolVersion)
+        return result
+
 
 # ---------------------------------------------------------------------------
 
@@ -173,7 +245,7 @@ class PacketAnswer(NavisetPacket):
          @protected
         """
         super(PacketAnswer, self)._parseBody()
-        self.__command = Command.CMD_GET_STATUS
+        #self.__command = Command.CMD_GET_STATUS
 
     def _buildBody(self):
         """
@@ -548,6 +620,89 @@ class TestCase(unittest.TestCase):
         self.assertEqual(isinstance(packet, PacketData), False)
         self.assertEqual(packet.header, 0)
         self.assertEqual(packet.length, 19)
+        self.assertEqual(packet.deviceImei, '868204003057949')
+        self.assertEqual(packet.protocolVersion, 4)
         self.assertEqual(packet.body, b'\x01\x00868204003057949\x0e\x04')
         self.assertEqual(packet.checksum, 63392)
 
+    def test_packetTranslate(self):
+        # :-( unknown protocol version 1
+        data = (
+            b'\xb7S\x01\x00?\x00\x00\x0b@eHQ\x0cq,\x03P\xc1\xfd\x02\x00' +
+            b'\x00\xff\x04\x00\x009\x00\x15\x00\x00\x8a\x0f\x00\x00\xff' +
+            b'\xff\xff\xff\xd0\x03\xe0\xfe\xa0\xc1\xff\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00' +
+            b'\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00' +
+            b'\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01' +
+            b'\x00\x01\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\nFeHQ\x0cq,\x03\x08' +
+            b'\xc1\xfd\x02\x00\x00\xff\x04\x00\x00D\x00$\x8f4\xa3\x0f\x00' +
+            b'\x00\x01\x00\x00\x00\xa0\x03 \xfe\xd0\xc0\xff\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00\x00' +
+            b'\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00' +
+            b'\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00' +
+            b'\x01\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x02\x00\n_eHQ\xe0p,\x03`\xc0\xfd' +
+            b'\x02J\x00\xff\x04v\x06U\x00$)4\xc2\x0f\x00\x00\x0c\x00\x00' +
+            b'\x00\xb0\tp\xf6\x10\xc2\xff\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00\x00\x00\x00\x00\x00' +
+            b'\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00\x00\xff\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00\xff\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x03\x00\n`eHQ\xe0p,\x03P\xc0\xfd\x02W\x00\xff' +
+            b'\x04y\x06X\x00$\x7f3\xc2\x0f\x00\x00\r\x00\x00\x00`\tp\xf6`\xc2' +
+            b'\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\xff$\x00\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80' +
+            b'\x80\x80\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x01\x00\x01\x00\xff\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04\x00\nbe' +
+            b'HQ\xbcp,\x03@\xc0\xfd\x02i\x00\xff\x04\xdb\x06Z\x00$\x811\xc2' +
+            b'\x0f\x00\x00\x10\x00\x00\x000\t@\xeb`\xc3\xff\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00\x00' +
+            b'\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00' +
+            b'\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00' +
+            b'\x01\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x05\x00\nfeHQ\x8cp,\x03\x10\xc0' +
+            b'\xfd\x02K\x00\xff\x04\x06\x08e\x00$\xb32\xc2\x0f\x00\x00\x14' +
+            b'\x00\x00\x00\xb0\x0c\xb0\xefp\xc2\xff\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00\x00\x00\x00' +
+            b'\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00\x00\xff' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00' +
+            b'\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\xfb\x0f'
+        )
+        protocolPackets = PacketFactory.getPacketsFromBuffer(data)
+        p = protocolPackets[0]
+        self.assertEqual(p.deviceNumber, 1)
+        self.assertEqual(len(p.items), 25)
+        #print(p.deviceNumber)
+
+    def test_commandPacket(self):
+        cmd = Command(b'\x02\x01\xc1\x10')
+        self.assertEqual(cmd.number, 1)
+        self.assertEqual(cmd.length, 0)
+        self.assertEqual(cmd.checksum, 4289)
+        self.assertEqual(cmd.rawData, b'\x02\x01\xc1\x10')
+
+        cmdGet = CommandGetDeviceStatus()
+        print(cmdGet._rebuild)
+        self.assertEqual(cmdGet.number, 1)
+        self.assertEqual(cmdGet.rawData, b'')

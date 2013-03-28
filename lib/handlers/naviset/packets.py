@@ -6,6 +6,7 @@
 '''
 
 import time
+import socket
 from datetime import datetime
 from struct import unpack, pack
 import lib.bits as bits
@@ -28,7 +29,7 @@ class NavisetBase(BasePacket):
          @param buffer: binary string
          @return: True if buffer crc equals to supplied crc value, else False
         """
-        data = self._head + self._body
+        data = (self._head or b'') + (self._body or b'')
         return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
 
 # ---------------------------------------------------------------------------
@@ -152,118 +153,6 @@ class PacketHead(PacketNumbered):
         if (0 <= value <= 0xFF):
             self.__protocolVersion = value
             self._rebuild = True
-
-# ---------------------------------------------------------------------------
-
-class Command(NavisetBase):
-    """
-     A command packet
-    """
-
-    # protected properties
-    _fmtHeader = '<H'   # header format
-    _fmtLength = None   # packet length format
-
-    _header = b'\x02'
-    _number = 0
-
-    @property
-    def number(self):
-        if self._rebuild: self._build()
-        return self._number
-
-    def _parseLength(self):
-        # read header and command number
-        unpacked = unpack('<BB', self._head)
-        self._header = unpacked[0]
-        self._number = unpacked[1]
-        headerCode = 0x02
-        if (self._header != headerCode):
-            raise Exception('Incorrect command packet! ' +\
-                            str(self._header) + ' (given) != ' +\
-                            str(headerCode) + ' (must be)')
-
-    def _build(self):
-        """
-         Builds rawData from object variables
-         @return: self
-        """
-        print('sample')
-        self._rebuild = False
-        self._head = self._buildHead()
-        self._body = self._buildBody()
-        self._tail = self._buildTail()
-        self._rawData = self._buildRawData()
-        return self
-
-    def _buildHead(self):
-        data = b''
-        data += super(Command, self)._buildHead()
-        print('TEST')
-        return data
-
-# ---------------------------------------------------------------------------
-
-class CommandGetDeviceStatus(Command):
-    """
-     Command for getting
-    """
-    _number = 1
-
-    def __init__(self):
-        super(CommandGetDeviceStatus, self).__init__()
-        self._rebuild = True
-
-        #self.
-
-    def _buildBody(self):
-        """
-         Builds rawData from object variables
-         @protected
-        """
-        result = super(CommandGetDeviceStatus, self)._buildBody()
-        print('TESTS')
-        #result += self.__deviceImei.encode()
-        #result += pack('<B', self.__protocolVersion)
-        return result
-
-
-# ---------------------------------------------------------------------------
-
-class PacketAnswer(NavisetPacket):
-    """
-      Data packet of naviset messaging protocol
-    """
-
-    # private properties
-    __command = 0
-
-    def _parseBody(self):
-        """
-         Parses body of the packet
-         @param body: Body bytes
-         @protected
-        """
-        super(PacketAnswer, self)._parseBody()
-        #self.__command = Command.CMD_GET_STATUS
-
-    def _buildBody(self):
-        """
-         Builds rawData from object variables
-         @protected
-        """
-        result = super(PacketAnswer, self)._buildBody()
-        result += pack('<B', self.__command)
-        return result
-
-    @property
-    def command(self):
-        if self._rebuild: self._build()
-        return self.__command
-
-    @command.setter
-    def command(self, value):
-        pass
 
 # ---------------------------------------------------------------------------
 
@@ -448,6 +337,220 @@ class PacketDataItem:
     @property
     def additional(self):
         return self.__additional
+
+
+# ---------------------------------------------------------------------------
+
+class Command(NavisetBase):
+    """
+     A command packet
+    """
+
+    # protected properties
+    _fmtHeader = '<H'   # header format
+    _fmtLength = None   # packet length format
+
+    _header = 2
+    _number = 0
+
+    @property
+    def number(self):
+        if self._rebuild: self._build()
+        return self._number
+
+    def __init__(self, params = None):
+        """
+         Initialize command with specific params
+         @param params: dict
+         @return:
+        """
+        super(Command, self).__init__()
+        self.setParams(params)
+
+    def setParams(self, params):
+        """
+         Set command params if needed.
+         Override in child classes.
+         @param params: dict
+         @return:
+        """
+        self._rebuild = True
+
+    def _parseHeader(self):
+        # read header and command number
+        unpacked = unpack('<BB', self._head)
+        self._header = unpacked[0]
+        self._number = unpacked[1]
+        headerCode = 0x02
+        if (self._header != headerCode):
+            raise Exception('Incorrect command packet! ' +\
+                            str(self._header) + ' (given) != ' +\
+                            str(headerCode) + ' (must be)')
+
+    def _buildHead(self):
+        data = b''
+        data += pack('<B', self._header)
+        data += pack('<B', self._number)
+        return data
+
+# ---------------------------------------------------------------------------
+# Simple commands
+# ---------------------------------------------------------------------------
+
+class CommandGetStatus(Command): _number = 0
+class CommandGetImei(Command): _number = 1
+class CommandGetRegisteredIButtons(Command): _number = 5
+class CommandGetPhones(Command): _number = 7
+class CommandGetTrackParams(Command): _number = 10
+class CommandRemoveTrackFromBuffer(Command): _number = 16
+class CommandRestart(Command): _number = 18
+
+# ---------------------------------------------------------------------------
+
+class CommandSetGprsParams(Command):
+    """
+     Change device GPRS params
+    """
+    _number = 4
+
+    # private params
+    __ip = ''
+    __port = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.ip = params['ip'] or ''
+        self.port = params['port'] or 0
+
+    @property
+    def ip(self):
+        if self._rebuild: self._build()
+        return self.__ip
+
+    @ip.setter
+    def ip(self, value):
+        self.__ip = str(value)
+        self._rebuild = True
+
+    @property
+    def port(self):
+        if self._rebuild: self._build()
+        return self.__port
+
+    @port.setter
+    def port(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__port = value
+            self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += socket.inet_aton(self.__ip)
+        data += pack('<H', self.__port)
+        return data
+
+# ---------------------------------------------------------------------------
+
+IMAGE_RESOLUTION_80x64 = 0
+IMAGE_RESOLUTION_160x128 = 1
+IMAGE_RESOLUTION_320x240 = 2
+IMAGE_RESOLUTION_640x480 = 3
+IMAGE_PACKET_CONFIRM_OK = 16
+IMAGE_PACKET_CONFIRM_CORRUPT = 16
+
+class CommandGetImage(Command):
+    """
+     Change device GPRS params
+    """
+    _number = 20
+
+    # private params
+    __value = ''
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.ip = params['ip'] or ''
+        self.port = params['port'] or 0
+
+    @property
+    def ip(self):
+        if self._rebuild: self._build()
+        return self.__ip
+
+    @ip.setter
+    def ip(self, value):
+        self.__ip = str(value)
+        self._rebuild = True
+
+    @property
+    def port(self):
+        if self._rebuild: self._build()
+        return self.__port
+
+    @port.setter
+    def port(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__port = value
+            self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += socket.inet_aton(self.__ip)
+        data += pack('<H', self.__port)
+        return data
+
+# ---------------------------------------------------------------------------
+
+class PacketAnswer(NavisetPacket):
+    """
+      Data packet of naviset messaging protocol
+    """
+
+    # private properties
+    __command = 0
+
+    def _parseBody(self):
+        """
+         Parses body of the packet
+         @param body: Body bytes
+         @protected
+        """
+        super(PacketAnswer, self)._parseBody()
+        #self.__command = Command.CMD_GET_STATUS
+
+    def _buildBody(self):
+        """
+         Builds rawData from object variables
+         @protected
+        """
+        result = super(PacketAnswer, self)._buildBody()
+        result += pack('<B', self.__command)
+        return result
+
+    @property
+    def command(self):
+        if self._rebuild: self._build()
+        return self.__command
+
+    @command.setter
+    def command(self, value):
+        pass
 
 # ---------------------------------------------------------------------------
 
@@ -695,14 +798,26 @@ class TestCase(unittest.TestCase):
         self.assertEqual(len(p.items), 25)
         #print(p.deviceNumber)
 
-    def test_commandPacket(self):
-        cmd = Command(b'\x02\x01\xc1\x10')
-        self.assertEqual(cmd.number, 1)
-        self.assertEqual(cmd.length, 0)
-        self.assertEqual(cmd.checksum, 4289)
-        self.assertEqual(cmd.rawData, b'\x02\x01\xc1\x10')
+    def test_simpleCommandsPacket(self):
+        cmd = CommandGetStatus()
+        self.assertEqual(cmd.number, 0)
+        self.assertEqual(cmd.rawData, b'\x02\x00\x00\xd0')
 
-        cmdGet = CommandGetDeviceStatus()
-        print(cmdGet._rebuild)
-        self.assertEqual(cmdGet.number, 1)
-        self.assertEqual(cmdGet.rawData, b'')
+        cmd = CommandGetRegisteredIButtons()
+        self.assertEqual(cmd.number, 5)
+        self.assertEqual(cmd.checksum, 54208)
+        self.assertEqual(cmd.rawData, b'\x02\x05\xc0\xd3')
+
+    def test_gprsCommandsPacket(self):
+        cmd = CommandSetGprsParams({
+            "ip": '127.0.0.1',
+            "port": 20200
+        })
+        self.assertEqual(cmd.number, 4)
+        self.assertEqual(cmd.checksum, 10512)
+        self.assertEqual(cmd.rawData, b'\x02\x04\x7f\x00\x00\x01\xe8N\x10)')
+        # let's change port and ip
+        cmd.port = 20201
+        cmd.ip = '212.10.222.10'
+        self.assertEqual(cmd.rawData, b'\x02\x04\xd4\n\xde\n\xe9N\xdb\x89')
+

@@ -60,8 +60,8 @@ class GlobalsatHandler(AbstractHandler):
         'S': '\w+',
         'T': '\w+',
        #'U': '',
-       #'V': '',
-       #'W': '',
+        'V': '[0-9A-F]{2,}',
+        'W': '[0-9A-F]{2,}',
         'X': '[\w\.]+',
         'Y': '\w{4}',
         'a': '\d+',
@@ -234,8 +234,6 @@ class GlobalsatHandler(AbstractHandler):
             # HDOP (Horizontal Dilution of Precision)
             elif char == "M":
                 packet['hdop'] = float(value)
-                """
-            TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
             # Extracting movement sensor from report type.
             # Have lower priority than actual movement sensor
             elif char == "R":
@@ -243,7 +241,6 @@ class GlobalsatHandler(AbstractHandler):
                     packet['movementsensor'] = int(value != '4' and
                       value != 'F' and
                       value != 'E')
-                """
             # Extracting movement sensor value and ACC
             elif char == "Y":
                 # Tracker sends value as HEX string
@@ -256,9 +253,6 @@ class GlobalsatHandler(AbstractHandler):
                 # No external power
                 packet['sensors']['extbattery'] = (dec >> 15) % 2
                 # Digital inputs
-                """
-                TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
-
                 packet['sensors']['digital_input1'] = (dec >> 1) % 2
                 packet['sensors']['digital_input2'] = (dec >> 2) % 2
                 packet['sensors']['digital_input3'] = (dec >> 3) % 2
@@ -266,16 +260,13 @@ class GlobalsatHandler(AbstractHandler):
                 packet['sensors']['digital_output1'] = (dec >> 9) % 2
                 packet['sensors']['digital_output2'] = (dec >> 10) % 2
                 packet['sensors']['digital_output3'] = (dec >> 11) % 2
-                """
             # Signalization status
             elif char == "P":
                 dec = int(value, 16)
                 packet['sensors']['sos'] = dec % 2
-                #packet['sensors']['gpsantenna'] = 1 - (dec >> 2) % 2
-                #packet['sensors']['battery_disconnect'] = (dec >> 6) % 2
-                #packet['sensors']['extbattery_low'] = (dec >> 7) % 2
-                """
-              TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
+                packet['sensors']['gpsantenna'] = 1 - (dec >> 2) % 2
+                packet['sensors']['battery_disconnect'] = (dec >> 6) % 2
+                packet['sensors']['extbattery_low'] = (dec >> 7) % 2
             # Counters
             #elif char == "e":
                 packet['sensors']['counter0'] = float(value)
@@ -285,7 +276,6 @@ class GlobalsatHandler(AbstractHandler):
                 packet['sensors']['counter2'] = float(value)
             elif char == "h":
                 packet['sensors']['counter3'] = float(value)
-                """
             # Analog input 0
             elif char == "a":
                 packet['sensors']['analog_input0'] = float(value)

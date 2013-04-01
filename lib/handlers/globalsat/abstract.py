@@ -194,7 +194,7 @@ class GlobalsatHandler(AbstractHandler):
          @param data: dict() data from gps-tracker
         """
         packet = {}
-        packet['sensors'] = {}
+        sensor = {}
         for char in data:
             value = data[char]
             # IMEI / UID
@@ -229,68 +229,58 @@ class GlobalsatHandler(AbstractHandler):
                 packet['azimuth'] = int(round(float(value)))
             # Odometer
             elif char == "i":
-                packet['odometer'] = float(value)
-                packet['sensors']['odometer'] = packet['odometer']
+                packet['odometer'] = float(value) # for backward compatibility
+                sensor['odometer'] = float(value) # new version
             # HDOP (Horizontal Dilution of Precision)
             elif char == "M":
                 packet['hdop'] = float(value)
             # Extracting movement sensor from report type.
             # Have lower priority than actual movement sensor
-            elif char == "R":
-                if not 'movementsensor' in packet:
-                    packet['movementsensor'] = int(value != '4' and
-                      value != 'F' and
-                      value != 'E')
+            #elif char == "R":
+            #    if not 'movementsensor' in packet:
+            #        packet['movementsensor'] = int(value != '4' and
+            #          value != 'F' and
+            #          value != 'E')
             # Extracting movement sensor value and ACC
             elif char == "Y":
                 # Tracker sends value as HEX string
                 dec = int(value, 16)
-                packet['movementsensor'] = (dec >> 7) % 2
-                # ACC Sensor
-                packet['sensors']['acc'] = (dec >> 13) % 2
-                # GPS Antenna
-                packet['sensors']['gpsantenna'] = (dec >> 14) % 2
-                # No external power
-                packet['sensors']['extbattery'] = (dec >> 15) % 2
                 # Digital inputs
-                packet['sensors']['digital_input1'] = (dec >> 1) % 2
-                packet['sensors']['digital_input2'] = (dec >> 2) % 2
-                packet['sensors']['digital_input3'] = (dec >> 3) % 2
+                sensor['din1'] = (dec >> 1) % 2
+                sensor['din2'] = (dec >> 2) % 2
+                sensor['din3'] = (dec >> 3) % 2
+                # Movement sensor
+                sensor['moving'] = (dec >> 7) % 2
                 # Digital outputs
-                packet['sensors']['digital_output1'] = (dec >> 9) % 2
-                packet['sensors']['digital_output2'] = (dec >> 10) % 2
-                packet['sensors']['digital_output3'] = (dec >> 11) % 2
+                sensor['dout1'] = (dec >> 9) % 2
+                sensor['dout2'] = (dec >> 10) % 2
+                sensor['dout3'] = (dec >> 11) % 2
+                # ACC Sensor
+                sensor['acc'] = (dec >> 13) % 2
+                # GPS Antenna
+                sensor['gpsantenna_connected'] = (dec >> 14) % 2
+                # No external power
+                sensor['extbattery_connected'] = (dec >> 15) % 2
             # Signalization status
             elif char == "P":
                 dec = int(value, 16)
-                packet['sensors']['sos'] = dec % 2
-                packet['sensors']['gpsantenna'] = 1 - (dec >> 2) % 2
-                packet['sensors']['battery_disconnect'] = (dec >> 6) % 2
-                packet['sensors']['extbattery_low'] = (dec >> 7) % 2
+                sensor['sos'] = dec % 2
             # Counters
-            #elif char == "e":
-                packet['sensors']['counter0'] = float(value)
+            elif char == "e":
+                sensor['counter0'] = float(value)
             elif char == "f":
-                packet['sensors']['counter1'] = float(value)
+                sensor['counter1'] = float(value)
             elif char == "g":
-                packet['sensors']['counter2'] = float(value)
+                sensor['counter2'] = float(value)
             elif char == "h":
-                packet['sensors']['counter3'] = float(value)
+                sensor['counter3'] = float(value)
             # Analog input 0
             elif char == "a":
-                packet['sensors']['analog_input0'] = float(value)
+                sensor['ain0'] = float(value)
             elif char == "m":
-                packet['sensors']['extvoltage'] = float(value)
-            elif char == "n" or char == "N":
-                if (self.re_volts.match(value)):
-                    packet['batterylevel'] = 1
-                elif (self.re_percents.match(value)):
-                    percents = float(self.re_percents.\
-                      search(value).group(1)) / 100
-                    packet['batterylevel'] = percents
-                elif (self.re_number.match(value)):
-                    percents = int(value) / 100
-                    packet['batterylevel'] = percents
+                sensor['extvoltage'] = float(value) # old version
+                sensor['extbattery_voltage'] = float(value) # new version
+        packet['sensors'] = sensor
         return packet
 
     def formatBatteryLevel(self, value):

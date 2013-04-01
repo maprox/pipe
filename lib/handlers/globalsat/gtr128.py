@@ -42,10 +42,14 @@ class Handler(GlobalsatHandler):
          @param data: dict() data from gps-tracker
         """
         packet = GlobalsatHandler.translate(self, data)
+        sensor = packet['sensors'] or {}
         for char in data:
             value = data[char]
             if char == "n":
-                packet['batterylevel'] = self.formatBatteryLevel(value)
+                batteryLevel = self.formatBatteryLevel(value)
+                packet['batterylevel'] = batteryLevel # old version
+                sensor['battery_level'] = batteryLevel # new version
+        packet['sensors'] = sensor
         return packet
 
     def addCommandSetOptions(self, data):

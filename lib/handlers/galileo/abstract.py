@@ -153,7 +153,8 @@ class GalileoHandler(AbstractHandler):
             num = tag.getNumber()
 
             if (num < prevNum):
-                packet['sensors'] = sensor.copy()
+                if sensor:
+                    packet['sensors'] = sensor.copy()
                 packets.append(packet)
                 packet = {}
                 sensor = {}
@@ -213,7 +214,8 @@ class GalileoHandler(AbstractHandler):
                 sensor['ain2'] = value
             elif (num == 83): # Analog input 3
                 sensor['ain3'] = value
-        packet['sensors'] = sensor.copy()
+        if sensor:
+            packet['sensors'] = sensor.copy()
         packets.append(packet)
         return packets
 
@@ -351,3 +353,7 @@ class TestCase(unittest.TestCase):
         packet = observerPackets[6]
         self.assertEqual(packet['speed'], 0)
         self.assertEqual(packet['uid'], '868204001578425')
+        print(packet['sensors'])
+        #self.assertEqual(packet['sensors'], {
+        #    'sat_count': 3
+        #})

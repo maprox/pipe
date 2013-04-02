@@ -153,7 +153,7 @@ class GalileoHandler(AbstractHandler):
             num = tag.getNumber()
 
             if (num < prevNum):
-                packet['sensors'] = sensor
+                packet['sensors'] = sensor.copy()
                 packets.append(packet)
                 packet = {}
                 sensor = {}
@@ -213,7 +213,7 @@ class GalileoHandler(AbstractHandler):
                 sensor['ain2'] = value
             elif (num == 83): # Analog input 3
                 sensor['ain3'] = value
-        packet['sensors'] = sensor
+        packet['sensors'] = sensor.copy()
         packets.append(packet)
         return packets
 

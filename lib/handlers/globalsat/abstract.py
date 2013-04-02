@@ -224,6 +224,7 @@ class GlobalsatHandler(AbstractHandler):
             # Satellites count
             elif char == "L":
                 packet['satellitescount'] = int(value)
+                sensor['sat_count'] = int(value)
             # Azimuth - driving direction
             elif char == "K":
                 packet['azimuth'] = int(round(float(value)))
@@ -236,11 +237,11 @@ class GlobalsatHandler(AbstractHandler):
                 packet['hdop'] = float(value)
             # Extracting movement sensor from report type.
             # Have lower priority than actual movement sensor
-            #elif char == "R":
-            #    if not 'movementsensor' in packet:
-            #        packet['movementsensor'] = int(value != '4' and
-            #          value != 'F' and
-            #          value != 'E')
+            elif char == "R":
+                if not 'moving' in sensor:
+                    sensor['moving'] = int(value != '4' and
+                      value != 'F' and
+                      value != 'E')
             # Extracting movement sensor value and ACC
             elif char == "Y":
                 # Tracker sends value as HEX string
@@ -258,9 +259,9 @@ class GlobalsatHandler(AbstractHandler):
                 # ACC Sensor
                 sensor['acc'] = (dec >> 13) % 2
                 # GPS Antenna
-                sensor['gpsantenna_connected'] = (dec >> 14) % 2
+                sensor['sat_antenna_connected'] = (dec >> 14) % 2
                 # No external power
-                sensor['extbattery_connected'] = (dec >> 15) % 2
+                sensor['ext_battery_connected'] = (dec >> 15) % 2
             # Signalization status
             elif char == "P":
                 dec = int(value, 16)
@@ -279,7 +280,7 @@ class GlobalsatHandler(AbstractHandler):
                 sensor['ain0'] = float(value)
             elif char == "m":
                 sensor['extvoltage'] = float(value) # old version
-                sensor['extbattery_voltage'] = float(value) # new version
+                sensor['ext_battery_voltage'] = float(value) # new version
         packet['sensors'] = sensor
         return packet
 

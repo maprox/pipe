@@ -45,7 +45,7 @@ class Handler(GlobalsatHandler):
             if char == "N":
                 batteryLevel = self.formatBatteryLevel(value)
                 packet['batterylevel'] = batteryLevel # old version
-                sensor['battery_level'] = batteryLevel # new version
+                sensor['int_battery_level'] = batteryLevel # new version
         packet['sensors'] = sensor
         return packet
 

@@ -146,14 +146,17 @@ class GalileoHandler(AbstractHandler):
         if (data == None): return packets
         if (data.tags == None): return packets
 
-        packet = {'sensors': {}}
+        packet = {}
+        sensor = {}
         prevNum = 0
         for tag in data.tags:
             num = tag.getNumber()
 
             if (num < prevNum):
+                packet['sensors'] = sensor
                 packets.append(packet)
-                packet = {'sensors': {}}
+                packet = {}
+                sensor = {}
 
             prevNum = num
             value = tag.getValue()
@@ -164,8 +167,9 @@ class GalileoHandler(AbstractHandler):
                 packet['uid2'] = value
             elif (num == 32): # Timestamp
                 packet['time'] = value.strftime('%Y-%m-%dT%H:%M:%S.%f')
-            elif (num == 48): # Satellites count, Correctness, Latitude, Longitude
+            elif (num == 48): # Satellites count, Correctness, Lat, Lon
                 packet.update(value)
+                sensor['sat_count'] = value['satellitescount']
             elif (num == 51): # Speed, Azimuth
                 packet.update(value)
             elif (num == 52): # Altitude
@@ -174,20 +178,42 @@ class GalileoHandler(AbstractHandler):
                 packet['hdop'] = value
             elif (num == 64): # Status
                 packet.update(value)
-                packet['sensors']['acc'] = value['acc']
-                packet['sensors']['sos'] = value['sos']
-                packet['sensors']['extbattery_low'] = value['extbattery_low']
+                sensor['acc'] = value['acc']
+                sensor['alarm_mode_enabled'] = value['alarm_mode_enabled']
+                sensor['bad_bus_voltage'] = value['bad_bus_voltage']
+                sensor['bad_ext_voltage'] = value['bad_ext_voltage']
+                sensor['critical_angle'] = value['critical_angle']
+                sensor['critical_vibration'] = value['critical_vibration']
+                sensor['geofence_presence'] = value['geofence_presence']
+                sensor['gsm_no_sim_card'] = value['gsm_no_sim_card']
+                sensor['gsm_signal_quality'] = value['gsm_signal_quality']
+                sensor['int_battery_low_level'] = value['int_battery_low_level']
+                sensor['sat_antenna_connected'] = value['sat_antenna_connected']
+                sensor['sat_glonass_enabled'] = value['sat_glonass_enabled']
+                sensor['sos'] = value['sos']
+            elif (num == 65): # External voltage
+                sensor['ext_battery_voltage'] = value
+            elif (num == 66): # Internal accumulator voltage
+                sensor['int_battery_voltage'] = value
+            elif (num == 67): # Terminal temperature
+                sensor['int_temperature'] = value
+            elif (num == 68): # Acceleration
+                sensor['acceleration_x'] = value['X']
+                sensor['acceleration_y'] = value['Y']
+                sensor['acceleration_z'] = value['Z']
+            elif (num == 69): # Digital outputs 1-16
+                sensor.update(value)
+            elif (num == 70): # Digital inputs 1-16
+                sensor.update(value)
             elif (num == 80): # Analog input 0
-                packet['sensors']['analog_input0'] = value
-
-            #TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
-            #elif (num == 81): # Analog input 1
-            #  packet['sensors']['analog_input1'] = value
-            #elif (num == 82): # Analog input 2
-            #  packet['sensors']['analog_input2'] = value
-            #elif (num == 83): # Analog input 3
-            #  packet['sensors']['analog_input3'] = value
-
+                sensor['ain0'] = value
+            elif (num == 81): # Analog input 1
+                sensor['ain1'] = value
+            elif (num == 82): # Analog input 2
+                sensor['ain2'] = value
+            elif (num == 83): # Analog input 3
+                sensor['ain3'] = value
+        packet['sensors'] = sensor
         packets.append(packet)
         return packets
 

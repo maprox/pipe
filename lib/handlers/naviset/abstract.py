@@ -2,11 +2,12 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Naviset base class for other Naviset firmware
-@copyright 2012, Maprox LLC
+@copyright 2012-2013, Maprox LLC
 '''
 
 
 import json
+from datetime import datetime
 from struct import pack
 
 from kernel.logger import log
@@ -24,6 +25,10 @@ class NavisetHandler(AbstractHandler):
     # private buffer for headPacket data
     __headPacketRawData = None
 
+    __imageResolution = packets.IMAGE_RESOLUTION_640x480
+    __imageReceivingConfig = None
+    __packNum = 0
+
     def processData(self, data):
         """
          Processing of data from socket / storage.
@@ -31,9 +36,12 @@ class NavisetHandler(AbstractHandler):
          @param packnum: Number of socket packet (defaults to 0)
          @return: self
         """
-        protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
-        for protocolPacket in protocolPackets:
-            self.processProtocolPacket(protocolPacket)
+        try:
+            protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
+            for protocolPacket in protocolPackets:
+                self.processProtocolPacket(protocolPacket)
+        except Exception as E:
+            log.error("processData error: %s", E)
 
         return super(NavisetHandler, self).processData(data)
 
@@ -44,14 +52,18 @@ class NavisetHandler(AbstractHandler):
          @param protocolPacket: Naviset protocol packet
         """
         self.sendAcknowledgement(protocolPacket)
-        if not self.__headPacketRawData:
-            self.__headPacketRawData = b''
+        self.receiveImage(protocolPacket)
 
         if isinstance(protocolPacket, packets.PacketHead):
             log.info('HeadPack is stored.')
             self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
+
+        if not isinstance(protocolPacket, packets.PacketData):
             return
+
+        if not self.__headPacketRawData:
+            self.__headPacketRawData = b''
 
         observerPackets = self.translate(protocolPacket)
         if len(observerPackets) == 0:
@@ -65,18 +77,75 @@ class NavisetHandler(AbstractHandler):
     def sendCommand(self, command):
         """
          Sends command to the tracker
-         @param command: Command string
+         @param command: Command class
         """
-        log.info('Sending "' + command + '"...')
-        log.info('[IS NOT IMPLEMENTED]')
+        if isinstance(command, packets.Command):
+            log.info('Sending command "%s"...', command.number)
+            self.send(command.rawData)
+        else:
+            log.error('Incorrect command object')
 
     def receiveImage(self, packet):
         """
          Receives an image from tracker.
          Sends it to the observer server, when totally received.
         """
-        log.error('Image receiving...')
-        log.info('[IS NOT IMPLEMENTED]')
+        if self.__imageReceivingConfig is None:
+            self.__imageReceivingConfig = {
+                'bytesReceived': 0,
+                'lastChunkReceivedTime': datetime.now(),
+                'imageParts': {}
+            }
+
+        diff = datetime.now() - \
+            self.__imageReceivingConfig['lastChunkReceivedTime']
+        if diff.seconds > 60 * 5: # 5 minutes
+            self.__imageReceivingConfig = None
+            self.sendCommand(packets.CommandGetImage({
+                "type": self.__imageResolution
+            }))
+
+        if not isinstance(packet, packets.PacketAnswerCommandGetImage):
+            return
+
+        if self.__imageReceivingConfig is None:
+            self.__imageReceivingConfig = {
+                'bytesReceived': 0,
+                'imageParts': {}
+            }
+
+        config = self.__imageReceivingConfig
+        if packet.code == packets.IMAGE_ANSWER_CODE_SIZE:
+            config['imageSize'] = packet.imageSize
+            log.info('Image transfer is started.')
+            log.info('Size of image is %d bytes', packet.imageSize)
+        elif packet.code == packets.IMAGE_ANSWER_CODE_DATA:
+            chunkLength = len(packet.chunkData)
+            config['bytesReceived'] += chunkLength
+            config['imageParts'][packet.chunkNumber] = packet.chunkData
+            log.debug('Image transfer in progress...')
+            log.debug('Chunk #%d (%d bytes). %d of %d bytes received.',
+                packet.chunkNumber, chunkLength,
+                config['bytesReceived'], config['imageSize'])
+            if config['bytesReceived'] >= config['imageSize']:
+                imageData = b''
+                imageParts = self.__imageReceivingConfig['imageParts']
+                for num in sorted(imageParts.keys()):
+                    imageData += imageParts[num]
+                log.debug('Transfer complete. Sending to the server...')
+                self.sendImages([{
+                    'mime': 'image/jpeg',
+                    'content': imageData
+                }])
+                self.__imageReceivingConfig = None
+
+        # remember time of last chunk to re-request image
+        # if connection breaks down
+        config['lastChunkReceivedTime'] = datetime.now()
+        # send confirmation
+        self.sendCommand(packets.CommandGetImage({
+            "type": packets.IMAGE_PACKET_CONFIRM_OK
+        }))
 
     def translate(self, protocolPacket):
         """
@@ -91,13 +160,14 @@ class NavisetHandler(AbstractHandler):
             return list
         for item in protocolPacket.items:
             packet = {'uid': self.uid}
+            #sensor = {}
             packet.update(item.params)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            #sensor['acc'] = item.params['acc']
+            #sensor['sos'] = item.params['sos']
+            #sensor['ext_battery_low'] = item.params['extbattery_low']
+            #sensor['ain0'] = value
             list.append(packet)
-            #packet['sensors']['acc'] = value['acc']
-            #packet['sensors']['sos'] = value['sos']
-            #packet['sensors']['extbattery_low'] = value['extbattery_low']
-            #packet['sensors']['analog_input0'] = value
         return list
 
     def sendAcknowledgement(self, packet):
@@ -192,70 +262,3 @@ class TestCase(unittest.TestCase):
             "id_action": 321312,
             "data": json.dumps(data)
         })
-
-    def test_packetTranslate(self):
-        data = (
-            b'\xb7S\x01\x00?\x00\x00\x0b@eHQ\x0cq,\x03P\xc1\xfd\x02\x00' +
-            b'\x00\xff\x04\x00\x009\x00\x15\x00\x00\x8a\x0f\x00\x00\xff' +
-            b'\xff\xff\xff\xd0\x03\xe0\xfe\xa0\xc1\xff\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00' +
-            b'\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00' +
-            b'\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01' +
-            b'\x00\x01\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\nFeHQ\x0cq,\x03\x08' +
-            b'\xc1\xfd\x02\x00\x00\xff\x04\x00\x00D\x00$\x8f4\xa3\x0f\x00' +
-            b'\x00\x01\x00\x00\x00\xa0\x03 \xfe\xd0\xc0\xff\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00\x00' +
-            b'\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00' +
-            b'\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00' +
-            b'\x01\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x02\x00\n_eHQ\xe0p,\x03`\xc0\xfd' +
-            b'\x02J\x00\xff\x04v\x06U\x00$)4\xc2\x0f\x00\x00\x0c\x00\x00' +
-            b'\x00\xb0\tp\xf6\x10\xc2\xff\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00\x00\x00\x00\x00\x00' +
-            b'\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00\x00\xff\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00\xff\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x03\x00\n`eHQ\xe0p,\x03P\xc0\xfd\x02W\x00\xff' +
-            b'\x04y\x06X\x00$\x7f3\xc2\x0f\x00\x00\r\x00\x00\x00`\tp\xf6`\xc2' +
-            b'\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\xff$\x00\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80' +
-            b'\x80\x80\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x01\x00\x01\x00\xff\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x04\x00\nbe' +
-            b'HQ\xbcp,\x03@\xc0\xfd\x02i\x00\xff\x04\xdb\x06Z\x00$\x811\xc2' +
-            b'\x0f\x00\x00\x10\x00\x00\x000\t@\xeb`\xc3\xff\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00\x00' +
-            b'\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00' +
-            b'\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00' +
-            b'\x01\x00\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x05\x00\nfeHQ\x8cp,\x03\x10\xc0' +
-            b'\xfd\x02K\x00\xff\x04\x06\x08e\x00$\xb32\xc2\x0f\x00\x00\x14' +
-            b'\x00\x00\x00\xb0\x0c\xb0\xefp\xc2\xff\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff$\x00\x00\x00\x00' +
-            b'\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00\x00\xff' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00' +
-            b'\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\xff\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
-            b'\x00\x00\x00\x00\x00\xfb\x0f'
-        )
-        protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
-        self.assertEqual(len(protocolPackets), 1)
-        #observerPackets = self.handler.translate(protocolPackets[0])

@@ -113,7 +113,7 @@ class GalileoHandler(AbstractHandler):
         partnum = packet.body[0]
         if self.__imageReceivingConfig is None:
             self.__imageReceivingConfig = {
-              'imageparts': {}
+              'imageParts': {}
             }
             config = self.__imageReceivingConfig
             log.info('Image transfer is started.')
@@ -123,7 +123,7 @@ class GalileoHandler(AbstractHandler):
                 log.debug('Size of chunk is %d bytes', len(packet.body) - 1)
             else:
                 imageData = b''
-                imageParts = self.__imageReceivingConfig['imageparts']
+                imageParts = self.__imageReceivingConfig['imageParts']
                 for num in sorted(imageParts.keys()):
                     imageData += imageParts[num]
                 self.sendImages([{
@@ -135,7 +135,7 @@ class GalileoHandler(AbstractHandler):
                 return
 
         imageData = packet.body[1:]
-        config['imageparts'][partnum] = imageData
+        config['imageParts'][partnum] = imageData
 
     def translate(self, data):
         """
@@ -353,7 +353,3 @@ class TestCase(unittest.TestCase):
         packet = observerPackets[6]
         self.assertEqual(packet['speed'], 0)
         self.assertEqual(packet['uid'], '868204001578425')
-        print(packet['sensors'])
-        #self.assertEqual(packet['sensors'], {
-        #    'sat_count': 3
-        #})

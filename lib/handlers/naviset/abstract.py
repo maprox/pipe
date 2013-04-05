@@ -111,9 +111,11 @@ class NavisetHandler(AbstractHandler):
 
         config = self.__imageReceivingConfig
         if packet.code == packets.IMAGE_ANSWER_CODE_SIZE:
-            config['imageSize'] = packet.imageSize
             log.info('Image transfer is started.')
             log.info('Size of image is %d bytes', packet.imageSize)
+            config['imageSize'] = packet.imageSize
+            config['bytesReceived'] = 0
+            config['imageParts'] = {}
         elif packet.code == packets.IMAGE_ANSWER_CODE_DATA:
             log.debug('Image transfer in progress...')
             chunkLength = len(packet.chunkData)

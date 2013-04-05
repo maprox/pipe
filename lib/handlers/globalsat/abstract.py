@@ -280,7 +280,6 @@ class GlobalsatHandler(AbstractHandler):
                 sensor['ain0'] = float(value)
             elif char == "m":
                 sensor['extvoltage'] = float(value) # old version
-                sensor['extvoltage'] = float(value) # old version
                 sensor['ext_battery_voltage'] = float(value) # new version
         if sensor:
             packet['sensors'] = sensor.copy()

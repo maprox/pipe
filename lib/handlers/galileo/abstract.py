@@ -162,58 +162,63 @@ class GalileoHandler(AbstractHandler):
             prevNum = num
             value = tag.getValue()
             #print(num, value)
-            if (num == 3): # IMEI
+            if num == 3: # IMEI
                 packet['uid'] = value
-            elif (num == 4): # CODE
+            elif num == 4: # CODE
                 packet['uid2'] = value
-            elif (num == 32): # Timestamp
+            elif num == 32: # Timestamp
                 packet['time'] = value.strftime('%Y-%m-%dT%H:%M:%S.%f')
-            elif (num == 48): # Satellites count, Correctness, Lat, Lon
+            elif num == 48: # Satellites count, Correctness, Lat, Lon
                 packet.update(value)
                 sensor['sat_count'] = value['satellitescount']
-            elif (num == 51): # Speed, Azimuth
+            elif num == 51: # Speed, Azimuth
                 packet.update(value)
-            elif (num == 52): # Altitude
+            elif num == 52: # Altitude
                 packet['altitude'] = value
-            elif (num == 53): # HDOP
+            elif num == 53: # HDOP
                 packet['hdop'] = value
-            elif (num == 64): # Status
-                packet.update(value)
-                sensor['acc'] = value['acc']
-                sensor['alarm_mode_enabled'] = value['alarm_mode_enabled']
-                sensor['bad_bus_voltage'] = value['bad_bus_voltage']
-                sensor['bad_ext_voltage'] = value['bad_ext_voltage']
-                sensor['critical_angle'] = value['critical_angle']
-                sensor['critical_vibration'] = value['critical_vibration']
-                sensor['geofence_presence'] = value['geofence_presence']
-                sensor['gsm_no_sim_card'] = value['gsm_no_sim_card']
-                sensor['gsm_signal_quality'] = value['gsm_signal_quality']
-                sensor['int_battery_low_level'] = value['int_battery_low_level']
-                sensor['sat_antenna_connected'] = value['sat_antenna_connected']
-                sensor['sat_glonass_enabled'] = value['sat_glonass_enabled']
-                sensor['sos'] = value['sos']
-            elif (num == 65): # External voltage
+            elif num == 64: # Status
+                sensor.update(value)
+            elif num == 65: # External voltage
                 sensor['ext_battery_voltage'] = value
-            elif (num == 66): # Internal accumulator voltage
+            elif num == 66: # Internal accumulator voltage
                 sensor['int_battery_voltage'] = value
-            elif (num == 67): # Terminal temperature
+            elif num == 67: # Terminal temperature
                 sensor['int_temperature'] = value
-            elif (num == 68): # Acceleration
+            elif num == 68: # Acceleration
                 sensor['acceleration_x'] = value['X']
                 sensor['acceleration_y'] = value['Y']
                 sensor['acceleration_z'] = value['Z']
-            elif (num == 69): # Digital outputs 1-16
+            elif num == 69: # Digital outputs 1-16
                 sensor.update(value)
-            elif (num == 70): # Digital inputs 1-16
+            elif num == 70: # Digital inputs 1-16
                 sensor.update(value)
-            elif (num == 80): # Analog input 0
-                sensor['ain0'] = value
-            elif (num == 81): # Analog input 1
-                sensor['ain1'] = value
-            elif (num == 82): # Analog input 2
-                sensor['ain2'] = value
-            elif (num == 83): # Analog input 3
-                sensor['ain3'] = value
+            elif num in range(80, 84): # Analog input 0 - 4
+                sensor['ain%d' % (num - 80)] = value
+            elif num in range(112, 120):
+                sensor['ext_temperature_%d' % (num - 112)] = value
+            elif num == 144:
+                sensor['ibutton_1'] = value
+            elif num == 192:
+                sensor['fms_total_fuel_consumption'] = value
+            elif num == 193:
+                sensor.update(value)
+            elif num == 194:
+                sensor['fms_total_mileage'] = value
+            elif num == 195:
+                sensor['can_b1'] = value
+            elif num in range(196, 211):
+                sensor['can_8bit_r%d' % (num - 196)] = value
+            elif num == 211:
+                sensor['ibutton_2'] = value
+            elif num == 212:
+                sensor['total_mileage'] = value
+            elif num == 213:
+                sensor.update(value)
+            elif num in range(214, 219):
+                sensor['can_16bit_r%d' % (num - 214)] = value
+            elif num in range(219, 224):
+                sensor['can_32bit_r%d' % (num - 219)] = value
         if sensor:
             packet['sensors'] = sensor.copy()
         packets.append(packet)

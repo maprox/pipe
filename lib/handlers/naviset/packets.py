@@ -213,7 +213,27 @@ class PacketDataItem:
     __dataStructure = 0
     __number = 0
     __params = None
-    __additional = 0
+    __additional = None
+
+    # additional data sizes map
+    __dsMap = {
+        0: 1,
+        1: 4,
+        2: 1,
+        3: 2,
+        4: 4,
+        5: 4,
+        6: 4,
+        7: 4,
+        8: 4,
+        9: 4,
+        10: 6,
+        11: 4,
+        12: 4,
+        13: 2,
+        14: 4,
+        15: 8
+    }
 
     def __init__(self, data = None, ds = 0):
         """
@@ -240,28 +260,10 @@ class PacketDataItem:
         if (ds == None) or (ds == 0):
             return 0
 
-        dsMap = {
-             0: 1,
-             1: 4,
-             2: 1,
-             3: 2,
-             4: 4,
-             5: 4,
-             6: 4,
-             7: 4,
-             8: 4,
-             9: 4,
-            10: 6,
-            11: 4,
-            12: 4,
-            13: 2,
-            14: 4,
-            15: 8
-        }
         size = 0
-        for key in dsMap:
+        for key in cls.__dsMap:
             if bits.bitTest(ds, key):
-                size += dsMap[key]
+                size += cls.__dsMap[key]
         return size
 
     @classmethod
@@ -278,6 +280,79 @@ class PacketDataItem:
             items.append(item)
             if data is None or len(data) == 0: break
         return items
+
+    def parseAdditionalData(self):
+        """
+         Parses additional data of the packet
+         @return: dict
+        """
+        sensors = {}
+        buffer = self.__additional
+        offset = 0
+        for key in range(0, 16):
+            if not bits.bitTest(self.__dataStructure, key): continue
+            size = self.__dsMap[key]
+            data = buffer[offset:offset + size]
+            offset += size
+            if key == 0:
+                status = unpack('<B', data)[0]
+                sensors['bad_ext_voltage'] = int(bits.bitTest(status, 0))
+                sensors['moving'] = int(bits.bitTest(status, 1))
+                sensors['armed'] = int(bits.bitTest(status, 2))
+                sensors['gsm_sim_card_1_enabled'] = int(bits.bitTest(status, 3))
+                sensors['gsm_sim_card_2_enabled'] = int(bits.bitTest(status, 4))
+                sensors['gsm_no_gprs_connection'] = int(bits.bitTest(status, 5))
+                sensors['sat_antenna_connected'] =\
+                    1 - int(bits.bitTest(status, 6))
+            elif key == 1:
+                vExt, vInt = unpack('<HH', data)
+                sensors['ext_battery_voltage'] = vExt
+                sensors['int_battery_voltage'] = vInt
+            elif key == 2:
+                sensors['int_temperature'] = unpack('<b', data)[0]
+            elif key == 3:
+                dInp, dOut = unpack('<BB', data)
+                for i in range(0, 8):
+                    sensors['din%d' % i] = int(bits.bitTest(dInp, i))
+                    sensors['dout%d' % i] = int(bits.bitTest(dOut, i))
+            elif key in range(4, 8):
+                vInp1, vInp2 = unpack('<HH', data)
+                index = 2 * (key - 4)
+                sensors['ain%d' % index] = vInp1
+                sensors['ain%d' % (index + 1)] = vInp2
+            elif key in range(8, 10):
+                t = unpack('<bbbb', data)
+                index = 4 * (key - 8)
+                for i in range(0, 4):
+                    if t[i] > -100:
+                        sensors['ext_temperature_%d' % (i + index)] = t[i]
+            elif key == 10:
+                vH, vI = unpack('<HI', data)
+                sensors['ibutton_0'] = vH | (vI << 16)
+            elif key == 11:
+                fInp1, fInp2 = unpack('<HH', data)
+                sensors['fin0'] = fInp1
+                sensors['fin1'] = fInp2
+            elif key == 12: # Omnicomm fuel level
+                fInp1, fInp2 = unpack('<HH', data)
+                sensors['omnicomm_fuel_0'] = fInp1
+                sensors['omnicomm_fuel_1'] = fInp2
+            elif key == 13: # Omnicomm temperature
+                fInp1, fInp2 = unpack('<bb', data)
+                sensors['omnicomm_temperature_0'] = fInp1
+                sensors['omnicomm_temperature_1'] = fInp2
+            elif key == 14: # CAN data 1
+                fuel, rpm, coolantTemp = unpack('<BHb', data)
+                fuelPercent = fuel * 0.4
+                if fuelPercent > 100: fuelPercent = 100
+                sensors['can_fuel_percent'] = fuelPercent
+                sensors['can_rpm'] = rpm
+                sensors['can_coolant_temperature'] = coolantTemp
+            elif key == 15: # CAN data 2
+                fuelConsumption, totalMileage = unpack('<LL', data)
+                sensors['can_total_fuel_consumption'] = fuelConsumption * 0.5
+                sensors['can_total_mileage'] = totalMileage * 5
+        return sensors
 
     def convertCoordinate(self, coord):
         result = str(coord)
@@ -309,6 +384,7 @@ class PacketDataItem:
         self.__params['altitude'] = unpack("<H", buffer[19:21])[0]
         self.__params['hdop'] = unpack("<B", buffer[21:22])[0] / 10
         self.__additional = buffer[22:length]
+        self.__params['sensors'] = self.parseAdditionalData()
 
         # apply new data
         self.__rawDataTail = buffer[length:]
@@ -666,6 +742,7 @@ import unittest
 class TestCase(unittest.TestCase):
 
     def setUp(self):
+        self.maxDiff = None
         pass
 
     def test_headPacket(self):
@@ -780,8 +857,11 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packetItem2.params['speed'], 0)
         self.assertEqual(packetItem2.params['satellitescount'], 16)
         self.assertEqual(packetItem2.number, 10606)
-        self.assertEqual(packetItem2.additional, b'')
-        #self.assertEqual(packetItem2.sensor, b'')
+        self.assertEqual(packetItem2.params['sensors']['int_temperature'], 36)
+        self.assertEqual(
+            packetItem2.params['sensors']['ext_battery_voltage'], 11450)
+        self.assertEqual(
+            packetItem2.params['sensors']['sat_antenna_connected'], 1)
 
     def test_simpleCommandsPacket(self):
         cmd = CommandGetStatus()

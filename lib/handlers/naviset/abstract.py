@@ -97,22 +97,17 @@ class NavisetHandler(AbstractHandler):
                 'imageParts': {}
             }
 
-        diff = datetime.now() - \
-            self.__imageReceivingConfig['lastChunkReceivedTime']
-        if diff.seconds > 60 * 5: # 5 minutes
-            self.__imageReceivingConfig = None
-            self.sendCommand(packets.CommandGetImage({
-                "type": self.__imageResolution
-            }))
+        # Automatic image request each 5 minutes
+        #diff = datetime.now() - \
+        #    self.__imageReceivingConfig['lastChunkReceivedTime']
+        #if diff.seconds > 60 * 5: # 5 minutes
+        #    self.__imageReceivingConfig = None
+        #    self.sendCommand(packets.CommandGetImage({
+        #        "type": self.__imageResolution
+        #    }))
 
         if not isinstance(packet, packets.PacketAnswerCommandGetImage):
             return
-
-        if self.__imageReceivingConfig is None:
-            self.__imageReceivingConfig = {
-                'bytesReceived': 0,
-                'imageParts': {}
-            }
 
         config = self.__imageReceivingConfig
         if packet.code == packets.IMAGE_ANSWER_CODE_SIZE:
@@ -120,13 +115,17 @@ class NavisetHandler(AbstractHandler):
             log.info('Image transfer is started.')
             log.info('Size of image is %d bytes', packet.imageSize)
         elif packet.code == packets.IMAGE_ANSWER_CODE_DATA:
-            chunkLength = len(packet.chunkData)
-            config['bytesReceived'] += chunkLength
-            config['imageParts'][packet.chunkNumber] = packet.chunkData
             log.debug('Image transfer in progress...')
-            log.debug('Chunk #%d (%d bytes). %d of %d bytes received.',
-                packet.chunkNumber, chunkLength,
-                config['bytesReceived'], config['imageSize'])
+            chunkLength = len(packet.chunkData)
+            if chunkLength == 0:
+                log.debug('Chunk #%d (%d bytes). Null chunk - skip it...',
+                    packet.chunkNumber, chunkLength)
+            else:
+                config['bytesReceived'] += chunkLength
+                config['imageParts'][packet.chunkNumber] = packet.chunkData
+                log.debug('Chunk #%d (%d bytes). %d of %d bytes received.',
+                    packet.chunkNumber, chunkLength,
+                    config['bytesReceived'], config['imageSize'])
             if config['bytesReceived'] >= config['imageSize']:
                 imageData = b''
                 imageParts = self.__imageReceivingConfig['imageParts']
@@ -160,13 +159,10 @@ class NavisetHandler(AbstractHandler):
             return list
         for item in protocolPacket.items:
             packet = {'uid': self.uid}
-            #sensor = {}
             packet.update(item.params)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
-            #sensor['acc'] = item.params['acc']
-            #sensor['sos'] = item.params['sos']
-            #sensor['ext_battery_low'] = item.params['extbattery_low']
-            #sensor['ain0'] = value
+            if not 'sensors' in packet: packet['sensors'] = {}
+            packet['sensors']['sat_count'] = packet['satellitescount']
             list.append(packet)
         return list
 

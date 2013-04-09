@@ -163,8 +163,10 @@ class NavisetHandler(AbstractHandler):
             packet = {'uid': self.uid}
             packet.update(item.params)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
-            if not 'sensors' in packet: packet['sensors'] = {}
-            packet['sensors']['sat_count'] = packet['satellitescount']
+            # sensors
+            sensor = packet['sensors'] or {}
+            sensor['sat_count'] = packet['satellitescount']
+            self.setPacketSensors(packet, sensor)
             list.append(packet)
         return list
 

@@ -210,8 +210,7 @@ class Handler(AbstractHandler):
             elif char == "A":
                 if int(value) == 5:
                     sensor['sos'] = 1
-        if sensor:
-            packet['sensors'] = sensor.copy()
+        self.setPacketSensors(packet, sensor)
         return packet
 
     def getInitiationData(self, config):

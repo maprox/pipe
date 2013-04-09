@@ -127,6 +127,10 @@ class TeltonikaHandler(AbstractHandler):
             packet.update(item.params)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
             packet['hdop'] = 1 # temporarily manual value of hdop
+            # sensors
+            sensor = packet['sensors'] or {}
+            sensor['sat_count'] = packet['satellitescount']
+            self.setPacketSensors(packet, sensor)
             list.append(packet)
         return list
 

@@ -230,8 +230,7 @@ class GlobalsatHandler(AbstractHandler):
                 packet['azimuth'] = int(round(float(value)))
             # Odometer
             elif char == "i":
-                #packet['odometer'] = float(value) # for backward compatibility
-                sensor['odometer'] = float(value) # new version
+                sensor['odometer'] = float(value)
             # HDOP (Horizontal Dilution of Precision)
             elif char == "M":
                 packet['hdop'] = float(value)
@@ -279,10 +278,8 @@ class GlobalsatHandler(AbstractHandler):
             elif char == "a":
                 sensor['ain0'] = float(value)
             elif char == "m":
-                sensor['extvoltage'] = float(value) # old version
-                sensor['ext_battery_voltage'] = float(value) # new version
-        if sensor:
-            packet['sensors'] = sensor.copy()
+                sensor['ext_battery_voltage'] = float(value)
+        self.setPacketSensors(packet, sensor)
         return packet
 
     def formatBatteryLevel(self, value):

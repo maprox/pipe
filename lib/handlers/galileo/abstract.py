@@ -153,8 +153,7 @@ class GalileoHandler(AbstractHandler):
             num = tag.getNumber()
 
             if (num < prevNum):
-                if sensor:
-                    packet['sensors'] = sensor.copy()
+                self.setPacketSensors(packet, sensor)
                 packets.append(packet)
                 packet = {}
                 sensor = {}
@@ -219,8 +218,7 @@ class GalileoHandler(AbstractHandler):
                 sensor['can_16bit_r%d' % (num - 214)] = value
             elif num in range(219, 224):
                 sensor['can_32bit_r%d' % (num - 219)] = value
-        if sensor:
-            packet['sensors'] = sensor.copy()
+        self.setPacketSensors(packet, sensor)
         packets.append(packet)
         return packets
 

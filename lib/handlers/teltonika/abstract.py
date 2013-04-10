@@ -275,7 +275,7 @@ class TeltonikaHandler(AbstractHandler):
          @param config: config dict
          @return: array of dict or dict
         """
-        return self.getConfigSmsData(config)
+        return self.getPushSmsData(config)
 
     def getConfigurationPacket(self, config):
         """
@@ -285,6 +285,13 @@ class TeltonikaHandler(AbstractHandler):
         """
         packet = packets.TeltonikaConfiguration()
         packet.packetId = 1
+        packet.addParam(packets.CFG_DEEP_SLEEP_MODE, 0)
+        packet.addParam(packets.CFG_SORTING, packets.CFG_SORTING_ASC)
+        packet.addParam(packets.CFG_ACTIVE_DATA_LINK_TIMEOUT, 20)
+        packet.addParam(packets.CFG_UNKNOWN_PARAM_1012, 10)
+        packet.addParam(packets.CFG_FRAME_BORDER, 0)
+        packet.addParam(packets.CFG_GEOFENCE_ZONE_1_SHAPE, 0)
+        packet.addParam(packets.CFG_GEOFENCE_ZONE_1_PRIORITY, 0)
         packet.addParam(packets.CFG_TARGET_SERVER_IP_ADDRESS, str(get_ip()))
         packet.addParam(packets.CFG_TARGET_SERVER_PORT, str(config['port']))
         packet.addParam(packets.CFG_APN_NAME, config['gprs']['apn'])
@@ -294,7 +301,6 @@ class TeltonikaHandler(AbstractHandler):
         packet.addParam(packets.CFG_SMS_PASSWORD, config['device']['password'])
         packet.addParam(packets.CFG_STOP_DETECTION_SOURCE,
             packets.CFG_STOP_DETECTION_VAL_MOVEMENT_SENSOR)
-        packet.addParam(packets.CFG_SORTING, packets.CFG_SORTING_ASC)
         packet.addParam(packets.CFG_GPRS_CONTENT_ACTIVATION, 1) # Enable
         packet.addParam(packets.CFG_OPERATOR_LIST, '25002') # MegaFON
         # on stop config

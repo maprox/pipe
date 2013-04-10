@@ -155,6 +155,8 @@ def movecar(packet):
                           if 'sensor_acc' in row else None,
                       'sos': row['sensor_sos'] \
                           if 'sensor_sos' in row else None,
+                      'ext_battery_level': row['sensor_ext_battery_level'] \
+                          if 'sensor_ext_battery_level' in row else None
                     }
 
                     odometer = row['sensor_odometer'] \
@@ -176,9 +178,7 @@ def movecar(packet):
                         'speed': row['speed'],
                         'fuel': row['fuel'],
                         'azimuth': row['azimuth'],
-                        'movementsensor': row['movementsensor'],
                         'satellitescount': row['satellitescount'],
-                        'batterylevel': row['batterylevel'],
                         'hdop': row['hdop'],
                         'sensors': json.dumps(sensors)
                     }

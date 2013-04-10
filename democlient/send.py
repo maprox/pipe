@@ -49,10 +49,10 @@ except Exception as E:
     exit(1)
 
 # Max sleep time
-maxSleep = 100
+maxSleep = 600
 
 # Max parking time
-maxParkingTime = 100
+maxParkingTime = 600
 
 # Min parking speed
 minParkingSpeed = 1

@@ -288,10 +288,6 @@ class TeltonikaHandler(AbstractHandler):
         packet.addParam(packets.CFG_DEEP_SLEEP_MODE, 0)
         packet.addParam(packets.CFG_SORTING, packets.CFG_SORTING_ASC)
         packet.addParam(packets.CFG_ACTIVE_DATA_LINK_TIMEOUT, 20)
-        packet.addParam(packets.CFG_UNKNOWN_PARAM_1012, 10)
-        packet.addParam(packets.CFG_FRAME_BORDER, 0)
-        packet.addParam(packets.CFG_GEOFENCE_ZONE_1_SHAPE, 0)
-        packet.addParam(packets.CFG_GEOFENCE_ZONE_1_PRIORITY, 0)
         packet.addParam(packets.CFG_TARGET_SERVER_IP_ADDRESS, str(get_ip()))
         packet.addParam(packets.CFG_TARGET_SERVER_PORT, str(config['port']))
         packet.addParam(packets.CFG_APN_NAME, config['gprs']['apn'])
@@ -310,6 +306,8 @@ class TeltonikaHandler(AbstractHandler):
         # moving config
         packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_SAVED_RECORDS, 1)
         packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_PERIOD, 10) # seconds
+        packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_ANGLE, 10)
+        packet.addParam(packets.CFG_VEHICLE_MOVING_MIN_DISTANCE, 500) # m
         packet.addParam(packets.CFG_VEHICLE_MOVING_SEND_PERIOD, 20) # seconds
         return packet
 

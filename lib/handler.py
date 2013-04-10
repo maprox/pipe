@@ -301,3 +301,21 @@ class AbstractHandler(object):
         """
         self.processCloseTask(task)
         return self
+
+    def setPacketSensors(self, packet, sensor):
+        """
+         Makes a copy of some packet data into sensor
+         @param sensor: dict
+         @param packet: dict
+         @return: self
+        """
+        if (packet and sensor and
+            isinstance(packet, dict) and
+            isinstance(sensor, dict)):
+            for key in ['latitude', 'longitude',
+                        'altitude', 'speed',
+                        'hdop', 'azimuth']:
+                if key in packet:
+                    sensor[key] = packet[key]
+            packet['sensors'] = sensor.copy()
+        return self

@@ -7,6 +7,11 @@ if [ "$1" = 'tr600' ]; then
   ./run_tr600.sh $2 $3 $4 &
 fi
 
+if [ "$1" = 'gtr128' ]; then
+  echo 'Starting GTR-128/GTR-129 listener'
+  ./run_gtr128.sh $2 $3 $4 &
+fi
+
 if [ "$1" = 'tr203' ]; then
   echo 'Starting TR-203 listener'
   ./run_tr203.sh $2 $3 $4 &

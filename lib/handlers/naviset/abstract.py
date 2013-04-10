@@ -2,11 +2,12 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Naviset base class for other Naviset firmware
-@copyright 2012, Maprox LLC
+@copyright 2012-2013, Maprox LLC
 '''
 
 
 import json
+from datetime import datetime
 from struct import pack
 
 from kernel.logger import log
@@ -24,6 +25,10 @@ class NavisetHandler(AbstractHandler):
     # private buffer for headPacket data
     __headPacketRawData = None
 
+    __imageResolution = packets.IMAGE_RESOLUTION_640x480
+    __imageReceivingConfig = None
+    __packNum = 0
+
     def processData(self, data):
         """
          Processing of data from socket / storage.
@@ -31,9 +36,12 @@ class NavisetHandler(AbstractHandler):
          @param packnum: Number of socket packet (defaults to 0)
          @return: self
         """
-        protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
-        for protocolPacket in protocolPackets:
-            self.processProtocolPacket(protocolPacket)
+        try:
+            protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
+            for protocolPacket in protocolPackets:
+                self.processProtocolPacket(protocolPacket)
+        except Exception as E:
+            log.error("processData error: %s", E)
 
         return super(NavisetHandler, self).processData(data)
 
@@ -44,14 +52,18 @@ class NavisetHandler(AbstractHandler):
          @param protocolPacket: Naviset protocol packet
         """
         self.sendAcknowledgement(protocolPacket)
-        if not self.__headPacketRawData:
-            self.__headPacketRawData = b''
+        self.receiveImage(protocolPacket)
 
         if isinstance(protocolPacket, packets.PacketHead):
             log.info('HeadPack is stored.')
             self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
+
+        if not isinstance(protocolPacket, packets.PacketData):
             return
+
+        if not self.__headPacketRawData:
+            self.__headPacketRawData = b''
 
         observerPackets = self.translate(protocolPacket)
         if len(observerPackets) == 0:
@@ -65,18 +77,76 @@ class NavisetHandler(AbstractHandler):
     def sendCommand(self, command):
         """
          Sends command to the tracker
-         @param command: Command string
+         @param command: Command class
         """
-        log.info('Sending "' + command + '"...')
-        log.info('[IS NOT IMPLEMENTED]')
+        if isinstance(command, packets.Command):
+            log.info('Sending command "%s"...', command.number)
+            self.send(command.rawData)
+        else:
+            log.error('Incorrect command object')
 
     def receiveImage(self, packet):
         """
          Receives an image from tracker.
          Sends it to the observer server, when totally received.
         """
-        log.error('Image receiving...')
-        log.info('[IS NOT IMPLEMENTED]')
+        if self.__imageReceivingConfig is None:
+            self.__imageReceivingConfig = {
+                'bytesReceived': 0,
+                'lastChunkReceivedTime': datetime.now(),
+                'imageParts': {}
+            }
+
+        # Automatic image request each 5 minutes
+        #diff = datetime.now() - \
+        #    self.__imageReceivingConfig['lastChunkReceivedTime']
+        #if diff.seconds > 60 * 5: # 5 minutes
+        #    self.__imageReceivingConfig = None
+        #    self.sendCommand(packets.CommandGetImage({
+        #        "type": self.__imageResolution
+        #    }))
+
+        if not isinstance(packet, packets.PacketAnswerCommandGetImage):
+            return
+
+        config = self.__imageReceivingConfig
+        if packet.code == packets.IMAGE_ANSWER_CODE_SIZE:
+            log.info('Image transfer is started.')
+            log.info('Size of image is %d bytes', packet.imageSize)
+            config['imageSize'] = packet.imageSize
+            config['bytesReceived'] = 0
+            config['imageParts'] = {}
+        elif packet.code == packets.IMAGE_ANSWER_CODE_DATA:
+            log.debug('Image transfer in progress...')
+            chunkLength = len(packet.chunkData)
+            if chunkLength == 0:
+                log.debug('Chunk #%d (%d bytes). Null chunk - skip it...',
+                    packet.chunkNumber, chunkLength)
+            else:
+                config['bytesReceived'] += chunkLength
+                config['imageParts'][packet.chunkNumber] = packet.chunkData
+                log.debug('Chunk #%d (%d bytes). %d of %d bytes received.',
+                    packet.chunkNumber, chunkLength,
+                    config['bytesReceived'], config['imageSize'])
+            if config['bytesReceived'] >= config['imageSize']:
+                imageData = b''
+                imageParts = self.__imageReceivingConfig['imageParts']
+                for num in sorted(imageParts.keys()):
+                    imageData += imageParts[num]
+                log.debug('Transfer complete. Sending to the server...')
+                self.sendImages([{
+                    'mime': 'image/jpeg',
+                    'content': imageData
+                }])
+                self.__imageReceivingConfig = None
+
+        # remember time of last chunk to re-request image
+        # if connection breaks down
+        config['lastChunkReceivedTime'] = datetime.now()
+        # send confirmation
+        self.sendCommand(packets.CommandGetImage({
+            "type": packets.IMAGE_PACKET_CONFIRM_OK
+        }))
 
     def translate(self, protocolPacket):
         """
@@ -93,11 +163,11 @@ class NavisetHandler(AbstractHandler):
             packet = {'uid': self.uid}
             packet.update(item.params)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            # sensors
+            sensor = packet['sensors'] or {}
+            sensor['sat_count'] = packet['satellitescount']
+            self.setPacketSensors(packet, sensor)
             list.append(packet)
-            #packet['sensors']['acc'] = value['acc']
-            #packet['sensors']['sos'] = value['sos']
-            #packet['sensors']['extbattery_low'] = value['extbattery_low']
-            #packet['sensors']['analog_input0'] = value
         return list
 
     def sendAcknowledgement(self, packet):
@@ -171,11 +241,11 @@ import unittest
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        pass
+        import kernel.pipe as pipe
+        self.handler = NavisetHandler(pipe.Manager(), None)
 
     def test_packetData(self):
-        import kernel.pipe as pipe
-        h = NavisetHandler(pipe.Manager(), None)
+        h = self.handler
         config = h.getInitiationConfig({
             "identifier": "0123456789012345",
             "host": "trx.maprox.net",

@@ -364,21 +364,21 @@ class Tag64(TagNumberShort):
         if (rawdata == None): return None
         r = super(Tag64, self).getValueFromRawData(rawdata)
         return {
-          'movementsensor':   bits.bitValue(r,  0),
-          'criticalangle':    bits.bitValue(r,  1),
-          'nosimcard':        bits.bitValue(r,  3),
-          'ingeofence':       bits.bitValue(r,  4),
-          'extbattery_low':   bits.bitValue(r,  5),
-          'gpsantenna':   1 - bits.bitValue(r,  6),
-          'badbusvoltage':    bits.bitValue(r,  7),
-          'badextvoltage':    bits.bitValue(r,  8),
-          'acc':              bits.bitValue(r,  9),
-          'crashvibration':   bits.bitValue(r, 10),
-          'glonass':          bits.bitValue(r, 11),
-          'signalquality':    bits.bitValue(r, 12) \
-            + (2 * bits.bitValue(r, 13)),
-          'alarmmodeon':      bits.bitValue(r, 14),
-          'sos':              bits.bitValue(r, 15)
+          'moving': bits.bitValue(r,  0),
+          'critical_angle': bits.bitValue(r,  1),
+          'gsm_no_sim_card': bits.bitValue(r,  3),
+          'geofence_presence': bits.bitValue(r,  4),
+          'int_battery_low_level': bits.bitValue(r,  5),
+          'sat_antenna_connected': 1 - bits.bitValue(r,  6),
+          'bad_bus_voltage': bits.bitValue(r,  7),
+          'bad_ext_voltage': bits.bitValue(r,  8),
+          'acc': bits.bitValue(r,  9),
+          'critical_vibration':  bits.bitValue(r, 10),
+          'sat_glonass_enabled': bits.bitValue(r, 11),
+          'gsm_signal_quality': bits.bitValue(r, 12) \
+                            + (2 * bits.bitValue(r, 13)),
+          'armed': bits.bitValue(r, 14),
+          'sos': bits.bitValue(r, 15)
         }
 
     @classmethod
@@ -395,21 +395,22 @@ class Tag64(TagNumberShort):
         """
         if (value == None): return None
         r = 0
-        r = self.bitSet(r, 0, value, 'movementsensor')
-        r = self.bitSet(r, 1, value, 'criticalangle')
-        r = self.bitSet(r, 3, value, 'nosimcard')
-        r = self.bitSet(r, 4, value, 'ingeofence')
-        r = self.bitSet(r, 5, value, 'extbattery_low')
-        r = self.bitSet(r, 6, value, 'gpsantenna')
-        r = self.bitSet(r, 7, value, 'badbusvoltage')
-        r = self.bitSet(r, 8, value, 'badextvoltage')
+        r = self.bitSet(r, 0, value, 'moving')
+        r = self.bitSet(r, 1, value, 'critical_angle')
+        r = self.bitSet(r, 3, value, 'gsm_no_sim_card')
+        r = self.bitSet(r, 4, value, 'geofence_presence')
+        r = self.bitSet(r, 5, value, 'int_battery_low_level')
+        r = self.bitSet(r, 6, value, 'sat_antenna_connected')
+        r = self.bitSet(r, 7, value, 'bad_bus_voltage')
+        r = self.bitSet(r, 8, value, 'bad_ext_voltage')
         r = self.bitSet(r, 9, value, 'acc')
-        r = self.bitSet(r, 10, value, 'crashvibration')
-        r = self.bitSet(r, 11, value, 'glonass')
-        r = self.bitSet(r, 12, value, 'signalquality')
-        if 'alarmmodeon' in value:
-            r = bits.bitSetValue(r, 13, value['alarmmodeon'] % 2)
-            r = bits.bitSetValue(r, 14, value['alarmmodeon'] >> 1)
+        r = self.bitSet(r, 10, value, 'critical_vibration')
+        r = self.bitSet(r, 11, value, 'sat_glonass_enabled')
+        r = self.bitSet(r, 12, value, 'gsm_signal_quality')
+        if 'gsm_signal_quality' in value:
+            r = bits.bitSetValue(r, 12, value['gsm_signal_quality'] % 2)
+            r = bits.bitSetValue(r, 13, value['gsm_signal_quality'] >> 1)
+        r = self.bitSet(r, 14, value, 'armed')
         r = self.bitSet(r, 15, value, 'sos')
         return super(Tag64, self).getRawDataFromValue(r)
 
@@ -471,7 +472,7 @@ class Tag69(TagNumberShort):
         r = super(Tag69, self).getValueFromRawData(rawdata)
         res = {}
         for idx in range(16):
-            varname = 'do' + str(idx)
+            varname = 'dout' + str(idx)
             res[varname] = bits.bitValue(r, idx)
         return res
 
@@ -482,7 +483,7 @@ class Tag69(TagNumberShort):
         if (value == None): return None
         r = 0
         for idx in range(16):
-            varname = 'do' + str(idx)
+            varname = 'dout' + str(idx)
             bits.bitSetValue(r, idx, value[varname] \
               if varname in value else 0)
         return super(Tag69, self).getRawDataFromValue(r)
@@ -500,7 +501,7 @@ class Tag70(TagNumberShort):
         r = super(Tag70, self).getValueFromRawData(rawdata)
         res = {}
         for idx in range(16):
-            varname = 'di' + str(idx)
+            varname = 'din' + str(idx)
             res[varname] = bits.bitValue(r, idx)
         return res
 
@@ -511,7 +512,7 @@ class Tag70(TagNumberShort):
         if (value == None): return None
         r = 0
         for idx in range(16):
-            varname = 'di' + str(idx)
+            varname = 'din' + str(idx)
             bits.bitSetValue(r, idx, value[varname] \
               if varname in value else 0)
         return super(Tag70, self).getRawDataFromValue(r)
@@ -615,7 +616,7 @@ class Tag119(TagThermometer):
 # ---------------------------------------------------------------------------
 
 class Tag144(TagNumberLong):
-    """ 0x90: iButton 1 """
+    """ 0x90: iButton 0 """
 
 # ---------------------------------------------------------------------------
 
@@ -648,11 +649,11 @@ class Tag193(TagNumberLong):
          Converts raw data to value
         """
         if (rawdata == None): return None
-        (fuelpercent, temperature, rpm) = unpack(self._packfmt, rawdata)
+        fuelPercent, coolantTemp, rpm = unpack(self._packfmt, rawdata)
         return {
-          'fuelpercent': int(fuelpercent * 0.4),
-          'temperature': int(temperature - 40),
-          'rpm': int(rpm * 0.125)
+          'can_fuel_percent': int(fuelPercent * 0.4),
+          'can_coolant_temperature': int(coolantTemp - 40),
+          'can_rpm': int(rpm * 0.125)
         }
 
     def getRawDataFromValue(self, value):
@@ -660,13 +661,15 @@ class Tag193(TagNumberLong):
          Converts value to raw data
         """
         if (value == None): return None
-        fuelpercent = value['fuelpercent'] if 'fuelpercent' in value else 0
-        temperature = value['temperature'] if 'temperature' in value else 0
-        rpm = value['rpm'] if 'rpm' in value else 0
+        fuelPercent = value['can_fuel_percent'] \
+            if 'can_fuel_percent' in value else 0
+        coolantTemp = value['can_coolant_temperature'] \
+            if 'can_coolant_temperature' in value else 0
+        rpm = value['can_rpm'] if 'can_rpm' in value else 0
         return pack(self._packfmt,
-          int(fuelpercent / 0.4),
-          int(temperature + 40),
-          int(rpm / 0.125))
+            int(fuelPercent / 0.4),
+            int(coolantTemp + 40),
+            int(rpm / 0.125))
 
 # ---------------------------------------------------------------------------
 
@@ -790,7 +793,7 @@ class Tag213(TagNumberByte):
         r = super(Tag213, self).getValueFromRawData(rawdata)
         res = {}
         for idx in range(8):
-            varname = 'ibutton' + str(idx + 1)
+            varname = 'ibutton_connected_' + str(idx + 1)
             res[varname] = bits.bitValue(r, idx)
         return res
 
@@ -801,7 +804,7 @@ class Tag213(TagNumberByte):
         if (value == None): return None
         r = 0
         for idx in range(8):
-            varname = 'ibutton' + str(idx + 1)
+            varname = 'ibutton_connected_' + str(idx + 1)
             bits.bitSetValue(r, idx, value[varname] \
               if varname in value else 0)
         return super(Tag213, self).getRawDataFromValue(r)
@@ -967,11 +970,11 @@ class TestCase(unittest.TestCase):
     def test_tag64(self):
         tag = Tag.getInstance(64, b'\xAA\xAA')
         value = tag.getValue()
-        self.assertEqual(value['crashvibration'], 0)
-        self.assertEqual(value['badbusvoltage'], 1)
-        self.assertEqual(value['nosimcard'], 1)
-        self.assertEqual(value['signalquality'], 2)
-        tag.setValue({'crashvibration': 1})
+        self.assertEqual(value['critical_vibration'], 0)
+        self.assertEqual(value['bad_bus_voltage'], 1)
+        self.assertEqual(value['gsm_no_sim_card'], 1)
+        self.assertEqual(value['gsm_signal_quality'], 2)
+        tag.setValue({'critical_vibration': 1})
         self.assertEqual(tag.getRawData(), b'\x00\x04')
 
     def test_tag67(self):
@@ -990,9 +993,9 @@ class TestCase(unittest.TestCase):
     def test_tag69(self):
         tag = Tag.getInstance(69, b'\xAF\x21')
         value = tag.getValue()
-        self.assertEqual(value['do2'], 1)
-        self.assertEqual(value['do11'], 0)
-        self.assertEqual(value['do13'], 1)
+        self.assertEqual(value['dout2'], 1)
+        self.assertEqual(value['dout11'], 0)
+        self.assertEqual(value['dout13'], 1)
         self.assertEqual(tag.getRawTag(), b'\x45\xAF\x21')
 
     def test_tag118(self):
@@ -1004,17 +1007,17 @@ class TestCase(unittest.TestCase):
     def test_tag193(self):
         tag = Tag.getInstance(193, b'\xFA\x72\x50\x25')
         value = tag.getValue()
-        self.assertEqual(value['rpm'], 1194)
-        self.assertEqual(value['fuelpercent'], 100)
-        self.assertEqual(value['temperature'], 74)
+        self.assertEqual(value['can_rpm'], 1194)
+        self.assertEqual(value['can_fuel_percent'], 100)
+        self.assertEqual(value['can_coolant_temperature'], 74)
 
     def test_tag213(self):
         tag = Tag.getInstance(213, b'\x05')
         value = tag.getValue()
-        self.assertEqual(value['ibutton1'], 1)
-        self.assertEqual(value['ibutton2'], 0)
-        self.assertEqual(value['ibutton3'], 1)
-        self.assertEqual(value['ibutton8'], 0)
+        self.assertEqual(value['ibutton_connected_1'], 1)
+        self.assertEqual(value['ibutton_connected_2'], 0)
+        self.assertEqual(value['ibutton_connected_3'], 1)
+        self.assertEqual(value['ibutton_connected_8'], 0)
 
     def test_tag225(self):
         tag = Tag.getInstance(225, b'SMSMSLEEEEE')

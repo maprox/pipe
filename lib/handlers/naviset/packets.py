@@ -6,6 +6,7 @@
 '''
 
 import time
+import socket
 from datetime import datetime
 from struct import unpack, pack
 import lib.bits as bits
@@ -14,7 +15,26 @@ from lib.packets import *
 
 # ---------------------------------------------------------------------------
 
-class NavisetPacket(BasePacket):
+class NavisetBase(BasePacket):
+    """
+     Base class for naviset packet.
+    """
+
+    # protected properties
+    _fmtChecksum = '<H' # checksum format
+
+    def calculateChecksum(self):
+        """
+         Calculates CRC (CRC-16 Modbus)
+         @param buffer: binary string
+         @return: True if buffer crc equals to supplied crc value, else False
+        """
+        data = (self._head or b'') + (self._body or b'')
+        return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
+
+# ---------------------------------------------------------------------------
+
+class NavisetPacket(NavisetBase):
     """
      Default naviset protocol packet
     """
@@ -22,13 +42,14 @@ class NavisetPacket(BasePacket):
     # protected properties
     _fmtHeader = None   # header format
     _fmtLength = '<H'   # packet length format
-    _fmtChecksum = '<H' # checksum format
 
     def _parseLength(self):
         # read header and length
         head = unpack(self._fmtLength, self._head)[0]
         head = bits.bitClear(head, 15)
         head = bits.bitClear(head, 14)
+        #head = bits.bitClear(head, 13)
+        #head = bits.bitClear(head, 12)
         self._length = head
         self._header = head >> 14
 
@@ -40,15 +61,6 @@ class NavisetPacket(BasePacket):
         length = len(self._body)
         data = length + (self._header << 14)
         return pack(self._fmtLength, data)
-
-    def calculateChecksum(self):
-        """
-         Calculates CRC (CRC-16 Modbus)
-         @param buffer: binary string
-         @return: True if buffer crc equals to supplied crc value, else False
-        """
-        data = self._head + self._body
-        return crc16.Crc16.calcBinaryString(data, crc16.INITIAL_MODBUS)
 
 # ---------------------------------------------------------------------------
 
@@ -144,55 +156,6 @@ class PacketHead(PacketNumbered):
 
 # ---------------------------------------------------------------------------
 
-class Command():
-    """
-     A command packet
-    """
-
-    CMD_GET_STATUS = 0
-    CMD_GET_IMEI = 1
-    CMD_CHANGE_NUMBER = 2
-    CMD_CHANGE_PASSWORD = 3
-
-# ---------------------------------------------------------------------------
-
-class PacketAnswer(NavisetPacket):
-    """
-      Data packet of naviset messaging protocol
-    """
-
-    # private properties
-    __command = 0
-
-    def _parseBody(self):
-        """
-         Parses body of the packet
-         @param body: Body bytes
-         @protected
-        """
-        super(PacketAnswer, self)._parseBody()
-        self.__command = Command.CMD_GET_STATUS
-
-    def _buildBody(self):
-        """
-         Builds rawData from object variables
-         @protected
-        """
-        result = super(PacketAnswer, self)._buildBody()
-        result += pack('<B', self.__command)
-        return result
-
-    @property
-    def command(self):
-        if self._rebuild: self._build()
-        return self.__command
-
-    @command.setter
-    def command(self, value):
-        pass
-
-# ---------------------------------------------------------------------------
-
 class PacketData(PacketNumbered):
     """
       Data packet of naviset messaging protocol
@@ -250,7 +213,27 @@ class PacketDataItem:
     __dataStructure = 0
     __number = 0
     __params = None
-    __additional = 0
+    __additional = None
+
+    # additional data sizes map
+    __dsMap = {
+        0: 1,
+        1: 4,
+        2: 1,
+        3: 2,
+        4: 4,
+        5: 4,
+        6: 4,
+        7: 4,
+        8: 4,
+        9: 4,
+        10: 6,
+        11: 4,
+        12: 4,
+        13: 2,
+        14: 4,
+        15: 8
+    }
 
     def __init__(self, data = None, ds = 0):
         """
@@ -277,28 +260,10 @@ class PacketDataItem:
         if (ds == None) or (ds == 0):
             return 0
 
-        dsMap = {
-             0: 1,
-             1: 4,
-             2: 1,
-             3: 2,
-             4: 4,
-             5: 4,
-             6: 4,
-             7: 4,
-             8: 4,
-             9: 4,
-            10: 6,
-            11: 4,
-            12: 4,
-            13: 2,
-            14: 4,
-            15: 8
-        }
         size = 0
-        for key in dsMap:
+        for key in cls.__dsMap:
             if bits.bitTest(ds, key):
-                size += dsMap[key]
+                size += cls.__dsMap[key]
         return size
 
     @classmethod
@@ -313,8 +278,81 @@ class PacketDataItem:
             item = cls(data, ds)
             data = item.rawDataTail
             items.append(item)
-            if len(data) == 0: break
+            if data is None or len(data) == 0: break
         return items
+
+    def parseAdditionalData(self):
+        """
+         Parses additional data of the packet
+         @return: dict
+        """
+        sensors = {}
+        buffer = self.__additional
+        offset = 0
+        for key in range(0, 16):
+            if not bits.bitTest(self.__dataStructure, key): continue
+            size = self.__dsMap[key]
+            data = buffer[offset:offset + size]
+            offset += size
+            if key == 0:
+                status = unpack('<B', data)[0]
+                sensors['bad_ext_voltage'] = int(bits.bitTest(status, 0))
+                sensors['moving'] = int(bits.bitTest(status, 1))
+                sensors['armed'] = int(bits.bitTest(status, 2))
+                sensors['gsm_sim_card_1_enabled'] = int(bits.bitTest(status, 3))
+                sensors['gsm_sim_card_2_enabled'] = int(bits.bitTest(status, 4))
+                sensors['gsm_no_gprs_connection'] = int(bits.bitTest(status, 5))
+                sensors['sat_antenna_connected'] =\
+                    1 - int(bits.bitTest(status, 6))
+            elif key == 1:
+                vExt, vInt = unpack('<HH', data)
+                sensors['ext_battery_voltage'] = vExt
+                sensors['int_battery_voltage'] = vInt
+            elif key == 2:
+                sensors['int_temperature'] = unpack('<b', data)[0]
+            elif key == 3:
+                dInp, dOut = unpack('<BB', data)
+                for i in range(0, 8):
+                    sensors['din%d' % i] = int(bits.bitTest(dInp, i))
+                    sensors['dout%d' % i] = int(bits.bitTest(dOut, i))
+            elif key in range(4, 8):
+                vInp1, vInp2 = unpack('<HH', data)
+                index = 2 * (key - 4)
+                sensors['ain%d' % index] = vInp1
+                sensors['ain%d' % (index + 1)] = vInp2
+            elif key in range(8, 10):
+                t = unpack('<bbbb', data)
+                index = 4 * (key - 8)
+                for i in range(0, 4):
+                    if t[i] > -100:
+                        sensors['ext_temperature_%d' % (i + index)] = t[i]
+            elif key == 10:
+                vH, vI = unpack('<HI', data)
+                sensors['ibutton_0'] = vH | (vI << 16)
+            elif key == 11:
+                fInp1, fInp2 = unpack('<HH', data)
+                sensors['fin0'] = fInp1
+                sensors['fin1'] = fInp2
+            elif key == 12: # Omnicomm fuel level
+                fInp1, fInp2 = unpack('<HH', data)
+                sensors['omnicomm_fuel_0'] = fInp1
+                sensors['omnicomm_fuel_1'] = fInp2
+            elif key == 13: # Omnicomm temperature
+                fInp1, fInp2 = unpack('<bb', data)
+                sensors['omnicomm_temperature_0'] = fInp1
+                sensors['omnicomm_temperature_1'] = fInp2
+            elif key == 14: # CAN data 1
+                fuel, rpm, coolantTemp = unpack('<BHb', data)
+                fuelPercent = fuel * 0.4
+                if fuelPercent > 100: fuelPercent = 100
+                sensors['can_fuel_percent'] = fuelPercent
+                sensors['can_rpm'] = rpm
+                sensors['can_coolant_temperature'] = coolantTemp
+            elif key == 15: # CAN data 2
+                fuelConsumption, totalMileage = unpack('<LL', data)
+                sensors['can_total_fuel_consumption'] = fuelConsumption * 0.5
+                sensors['can_total_mileage'] = totalMileage * 5
+        return sensors
 
     def convertCoordinate(self, coord):
         result = str(coord)
@@ -346,6 +384,7 @@ class PacketDataItem:
         self.__params['altitude'] = unpack("<H", buffer[19:21])[0]
         self.__params['hdop'] = unpack("<B", buffer[21:22])[0] / 10
         self.__additional = buffer[22:length]
+        self.__params['sensors'] = self.parseAdditionalData()
 
         # apply new data
         self.__rawDataTail = buffer[length:]
@@ -377,6 +416,252 @@ class PacketDataItem:
 
 # ---------------------------------------------------------------------------
 
+class PacketAnswer(NavisetPacket):
+    """
+      Data packet of naviset messaging protocol
+    """
+
+    # private properties
+    _command = 0
+
+    @property
+    def command(self):
+        if self._rebuild: self._build()
+        return self._command
+
+    @classmethod
+    def getInstance(cls, data = None):
+        CLASS = None
+        if data:
+            command = unpack('<B', data[2:3])[0]
+            CLASS = getAnswerClassByNumber(command)
+        return CLASS
+
+# ---------------------------------------------------------------------------
+
+class Command(NavisetBase):
+    """
+     A command packet
+    """
+
+    # protected properties
+    _fmtHeader = '<H'   # header format
+    _fmtLength = None   # packet length format
+
+    _header = 2
+    _number = 0
+
+    @property
+    def number(self):
+        if self._rebuild: self._build()
+        return self._number
+
+    def __init__(self, params = None):
+        """
+         Initialize command with specific params
+         @param params: dict
+         @return:
+        """
+        super(Command, self).__init__()
+        self.setParams(params)
+
+    def setParams(self, params):
+        """
+         Set command params if needed.
+         Override in child classes.
+         @param params: dict
+         @return:
+        """
+        self._rebuild = True
+
+    def _parseHeader(self):
+        # read header and command number
+        unpacked = unpack('<BB', self._head)
+        self._header = unpacked[0]
+        self._number = unpacked[1]
+        headerCode = 0x02
+        if (self._header != headerCode):
+            raise Exception('Incorrect command packet! ' +\
+                            str(self._header) + ' (given) != ' +\
+                            str(headerCode) + ' (must be)')
+
+    def _buildHead(self):
+        data = b''
+        data += pack('<B', self._header)
+        data += pack('<B', self._number)
+        return data
+
+# ---------------------------------------------------------------------------
+# Simple commands
+# ---------------------------------------------------------------------------
+
+class CommandGetStatus(Command): _number = 0
+class CommandGetImei(Command): _number = 1
+class CommandGetRegisteredIButtons(Command): _number = 5
+class CommandGetPhones(Command): _number = 7
+class CommandGetTrackParams(Command): _number = 10
+class CommandRemoveTrackFromBuffer(Command): _number = 16
+class CommandRestart(Command): _number = 18
+
+# ---------------------------------------------------------------------------
+
+class CommandSetGprsParams(Command):
+    """
+     Change device GPRS params
+    """
+    _number = 4
+
+    # private params
+    __ip = ''
+    __port = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.ip = params['ip'] or ''
+        self.port = params['port'] or 0
+
+    @property
+    def ip(self):
+        if self._rebuild: self._build()
+        return self.__ip
+
+    @ip.setter
+    def ip(self, value):
+        self.__ip = str(value)
+        self._rebuild = True
+
+    @property
+    def port(self):
+        if self._rebuild: self._build()
+        return self.__port
+
+    @port.setter
+    def port(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__port = value
+            self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += socket.inet_aton(self.__ip)
+        data += pack('<H', self.__port)
+        return data
+
+# ---------------------------------------------------------------------------
+
+IMAGE_RESOLUTION_80x64 = 0
+IMAGE_RESOLUTION_160x128 = 1
+IMAGE_RESOLUTION_320x240 = 2
+IMAGE_RESOLUTION_640x480 = 3
+IMAGE_PACKET_CONFIRM_OK = 16
+IMAGE_PACKET_CONFIRM_CORRUPT = 32
+
+class CommandGetImage(Command):
+    """
+     Command for image receiving/confirmation
+    """
+    _number = 20
+
+    # private params
+    __type = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.type = params['type'] or 0
+
+    @property
+    def type(self):
+        if self._rebuild: self._build()
+        return self.__type
+
+    @type.setter
+    def type(self, value):
+        self.__type = str(value)
+        self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += pack('<B', int(self.__type))
+        return data
+
+# ---------------------------------------------------------------------------
+
+IMAGE_ANSWER_CODE_SIZE = 0
+IMAGE_ANSWER_CODE_DATA = 1
+IMAGE_ANSWER_CODE_CAMERA_NOT_FOUND = 2
+IMAGE_ANSWER_CODE_CAMERA_IS_BUSY = 3
+
+class PacketAnswerCommandGetImage(PacketAnswer):
+    """
+     Answer on CommandGetImage
+    """
+    _command = 20
+
+    __code = 0
+    __imageSize = 0
+    __chunkNumber = 0
+    __chunkData = None
+
+    @property
+    def code(self):
+        if self._rebuild: self._build()
+        return self.__code
+
+    @property
+    def imageSize(self):
+        if self._rebuild: self._build()
+        return self.__imageSize
+
+    @property
+    def chunkNumber(self):
+        if self._rebuild: self._build()
+        return self.__chunkNumber
+
+    @property
+    def chunkData(self):
+        if self._rebuild: self._build()
+        return self.__chunkData
+
+    def _parseBody(self):
+        """
+         Parses body of the packet
+         @param body: Body bytes
+         @protected
+        """
+        super(PacketAnswerCommandGetImage, self)._parseBody()
+        buffer = self._body
+        self._command = unpack('<B', buffer[:1])[0]
+        self.__code = unpack('<B', buffer[1:2])[0]
+        if self.__code == IMAGE_ANSWER_CODE_SIZE:
+            b, w = unpack('<HB', buffer[2:5])
+            self.__imageSize = b | (w << 16)
+        elif self.__code == IMAGE_ANSWER_CODE_DATA:
+            self.__chunkNumber = unpack('<B', buffer[2:3])[0]
+            chunkLength = unpack('<H', buffer[3:5])[0]
+            self.__chunkData = buffer[5:5 + chunkLength]
+            if len(self.__chunkData) != chunkLength:
+                raise Exception('Incorrect image chunk length! ' +\
+                    str(len(self.__chunkData)) + ' (given) != ' +\
+                    str(chunkLength) + ' (must be)')
+
+# ---------------------------------------------------------------------------
+
 class PacketFactory:
     """
      Packet factory
@@ -390,6 +675,7 @@ class PacketFactory:
          @return: array of BasePacket instances (empty array if no packet found)
         """
         packets = []
+        if not data: return packets
         while True:
             packet = cls.getInstance(data)
             data = packet.rawDataTail
@@ -425,7 +711,28 @@ class PacketFactory:
         CLASS = cls.getClass(number)
         if not CLASS:
             raise Exception('Packet %s is not found' % number)
+        if issubclass(CLASS, PacketAnswer):
+            CLASS = PacketAnswer.getInstance(data)
+        if not CLASS:
+            raise Exception('Class for %s is not found' % data)
         return CLASS(data)
+
+import inspect
+import sys
+
+def getAnswerClassByNumber(number):
+    """
+     Returns command class by its number
+     @param number: int Number of the command
+     @return: Command class
+    """
+    for name, cls in inspect.getmembers(sys.modules[__name__]):
+        if inspect.isclass(cls) and \
+            issubclass(cls, PacketAnswer) and\
+                cls._command == number:
+                    return cls
+    return None
+
 
 # ===========================================================================
 # TESTS
@@ -435,6 +742,7 @@ import unittest
 class TestCase(unittest.TestCase):
 
     def setUp(self):
+        self.maxDiff = None
         pass
 
     def test_headPacket(self):
@@ -463,78 +771,167 @@ class TestCase(unittest.TestCase):
 
     def test_packetTail(self):
         packets = PacketFactory.getPacketsFromBuffer(
-          b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9' +
-          b'\x12\x00\x22\x00012896001609129\x05$6')
+            b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9' +
+            b'\x12\x00\x22\x00012896001609129\x05$6')
         self.assertEqual(len(packets), 2)
 
     def test_dataPacket(self):
         packets = PacketFactory.getPacketsFromBuffer(
-          b'\xe2C\x01\x00\x00\x00\x00\x00s\x01\xaaP\x10HfR\x034\x91=\x02' +
-          b'\x00\x00\x00\x00\x00\x00\xff\x01\x00s\x01\xaaP\x10HfR\x034\x91' +
-          b'=\x02\x00\x00\x00\x00\x00\x00\xff\x02\x00\x8f\x02\xaaP\x068fR' +
-          b'\x03\x18\x91=\x02\x01\x00\x00\x00\xb0\x00\x1c\x03\x00\xae\x02' +
-          b'\xaaP\x07\xfceR\x03t\x91=\x02\x03\x00\x00\x00\x9c\x00\x1a\x04' +
-          b'\x00\xbd\x02\xaaP\x07\xfceR\x03\x84\x91=\x02\x00\x007\x04\xa3' +
-          b'\x00\x1a\x05\x00\'\x03\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00' +
-          b'\x00\xa3\x00\x0b\x06\x00\xa0\x03\xaaP\t\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00\x00\x00\xa2\x00\r\x07\x00\x19\x04\xaaP\n\xfceR\x03\x84' +
-          b'\x91=\x02\x00\x00X\n\xa0\x00\x0b\x08\x00\x92\x04\xaaP\x0b\xfceR' +
-          b'\x03\x84\x91=\x02\x00\x00\x00\x00\x9c\x00\n\t\x00\x0b\x05\xaaP' +
-          b'\n\xfceR\x03\x84\x91=\x02\x00\x00+\n\x9a\x00\n\n\x00\x84\x05\xaa' +
-          b'P\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xb9\t\x99\x00\t\x0b\x00\xfd' +
-          b'\x05\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x98\x00\n' +
-          b'\x0c\x00v\x06\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x99' +
-          b'\x00\x0b\r\x00\xef\x06\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00' +
-          b'\xe4\x08\x98\x00\x08\x0e\x00h\x07\xaaP\t\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00H\n\x98\x00\n\x0f\x00\xe1\x07\xaaP\x0c\xfceR\x03\x84\x91' +
-          b'=\x02\x00\x008\x0c\x98\x00\x08\x10\x00Z\x08\xaaP\x0b\xfceR\x03' +
-          b'\x84\x91=\x02\x00\x00\x00\x00\x98\x00\n\x11\x00\xd3\x08\xaaP' +
-          b'\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xe5\t\x98\x00\t\x12\x00L\t' +
-          b'\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x93\x00\x08\x13' +
-          b'\x00\xc5\t\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\\\n\x93\x00' +
-          b'\x08\x14\x00>\n\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00' +
-          b'\x93\x00\t\x15\x00\xb7\n\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
-          b'\xad\x04\x92\x00\t\x16\x000\x0b\xaaP\x0b\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00\x00\x00\x93\x00\t\x17\x00\xa9\x0b\xaaP\r\xfceR\x03\x84' +
-          b'\x91=\x02\x00\x00\xd6\x03\x93\x00\x08\x18\x00"\x0c\xaaP\x0c\xfc' +
-          b'eR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\x08\x19\x00\x9b\x0c' +
-          b'\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\n\x1a\x00' +
-          b'\x14\r\xaaP\t\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x94\x00\x0b' +
-          b'\x1b\x00\x8d\r\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x95' +
-          b'\x00\x0c\x1c\x00\x06\x0e\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
-          b'\x00\x00\x95\x00\n\x1d\x00\x7f\x0e\xaaP\n\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00k\x03\x95\x00\x0b\x1e\x00\xf8\x0e\xaaP\n\xfceR\x03\x84' +
-          b'\x91=\x02\x00\x00\x00\x00\x97\x00\n\x1f\x00q\x0f\xaaP\t\xfceR' +
-          b'\x03\x84\x91=\x02\x00\x00\x00\x00\x97\x00\r \x00\xea\x0f\xaaP' +
-          b'\x0c\xfceR\x03\x84\x91=\x02\x00\x00~\x04\x96\x00\n!\x00c\x10' +
-          b'\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x96\x00\x0b"\x00' +
-          b'\xdc\x10\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x96' +
-          b'\x00\x0e#\x00U\x11\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00V\t' +
-          b'\x96\x00\x0c$\x00\xce\x11\xaaP\n\xfceR\x03\x84\x91=\x02\x00\x00' +
-          b'\x00\x00\x97\x00\n%\x00G\x12\xaaP\x0c\xfceR\x03\x84\x91=\x02' +
-          b'\x00\x00\xec\t\x97\x00\n&\x00\xc0\x12\xaaP\x0c\xfceR\x03\x84' +
-          b'\x91=\x02\x00\x00\x00\x00\x97\x00\n\'\x009\x13\xaaP\n\xfceR\x03' +
-          b'\x84\x91=\x02\x00\x00\x00\x00\x97\x00\n(\x00\xb2\x13\xaaP\n\xfc' +
-          b'eR\x03\x84\x91=\x02\x00\x00\x00\x00\x97\x00\x0c)\x00+\x14\xaaP' +
-          b'\x0b\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x98\x00\t*\x00\xa4' +
-          b'\x14\xaaP\x08\xfceR\x03\x84\x91=\x02\x00\x00\x00\x00\x99\x00' +
-          b'\x12+\x00\x1d\x15\xaaP\x0c\xfceR\x03\x84\x91=\x02\x00\x00\xad' +
-          b'\x06\x9b\x00\t,\x00\x96\x15\xaaP\x0b\xfceR\x03\x84\x91=\x02\x00' +
-          b'\x00\x00\x00\x9b\x00\n\x98+')
+            b'\xdcC\x01\x00\xff\xffh)\x8f\xf0\\Q\x10\xe0l,\x03\xe8\xbc' +
+            b'\xfd\x02\x00\x00\x00\x00\x00\x00\xff\x08\x98, \r%\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00\x00' +
+            b'\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00i)\x08\xf1\\Q\x10' +
+            b'\xe0l,\x03\xe8\xbc\xfd\x02\x00\x00\x00\x00\x00\x00\xff\x08' +
+            b'\x98,\x01\r$\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80' +
+            b'\x80\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00j)\x81\xf1\\Q\x10\xe0l,\x03\xe8\xbc\xfd\x02\x00\x00\x00' +
+            b'\x00\x00\x00\xff\x08\x98,&\r$\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x80\x80' +
+            b'\x80\x80\x80\x80\x80\x00\x00\x00\x00\x00\x00\x01\x00\x01' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00k)\xfa\xf1\\Q\x10\xe0l,\x03\xe8\xbc' +
+            b'\xfd\x02\x00\x00\x00\x00\x00\x00\xff\x08\xba,\xdc\x0c$\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00\x00' +
+            b'\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00l)s\xf2\\Q\x10\xe0l,\x03' +
+            b'\xe8\xbc\xfd\x02\x00\x00\x00\x00\x00\x00\xff\x08\xba,\x01\r$' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00\x00\x00' +
+            b'\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00m)\xec\xf2\\Q\x10\xe0l,' +
+            b'\x03\xe8\xbc\xfd\x02\x00\x00\x00\x00\x00\x00\xff\x08\x98,' +
+            b'\xf5\x0c$\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00\x00' +
+            b'\x00\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00n)e\xf3\\Q\x10' +
+            b'\xe0l,\x03\xe8\xbc\xfd\x02\x00\x00\x00\x00\x00\x00\xff(\xba,' +
+            b'\xdc\x0c$\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80\x00' +
+            b'\x00\x00\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00o)\xde\xf3\\' +
+            b'Q\x10\xe0l,\x03\xe8\xbc\xfd\x02\x00\x00\x00\x00\x00\x00\xff' +
+            b'\x08\x98,\x0e\r%\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80\x80\x80' +
+            b'\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00p)W\xf4' +
+            b'\\Q\x10\xe0l,\x03\xe8\xbc\xfd\x02\x00\x00\x00\x00\x00\x00' +
+            b'\xff\x08\x98,\xef\x0c$\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80\x80' +
+            b'\x80\x80\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'q)\xd0\xf4\\Q\x10\xe0l,\x03\xe8\xbc\xfd\x02\x00\x00\x00\x00' +
+            b'\x00\x00\xff\x08\x98,-\r$\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80' +
+            b'\x80\x80\x80\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00r)I\xf5\\Q\x10\xe0l,\x03\xe8\xbc\xfd\x02\x00\x00\x00\x00' +
+            b'\x00\x00\xff\x08\x98,\x0e\r%\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x80\x80\x80\x80' +
+            b'\x80\x80\x80\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00s)\xc2\xf5\\Q\x10\xe0l,\x03\xe8\xbc\xfd\x02\x00\x00\x00' +
+            b'\x00\x00\x00\xff\x08\xba,\xef\x0c$\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x80\x80\x80' +
+            b'\x80\x80\x80\x80\x80\x00\x00\x00\x00\x00\x00\x01\x00\x01\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00=\xa9'
+        )
         self.assertEqual(len(packets), 1)
         packet = packets[0]
         self.assertEqual(isinstance(packet, PacketData), True)
-        self.assertEqual(len(packet.items), 45)
+        self.assertEqual(len(packet.items), 12)
         packetItem = packet.items[3]
         self.assertEqual(isinstance(packetItem, PacketDataItem), True)
-        self.assertEqual(packetItem.params['speed'], 0.3)
-        self.assertEqual(packetItem.params['latitude'], 55.731708)
-        self.assertEqual(packetItem.params['longitude'], 37.589364)
-        self.assertEqual(packetItem.params['satellitescount'], 7)
+        self.assertEqual(packetItem.params['speed'], 0.0)
+        self.assertEqual(packetItem.params['latitude'], 53.243104)
+        self.assertEqual(packetItem.params['longitude'], 50.1834)
+        self.assertEqual(packetItem.params['satellitescount'], 16)
         self.assertEqual(packetItem.params['time'].
-            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2012-11-19T09:58:06.000000')
+            strftime('%Y-%m-%dT%H:%M:%S.%f'), '2013-04-04T03:22:34.000000')
         packetItem2 = packet.items[6]
         self.assertEqual(packetItem2.params['speed'], 0)
-        self.assertEqual(packetItem2.params['satellitescount'], 9)
-        self.assertEqual(packetItem2.number, 6)
-        self.assertEqual(packetItem2.additional, b'')
+        self.assertEqual(packetItem2.params['satellitescount'], 16)
+        self.assertEqual(packetItem2.number, 10606)
+        self.assertEqual(packetItem2.params['sensors']['int_temperature'], 36)
+        self.assertEqual(
+            packetItem2.params['sensors']['ext_battery_voltage'], 11450)
+        self.assertEqual(
+            packetItem2.params['sensors']['sat_antenna_connected'], 1)
+
+    def test_simpleCommandsPacket(self):
+        cmd = CommandGetStatus()
+        self.assertEqual(cmd.number, 0)
+        self.assertEqual(cmd.rawData, b'\x02\x00\x00\xd0')
+
+        cmd = CommandGetRegisteredIButtons()
+        self.assertEqual(cmd.number, 5)
+        self.assertEqual(cmd.checksum, 54208)
+        self.assertEqual(cmd.rawData, b'\x02\x05\xc0\xd3')
+
+    def test_gprsCommandsPacket(self):
+        cmd = CommandSetGprsParams({
+            "ip": '127.0.0.1',
+            "port": 20200
+        })
+        self.assertEqual(cmd.number, 4)
+        self.assertEqual(cmd.checksum, 10512)
+        self.assertEqual(cmd.rawData, b'\x02\x04\x7f\x00\x00\x01\xe8N\x10)')
+        # let's change port and ip
+        cmd.port = 20201
+        cmd.ip = '212.10.222.10'
+        self.assertEqual(cmd.rawData, b'\x02\x04\xd4\n\xde\n\xe9N\xdb\x89')
+
+    def test_getImageCommandsPacket(self):
+        cmd = CommandGetImage({
+            'type': IMAGE_RESOLUTION_640x480
+        })
+        self.assertEqual(cmd.number, 20)
+        self.assertEqual(cmd.rawData, b'\x02\x14\x03\x9f\x01')
+
+        cmd.type = IMAGE_PACKET_CONFIRM_OK
+        self.assertEqual(cmd.rawData, b'\x02\x14\x10\xde\xcc')
+
+    def test_commandAnswerGetImage(self):
+        data = b'\x05\x80\x14\x00\xb1\x46\x00\x03\x84'
+        packets = PacketFactory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertIsInstance(packet, PacketAnswerCommandGetImage)
+        self.assertEqual(packet.command, 20)
+        self.assertEqual(packet.code, 0)
+        self.assertEqual(packet.imageSize, 18097)
+
+    def test_commandAnswerGetImageChunk(self):
+        data = b'\xff\x81\x14\x01\x00\xfa\x01\xff\xd8\xff\xdb\x00\x84' + \
+               b'\x00\x13\r\x0e\x10\x0e\x0c\x13\x10\x0f\x10\x15\x14\x13' + \
+               b'\x16\x1c/\x1e\x1c\x1a\x1a\x1c9)+"/D<GFC<B@KTl[KPfQ@B^\x80' + \
+               b'_fosyzyIZ\x84\x8e\x83u\x8dlvyt\x01\x14\x15\x15\x1c\x19' +\
+               b'\x1c7\x1e\x1e7tMBMtttttttttttttttttttttttttttttttttttt' +\
+               b'tttttttttttttt\xff\xc0\x00\x11\x08\x01\xe0\x02\x80\x03' +\
+               b'\x01!\x00\x02\x11\x01\x03\x11\x01\xff\xdd\x00\x04\x00(' +\
+               b'\xff\xc4\x01\xa2\x00\x00\x01\x05\x01\x01\x01\x01\x01\x01' +\
+               b'\x00\x00\x00\x00\x00\x00\x00\x00\x01\x02\x03\x04\x05\x06' +\
+               b'\x07\x08\t\n\x0b\x10\x00\x02\x01\x03\x03\x02\x04\x03\x05' +\
+               b'\x05\x04\x04\x00\x00\x01}\x01\x02\x03\x00\x04\x11\x05\x12' +\
+               b'!1A\x06\x13Qa\x07"q\x142\x81\x91\xa1\x08#B\xb1\xc1\x15R' +\
+               b'\xd1\xf0$3br\x82\t\n\x16\x17\x18\x19\x1a%&\'()*456789:CD' +\
+               b'EFGHIJSTUVWXYZcdefghijstuvwxyz\x83\x84\x85\x86\x87\x88\x89' +\
+               b'\x8a\x92\x93\x94\x95\x96\x97\x98\x99\x9a\xa2\xa3\xa4\xa5' +\
+               b'\xa6\xa7\xa8\xa9\xaa\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba' +\
+               b'\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xd2\xd3\xd4\xd5\xd6' +\
+               b'\xd7\xd8\xd9\xda\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea' +\
+               b'\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\x01\x00\x03\x01' +\
+               b'\x01\x01\x01\x01\x01\x01\x01\x01\x00\x00\x00\x00\x00\x00' +\
+               b'\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x11\x00\x02\x01' +\
+               b'\x02\x04\x04\x03\x04\x07\x05\x04\x04\x00\x01\x02w\x00\x01' +\
+               b'\x02\x03\x11\x04\x05!1\x06\x12AQ\x07aq\x13"2\x81\x08\x14B' +\
+               b'\x91\xa1\xb1\xc1\t#3R\xf0\x15br\xd1\n\x16$4\xe1%\xf1\x17' +\
+               b'\x18\x19\x1a&\'()*56789:CDEFGHIJSTUVWXYZcdefghijstuvw\xc1\xb0'
+        packets = PacketFactory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertEqual(packet.chunkNumber, 0)
+        self.assertEqual(len(packet.chunkData), 506)

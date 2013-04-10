@@ -53,15 +53,15 @@ class GlobalsatHandler(AbstractHandler):
         'L': '\d+',
         'M': '\d+(\.\d+)?',
         'N': '\d+',
-        'P': '[0-9A-F]{2}',
+        'P': '[0-9A-F]{2,}',
        #'Z': '',
        #'Q': '',
         'R': '\w',
         'S': '\w+',
-       #'T': '',
+        'T': '\w+',
        #'U': '',
-       #'V': '',
-       #'W': '',
+        'V': '[0-9A-F]{2,}',
+        'W': '[0-9A-F]{2,}',
         'X': '[\w\.]+',
         'Y': '\w{4}',
         'a': '\d+',
@@ -72,7 +72,7 @@ class GlobalsatHandler(AbstractHandler):
         'i': '\d+',
         'm': '\d+',
         'n': '(\w+|\d+%)',
-        'o': '\d+',
+        'o': '\d+'
        #'s': ''
       },
       'search_config': 'GSs,(?P<uid>\w+),(?P<status>\d+),(?P<order>\d+),(?P<data>.*)\*[a-f\d]{1,2}\!',
@@ -194,7 +194,7 @@ class GlobalsatHandler(AbstractHandler):
          @param data: dict() data from gps-tracker
         """
         packet = {}
-        packet['sensors'] = {}
+        sensor = {}
         for char in data:
             value = data[char]
             # IMEI / UID
@@ -224,83 +224,62 @@ class GlobalsatHandler(AbstractHandler):
             # Satellites count
             elif char == "L":
                 packet['satellitescount'] = int(value)
+                sensor['sat_count'] = int(value)
             # Azimuth - driving direction
             elif char == "K":
                 packet['azimuth'] = int(round(float(value)))
             # Odometer
             elif char == "i":
-                packet['odometer'] = float(value)
-                packet['sensors']['odometer'] = packet['odometer']
+                sensor['odometer'] = float(value)
             # HDOP (Horizontal Dilution of Precision)
             elif char == "M":
                 packet['hdop'] = float(value)
-                """
-            TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
             # Extracting movement sensor from report type.
             # Have lower priority than actual movement sensor
             elif char == "R":
-                if not 'movementsensor' in packet:
-                    packet['movementsensor'] = int(value != '4' and
+                if not 'moving' in sensor:
+                    sensor['moving'] = int(value != '4' and
                       value != 'F' and
                       value != 'E')
-                """
             # Extracting movement sensor value and ACC
             elif char == "Y":
                 # Tracker sends value as HEX string
                 dec = int(value, 16)
-                packet['movementsensor'] = (dec >> 7) % 2
-                # ACC Sensor
-                packet['sensors']['acc'] = (dec >> 13) % 2
-                # GPS Antenna
-                packet['sensors']['gpsantenna'] = (dec >> 14) % 2
-                # No external power
-                packet['sensors']['extbattery'] = (dec >> 15) % 2
                 # Digital inputs
-                """
-                TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
-
-                packet['sensors']['digital_input1'] = (dec >> 1) % 2
-                packet['sensors']['digital_input2'] = (dec >> 2) % 2
-                packet['sensors']['digital_input3'] = (dec >> 3) % 2
+                sensor['din1'] = (dec >> 1) % 2
+                sensor['din2'] = (dec >> 2) % 2
+                sensor['din3'] = (dec >> 3) % 2
+                # Movement sensor
+                sensor['moving'] = (dec >> 7) % 2
                 # Digital outputs
-                packet['sensors']['digital_output1'] = (dec >> 9) % 2
-                packet['sensors']['digital_output2'] = (dec >> 10) % 2
-                packet['sensors']['digital_output3'] = (dec >> 11) % 2
-                """
+                sensor['dout1'] = (dec >> 9) % 2
+                sensor['dout2'] = (dec >> 10) % 2
+                sensor['dout3'] = (dec >> 11) % 2
+                # ACC Sensor
+                sensor['acc'] = (dec >> 13) % 2
+                # GPS Antenna
+                sensor['sat_antenna_connected'] = (dec >> 14) % 2
+                # No external power
+                sensor['ext_battery_connected'] = (dec >> 15) % 2
             # Signalization status
             elif char == "P":
                 dec = int(value, 16)
-                packet['sensors']['sos'] = dec % 2
-                #packet['sensors']['gpsantenna'] = 1 - (dec >> 2) % 2
-                #packet['sensors']['battery_disconnect'] = (dec >> 6) % 2
-                #packet['sensors']['extbattery_low'] = (dec >> 7) % 2
-                """
-              TEMPORARILY COMMENTED (TO MUCH UNUSED DATA)
+                sensor['sos'] = dec % 2
             # Counters
-            #elif char == "e":
-                packet['sensors']['counter0'] = float(value)
+            elif char == "e":
+                sensor['counter0'] = float(value)
             elif char == "f":
-                packet['sensors']['counter1'] = float(value)
+                sensor['counter1'] = float(value)
             elif char == "g":
-                packet['sensors']['counter2'] = float(value)
+                sensor['counter2'] = float(value)
             elif char == "h":
-                packet['sensors']['counter3'] = float(value)
-                """
+                sensor['counter3'] = float(value)
             # Analog input 0
             elif char == "a":
-                packet['sensors']['analog_input0'] = float(value)
+                sensor['ain0'] = float(value)
             elif char == "m":
-                packet['sensors']['extvoltage'] = float(value)
-            elif char == "n" or char == "N":
-                if (self.re_volts.match(value)):
-                    packet['batterylevel'] = 1
-                elif (self.re_percents.match(value)):
-                    percents = float(self.re_percents.\
-                      search(value).group(1)) / 100
-                    packet['batterylevel'] = percents
-                elif (self.re_number.match(value)):
-                    percents = int(value) / 100
-                    packet['batterylevel'] = percents
+                sensor['ext_battery_voltage'] = float(value)
+        self.setPacketSensors(packet, sensor)
         return packet
 
     def formatBatteryLevel(self, value):
@@ -371,7 +350,7 @@ class GlobalsatHandler(AbstractHandler):
         data_type = data.split(",")[0]
         if data_type == 'GSs':
             return "processSettings"
-        elif data_type == 'GSr':
+        elif data_type == 'GSr' or data_type == 'GSb':
             return "processData"
         else:
             raise NotImplementedError("Unknown data type " + data_type)

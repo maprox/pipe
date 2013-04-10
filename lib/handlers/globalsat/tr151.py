@@ -166,6 +166,7 @@ class Handler(AbstractHandler):
          @param data: dict() data from gps-tracker
         """
         packet = {}
+        sensor = {}
         for char in data:
             value = data[char]
             # IMEI / UID
@@ -198,6 +199,7 @@ class Handler(AbstractHandler):
             # Satellites count
             elif char == "L":
                 packet['satellitescount'] = int(value)
+                sensor['sat_count'] = int(value)
             # Azimuth - driving direction
             elif char == "K":
                 packet['azimuth'] = int(round(float(value)))
@@ -207,8 +209,8 @@ class Handler(AbstractHandler):
             # Report Mode
             elif char == "A":
                 if int(value) == 5:
-                    packet['sensors'] = {}
-                    packet['sensors']['sos'] = 1
+                    sensor['sos'] = 1
+        self.setPacketSensors(packet, sensor)
         return packet
 
     def getInitiationData(self, config):

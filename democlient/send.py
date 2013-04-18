@@ -13,6 +13,7 @@ import threading
 import logging
 import json
 import os
+import glob
 import csv
 import http.client
 import urllib.parse
@@ -192,27 +193,21 @@ def movecar(packet):
         except Exception as E:
             logger.exception(E)
 
-data = [{
-  "device_key": "a9265e4b14c08a491c85723ec7af6329",
-  "uid": "757460032240926_888",
-  "track_files": ['tracks/car1/1.csv']
-}, {
-  "device_key": "075be5b737d7ad9a7f109aa7bdd32f15",
-  "uid": "857460032240926_888",
-  "track_files": ['tracks/car2/1.csv']
-}, {
-  "device_key": "0b1c0b070bf53c6a9f0dfac9308498f2",
-  "uid": "957460032240926_888",
-  "track_files": ['tracks/car3/1.csv']
-}, {
-  "device_key": "39561823c27a6a891de8e078fa02a69f",
-  "uid": "057460032240926_888",
-  "track_files": ['tracks/car4/1.csv']
-}, {
-  "device_key": "991996e1ee344dd3a49a99cf7089d023",
-  "uid": "157460032240926_888",
-  "track_files": ['tracks/car5/1.csv']
-}]
+data = []
+
+os.chdir(options.dir)
+for files in glob.glob("*.conf"):
+	conf = ConfigParser()
+	try:
+		conf.read(files);
+		data.append({
+			'device_key': conf.get("car", "key"),
+			'uid': conf.get("car", "uid"),
+			'track_files': [files.replace('.conf', '.csv')]
+		})
+		print (data)
+	except Exception as E:
+		logger.warn("Error preparing " + options.dir + "/" + files)
 
 for i, t in enumerate(data):
     threading.Thread(target=movecar, name="t" + str(i), args=[t]).start()

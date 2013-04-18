@@ -16,5 +16,13 @@ options.add_option(
   metavar="PathToPipeConf",
   default="../conf/pipe.conf"
 )
+options.add_option(
+  "-d",
+  "--dir",
+  dest="dir",
+  help="path to track files",
+  metavar="PathToDir",
+  default="tracks"
+)
 
 (options, args) = options.parse_args()

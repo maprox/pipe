@@ -33,20 +33,29 @@ function doInstall()
 /**
  * Service start
  */
-function serviceStart()
+function serviceStart($debug)
 {
 		print "Starting demo-server... ";
 		$dir = WORKING_DIR . 'democlient/';
-		exec("cd $dir && sudo -u pipe python3.2 send.py -p ../conf/pipe-default.conf >/dev/null &");
+		if ($debug) {
+			$params = '-d navitech -p ../conf/pipe-debug.conf';
+		} else {
+			$params = '';
+		}
+		exec("cd $dir && sudo -u pipe python3.2 send.py $params >/dev/null &");
 		print "[OK]\n";
 }
 
 /**
  * Kills pipe-server processes
  */
-function serviceStop()
+function serviceStop($debug)
 {
-	$mask = "[p]ython.*send\.py";
+	if ($debug) {
+		$mask = "[p]ython.*send\.py.*debug";
+	} else {
+		$mask = "[p]ython.*send\.py\s*$";
+	}
 
 	print "Stopping... ";
 	$command = "sudo pkill -f $mask 2>&1";
@@ -79,9 +88,13 @@ print "Pipe-demo Starter v1.0.0\n";
 // read input arguments
 $command = '';
 $params = arguments($argv);
-if (is_array($params['input']) && !empty($params['input'][0]))
-{
+if (is_array($params['input']) && !empty($params['input'][0])) {
 	$command = array_shift($params['input']);
+}
+if (is_array($params['input']) && !empty($params['input'][0])) {
+	$debug = ($params['input'][0] == 'debug');
+} else {
+	$debug = false;
 }
 
 switch ($command)
@@ -90,22 +103,22 @@ switch ($command)
 		doInstall();
 		break;	
 	case 'start':
-		serviceStart();
+		serviceStart($debug);
 		break;
 	case 'stop':
-		serviceStop();
+		serviceStop($debug);
 		break;
 	case 'restart':
 	case 'force-reload':
 	case 'reload':
-		serviceStop();
-		serviceStart();
+		serviceStop($debug);
+		serviceStart($debug);
 		break;
 	case 'status':
-		serviceTest();
+		serviceTest($debug);
 		break;
 	default:
 		$file = basename(__FILE__, '.php');
-		print "Usage: service $file {start|stop|restart|reload|force-reload|status}\n" .
+		print "Usage: service $file {start|stop|restart|reload|force-reload|status} {debug|normal}\n" .
 			"Install: php " . $params['name'] . " install\n";
 }

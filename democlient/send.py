@@ -50,8 +50,11 @@ except Exception as E:
     exit(1)
 
 # Max sleep time
-maxSleep = 600
-
+if options.dir != 'navitech':
+    maxSleep = 600
+else:
+    maxSleep = 60
+    
 # Max parking time
 maxParkingTime = 600
 
@@ -197,12 +200,12 @@ data = []
 
 os.chdir(options.dir)
 for files in glob.glob("*.conf"):
-	conf = ConfigParser()
+	carconf = ConfigParser()
 	try:
-		conf.read(files);
+		carconf.read(files);
 		data.append({
-			'device_key': conf.get("car", "key"),
-			'uid': conf.get("car", "uid"),
+			'device_key': carconf.get("car", "key"),
+			'uid': carconf.get("car", "uid"),
 			'track_files': [files.replace('.conf', '.csv')]
 		})
 		print (data)

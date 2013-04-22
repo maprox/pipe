@@ -1,5 +1,6 @@
 conf/pipe-*
 democlient/send.log
+democlient/send.log*
 *__pycache__*
 *.pyc
 

@@ -11,6 +11,7 @@ import codecs
 import time
 import threading
 import logging
+import logging.handlers
 import json
 import os
 import glob
@@ -28,7 +29,8 @@ from random import *
 
 # logger setup
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr = logging.FileHandler(os.getcwd() + '/send.log')
+hdlr = logging.handlers.RotatingFileHandler(os.getcwd() + '/send.log', 'a', \
+	5 * 1024 * 1024, 5)
 hdlr.setFormatter(formatter)
 logger = logging.getLogger('democlient')
 logger.addHandler(hdlr)
@@ -208,7 +210,6 @@ for files in glob.glob("*.conf"):
 			'uid': carconf.get("car", "uid"),
 			'track_files': [files.replace('.conf', '.csv')]
 		})
-		print (data)
 	except Exception as E:
 		logger.warn("Error preparing " + options.dir + "/" + files)
 

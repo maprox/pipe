@@ -14,7 +14,7 @@ options.add_option(
   dest="pipeconf",
   help="path to the pipe configuration file",
   metavar="PathToPipeConf",
-  default="../conf/pipe.conf"
+  default="../conf/pipe-default.conf"
 )
 options.add_option(
   "-d",

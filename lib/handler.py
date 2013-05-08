@@ -24,16 +24,8 @@ class AbstractHandler(object):
     """
     _buffer = None # buffer of the current dispatch loop (for storage save)
 
-    default_options = {}
-
-    transmissionEndSymbol = "\n"
-    """ Symbol which marks end of transmission for PHP """
-
     uid = False
     """ Uid of currently connected device """
-
-    re_request = re.compile('^OBS.*request\((?P<data>.+)\)$')
-    re_success = re.compile('^OBS,success')
 
     def __init__(self, store, clientThread):
         """
@@ -87,8 +79,6 @@ class AbstractHandler(object):
             connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
             answer = connection.read()
             log.debug('Config answered: ' + answer.decode())
-            #result = self.re_success.search(answer.decode(), 0)
-            #if result:
             current_db.deleteSettings()
         return self
 

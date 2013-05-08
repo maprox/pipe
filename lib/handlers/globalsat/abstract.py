@@ -90,6 +90,8 @@ class GlobalsatHandler(AbstractHandler):
     re_percents = re.compile('(\d+)%')
     re_number = re.compile('(\d+)')
 
+    default_options = {}
+
     def __init__(self, store, thread):
         """ Constructor """
         AbstractHandler.__init__(self, store, thread)

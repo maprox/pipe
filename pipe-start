@@ -42,5 +42,10 @@ if [ "$1" = 'teltonika' ]; then
   ./run_teltonika.sh $2 $3 $4 &
 fi
 
+if [ "$1" = 'atrack' ]; then
+  echo 'Starting ATrack listener'
+  ./run_atrack.sh $2 $3 $4 &
+fi
+
 
 exit 0

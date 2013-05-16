@@ -680,7 +680,7 @@ class PacketFactory:
             packet = cls.getInstance(data)
             data = packet.rawDataTail
             packets.append(packet)
-            if (len(data) == 0): break
+            if len(data) == 0: break
         return packets
 
     @classmethod
@@ -693,7 +693,7 @@ class PacketFactory:
             1: PacketData,
             2: PacketAnswer
         }
-        if (not (number in classes)):
+        if not (number in classes):
             return None
         return classes[number]
 

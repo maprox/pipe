@@ -567,7 +567,7 @@ class PacketFactory:
         if length == 0:
             CLASS = PacketData
         if not CLASS:
-            raise Exception('Packet %s is not found' % number)
+            raise Exception('Unknown packet structure')
         return CLASS(data)
 
 # ===========================================================================

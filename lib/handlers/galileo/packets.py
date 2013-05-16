@@ -136,13 +136,13 @@ class BasePacket(object):
         crc = unpack("<H", buffer[length + 3:length + 5])[0]
         crc_data = buffer[:length + 3]
         if not self.isCorrectCrc(crc_data, crc):
-             raise Exception('Crc Is incorrect!');
+            raise Exception('Crc Is incorrect!')
 
         # now let's read packet data
         # but before this, check tagsdata length
         body = buffer[3:length + 3]
         if len(body) != length:
-            raise Exception('Body length Is incorrect!');
+            raise Exception('Body length Is incorrect!')
 
         # apply new data
         self.__rawDataTail = buffer[length + 5:]

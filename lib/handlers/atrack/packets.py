@@ -9,6 +9,8 @@ from datetime import datetime
 from struct import *
 import lib.crc16 as crc16
 from lib.packets import *
+import re
+
 
 # ---------------------------------------------------------------------------
 
@@ -114,7 +116,7 @@ class PacketKeepAlive(BasePacket):
 
 # ---------------------------------------------------------------------------
 
-class PacketCommandResponse(BasePacket):
+class PacketCommandResponse(BinaryPacket):
     """
       Command answer packet of ATrack messaging protocol
     """
@@ -122,15 +124,15 @@ class PacketCommandResponse(BasePacket):
     # public properties
     headerPrefix = b'$'
 
-    # protected properties
-    _fmtHeader = '>B'   # header format
-    _fmtLength = None   # packet length format
-    _fmtChecksum = None # checksum format
-    _params = None
-
+    # private properties
+    __params = None
     __command = None
     __tag = None
     __params = None
+
+    # patterns
+    re_command = '\$(?P<command>\w+)\+?(?P<tag>\w+)?(=(?P<params>.+))?\r\n'
+    re_params = '(("[^"]*")|[^,]+)*,?'
 
     @property
     def command(self):
@@ -155,47 +157,36 @@ class PacketCommandResponse(BasePacket):
     @property
     def params(self):
         if self._rebuild: self._build()
-        return self._params
-
-    def _parseLength(self):
-        """
-         Parses length of the packet
-         @param body: Body bytes
-         @protected
-        """
-        # read header and length
-        self._length = 10
+        return self.__params
 
     def _parseBody(self):
         """
          Parses body of the packet
-         @param body: Body bytes
-         @protected
+         @return: self
         """
-        super(PacketCommandResponse, self)._parseBody()
-        unitId, seqId = unpack('>QH', self._body)
-        self.__unitId = str(unitId)
-        self.__sequenceId = seqId
+        data = self.rawData
+        # let's work with text data
+        data = data.decode()
+
+        rc = re.compile(self.re_command, flags = re.IGNORECASE)
+        rp = re.compile(self.re_params, flags = re.IGNORECASE)
+        m = rc.search(data)
+        if m:
+            data_command = m.groupdict()
+            self.__command = data_command['command']
+            self.__tag = data_command['tag']
+            self.__params = []
+            self._offset += m.end()
+
+            # let's parse the parameters
+            params = data_command['params']
+            if params:
+                mp = rp.search(params)
+                while mp.group(0):
+                    self.__params.append(mp.group(1))
+                    mp = rp.search(params, mp.end())
+
         return self
-
-    def _buildHead(self):
-        """
-         Builds head of the packet
-         @return: head binstring
-        """
-        self._head = self.headerPrefix
-        return self._head
-
-    def _buildBody(self):
-        """
-         Builds rawData from object variables
-         @protected
-        """
-        #result = super(PacketKeepAlive, self)._buildBody()
-        result = b''
-        result += pack('>Q', int(self.__unitId or '0'))
-        result += pack('>H', self.__sequenceId)
-        return result
 
 # ---------------------------------------------------------------------------
 
@@ -216,7 +207,7 @@ class PacketFactory:
             packet = cls.getInstance(data)
             data = packet.rawDataTail
             packets.append(packet)
-            if len(data) == 0: break
+            if not data or len(data) == 0: break
         return packets
 
     @classmethod
@@ -270,18 +261,48 @@ class TestCase(unittest.TestCase):
             b'\xfe\x02\x00\x01A\x04\xd8\xdd\x8f(\x00\x16')
 
     def test_commandResponse(self):
-        buffer = b'$OK\r\n'
-        #packets = PacketFactory.getPacketsFromBuffer(buffer)
-        #p = packets[0]
-        #self.assertIsInstance(p, PacketCommandResponse)
+        packets = PacketFactory.getPacketsFromBuffer(b'$OK\r\n')
+        p = packets[0]
+        self.assertIsInstance(p, PacketCommandResponse)
+        self.assertEqual(p.command, 'OK')
+        self.assertEqual(p.rawData, b'$OK\r\n')
+
+    def test_multipleCommandResponse(self):
+        packets = PacketFactory.getPacketsFromBuffer(
+            b'$UNID=352964050784041\r\n$UNID=352964050784041\r\n' +
+            b'$UNID=352964050784041\r\n$UNID=352964050784041\r\n' +
+            b'$UNID=352964050784041\r\n$UNID=352964050784041\r\n' +
+            b'$INFO+SOMETAG=352964050784041,AX5,Rev.1.08,352964050784041,' +
+            b'250026811379271,897010268113792717,130,0,8,1,26,1,0\r\n' +
+            b'$UNID=352964050784041\r\n$INFO=352964050784041,AX5,Rev.' +
+            b'1.08,352964050784041,250026811379271,897010268113792717' +
+            b',130,0,6,1,27,1,0\r\n$UNID=352964050784041\r\n' +
+            b'$INFO=352964050784041,AX5,Rev.1.08,352964050784041,' +
+            b'250026811379271,897010268113792717,130,0,7,1,27,1,0\r\n' +
+            b'$UNID=352964050784041\r\n$INFO=352964050784041,AX5,Rev.' +
+            b'1.08,352964050784041,250026811379271,897010268113792717' +
+            b',129,0,9,1,27,1,0\r\n$UNID=352964050784041\r\n' +
+            b'$INFO=352964050784041,AX5,Rev.1.08,352964050784041,' +
+            b'250026811379271,897010268113792717,130,0,6,1,26,1,0\r\n' +
+            b'$UNID=352964050784041\r\n$UNID=352964050784041\r\n'
+        )
+        self.assertEqual(len(packets), 17)
+        p = packets[6]
+        self.assertIsInstance(p, PacketCommandResponse)
+        self.assertEqual(p.command, 'INFO')
+        self.assertEqual(p.tag, 'SOMETAG')
+        self.assertEqual(len(p.params), 13)
+        self.assertEqual(p.params[2], 'Rev.1.08')
+        self.assertEqual(p.params[10], '26')
+        self.assertEqual(p.params[12], '0')
 
     def test_packetData(self):
-        #packets = PacketFactory.getPacketsFromBuffer(
-        #    b'@P\xec\xc0\x00U\x00\x1a\x00\x01A\x04\xd8\xdd\x8f)Q\x90\xc2' +
-        #    b'\xedQ\x90\xc2\xedQ\x94\xdc\xbc\x02>\xa5\xc0\x03SDt\x00\x00' +
-        #    b'\x02\x00\x00\t\xcd\x00\x15\x00\x00\x00\x00\x00\x00\x00\x00' +
-        #    b'\x00\x00\x00\x00\x07\x00\x82\x00\x00\x00\x00\x00\x00\x00' +
-        #    b'\x00\x00\x00\x00\x00\x00\x9e\x00\x00\x02\x00\x00\x00\x00' +
-        #    b'\x00\x00\xff\xd8\x00\x00\x00\x00\x00\x00'
-        #)
+        packets = PacketFactory.getPacketsFromBuffer(
+            b'@P\xec\xc0\x00U\x00\x1a\x00\x01A\x04\xd8\xdd\x8f)Q\x90\xc2' +
+            b'\xedQ\x90\xc2\xedQ\x94\xdc\xbc\x02>\xa5\xc0\x03SDt\x00\x00' +
+            b'\x02\x00\x00\t\xcd\x00\x15\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x07\x00\x82\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x00\x00\x00\x00\x9e\x00\x00\x02\x00\x00\x00\x00' +
+            b'\x00\x00\xff\xd8\x00\x00\x00\x00\x00\x00'
+        )
         pass

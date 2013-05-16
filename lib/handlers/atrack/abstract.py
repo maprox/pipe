@@ -59,7 +59,7 @@ class AtrackHandler(AbstractHandler):
          @param command: packets.PacketCommand
          @return:
         """
-        self.send(command.rawData)
+        self.send(command.rawData + b'\r\n')
 
     def sendAcknowledgement(self, packet):
         """

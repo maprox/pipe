@@ -27,6 +27,9 @@ class AbstractHandler(object):
     uid = False
     """ Uid of currently connected device """
 
+    confSectionName = "protocol.version"
+    """ Configuration section name """
+
     def __init__(self, store, clientThread):
         """
          Constructor of Listener.
@@ -309,3 +312,15 @@ class AbstractHandler(object):
                     sensor[key] = packet[key]
             packet['sensors'] = sensor.copy()
         return self
+
+    def getConfigOption(self, key, defaultValue = None):
+        """
+         Returns configuration option by its key
+         @param key: Configuration key
+         @param defaultValue: Default value if key is not found
+         @return: mixed
+        """
+        if conf.has_section(self.confSectionName):
+            section = conf[self.confSectionName]
+            return section.get(key, defaultValue)
+        return defaultValue

@@ -9,7 +9,7 @@ from lib.handlers.atrack.abstract import AtrackHandler
 
 class Handler(AtrackHandler):
     """ ATrack. AX5 """
-    _confSectionName = "atrack.ax5"
+    confSectionName = "atrack.ax5"
 
 
 # ===========================================================================

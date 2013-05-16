@@ -22,7 +22,7 @@ from urllib.request import urlopen
 class Handler(AbstractHandler):
     """ Globalsat. TR-151 """
 
-    _confSectionName = "globalsat.tr151"
+    confSectionName = "globalsat.tr151"
     _reportFormat = "RAB27GHKLM"
     _smsFormat1 = "RAB27GHKLM"
 

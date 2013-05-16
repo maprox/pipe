@@ -9,8 +9,7 @@ from lib.handlers.atrack.abstract import AtrackHandler
 
 class Handler(AtrackHandler):
     """ ATrack. AX5 """
-    _confSectionName = "atrack.ax5"
-
+    confSectionName = "atrack.ax5"
 
 # ===========================================================================
 # TESTS
@@ -20,4 +19,10 @@ import unittest
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        pass
+        import kernel.pipe as pipe
+        self.handler = Handler(pipe.Manager(), None)
+
+    def test_config(self):
+        h = self.handler
+        self.assertEqual(h.confSectionName, 'atrack.ax5')
+        self.assertEqual(h.getConfigOption('positionReportPrefix', '@P'), '@P')

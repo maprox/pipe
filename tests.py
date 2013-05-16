@@ -26,6 +26,7 @@ from lib.handlers.teltonika.fmxxxx import TestCase as tc14
 from lib.handlers.teltonika.packets import TestCase as tc15
 from lib.handlers.atrack.abstract import TestCase as tc16
 from lib.handlers.atrack.packets import TestCase as tc17
+from lib.handlers.atrack.ax5 import TestCase as tc18
 
 if __name__ == '__main__':
     unittest.main()

@@ -50,6 +50,17 @@ class AtrackHandler(AbstractHandler):
         # sends the acknowledgment
         self.sendAcknowledgement(protocolPacket)
 
+        #if not self.uid:
+        #    self.sendCommand(packets.PacketCommand('UNID'))
+
+    def sendCommand(self, command):
+        """
+         Sends command to the device
+         @param command: packets.PacketCommand
+         @return:
+        """
+        self.send(command.rawData)
+
     def sendAcknowledgement(self, packet):
         """
          Sends acknowledgement to the socket

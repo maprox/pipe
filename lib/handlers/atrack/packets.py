@@ -9,6 +9,7 @@ from datetime import datetime
 from struct import *
 import lib.crc16 as crc16
 from lib.packets import *
+from lib.factory import AbstractPacketFactory
 import re
 
 
@@ -29,28 +30,6 @@ class PacketKeepAlive(BasePacket):
 
     __unitId = None
     __sequenceId = 0
-
-    def __init__(self, data = None):
-        """
-         Initialize command with specific params
-         @param params: dict
-         @return:
-        """
-        if isinstance(data, dict):
-            self.setParams(data)
-        else:
-            super(PacketKeepAlive, self).__init__(data)
-        self._rebuild = True
-
-    def setParams(self, params):
-        """
-         Set command params if needed.
-         Override in child classes.
-         @param params: dict
-         @return:
-        """
-        self.__unitId = params['unitId'] or ''
-        self.__sequenceId = params['sequenceId'] or 0
 
     @property
     def unitId(self):
@@ -116,6 +95,68 @@ class PacketKeepAlive(BasePacket):
 
 # ---------------------------------------------------------------------------
 
+class PacketCommand(BinaryPacket):
+    """
+      Command packet of ATrack messaging protocol
+    """
+    # private properties
+    __command = None
+    __tag = None
+    __params = None
+
+    def __init__(self, params = None):
+        """
+         Constructor
+         @param data: Input binary data
+         @param params: Input parameters
+        """
+        pass
+
+    @property
+    def command(self):
+        if self._rebuild: self._build()
+        return self.__command
+
+    @command.setter
+    def command(self, value):
+        self.__command = value
+        self._rebuild = True
+
+    @property
+    def tag(self):
+        if self._rebuild: self._build()
+        return self.__tag
+
+    @tag.setter
+    def tag(self, value):
+        self.__tag = value
+        self._rebuild = True
+
+    @property
+    def params(self):
+        if self._rebuild: self._build()
+        return self.__params
+
+    def _buildBody(self):
+        """
+
+         @return: bytes
+        """
+        buffer = b''
+        buffer += self.__command.encode()
+        if self.__tag:
+            buffer += b'+' + self.__tag.encode()
+        params = b''
+        if self.__params:
+            for param in self.__params:
+                if len(params) > 0:
+                    buffer += b','
+                buffer += param.encode()
+        buffer += b'\r\n'
+        return buffer
+
+# ---------------------------------------------------------------------------
+
 class PacketCommandResponse(BinaryPacket):
     """
       Command answer packet of ATrack messaging protocol
@@ -125,7 +166,6 @@ class PacketCommandResponse(BinaryPacket):
     headerPrefix = b'$'
 
     # private properties
-    __params = None
     __command = None
     __tag = None
     __params = None
@@ -188,6 +228,31 @@ class PacketCommandResponse(BinaryPacket):
 
         return self
 
+    def _buildHead(self):
+        """
+         Returns head buffer
+         @return: bytes
+        """
+        return self.headerPrefix
+
+    def _buildBody(self):
+        """
+
+         @return: bytes
+        """
+        buffer = b''
+        buffer += self.__command.encode()
+        if self.__tag:
+            buffer += b'+' + self.__tag.encode()
+        params = b''
+        if self.__params:
+            for param in self.__params:
+                if len(params) > 0:
+                    buffer += b','
+                buffer += param.encode()
+        buffer += b'\r\n'
+        return buffer
+
 # ---------------------------------------------------------------------------
 
 class PacketData(BasePacket):
@@ -196,14 +261,43 @@ class PacketData(BasePacket):
     """
     # public properties
     headerPrefix = b'@P'
+    customInfo = ''
 
     # protected properties
-    _fmtHeader = '>HH'   # header format
+    _fmtHeader = '>L'   # header format
     _fmtLength = '>H'    # length format
 
     # private properties
     __sequenceId = None
     __unitId = 0
+
+    customInfoTable = {
+        'SA': ('>B', 'satellitescount'),
+        'MV': ('>H', 'ext_battery_voltage'),
+        'BV': ('>H', 'int_battery_voltage'),
+        'GQ': ('>B', 'gsm_signal_quality'),
+        'CE': ('>H', 'gsm_cell_id'),
+        'LC': ('>H', 'gsm_cell_lac'),
+        'CN': ('>L', 'gsm_mcc_mnc'),
+        'RL': ('>B', 'gsm_rxlev'),
+        'PC': ('>L', 'pulse_count_value'),
+        'AT': ('>L', 'altitude'),
+        'RP': ('>H', 'can_rpm'),
+        'GS': ('>B', 'gsm_status'),
+        'DT': ('>B', 'report_type'),
+        'VN': (None, 'vin'),
+        'MF': ('>H', 'can_mass_airflow_rate'),
+        'EL': ('>B', 'can_engine_load'),
+        'TR': ('>B', 'can_throttle_position'),
+        'ET': ('>h', 'can_coolant_temperature'),
+        'FL': ('>B', 'can_fuel_level'),
+        'ML': ('>B', 'mil_status'), # (Malfunction Indicator Lamp)
+        'FC': ('>L', 'can_fuel_total'),
+        'CI': (None, 'custom_info'),
+        'AV1': ('>H', 'ain0'),
+        'NC': (None, 'gsm_neighbor_cell_info'),
+        'SM': ('>H' 'speed_max')
+    }
 
     @property
     def unitId(self):
@@ -214,6 +308,17 @@ class PacketData(BasePacket):
     def sequenceId(self):
         if self._rebuild: self._build()
         return self.__sequenceId
+
+    def configure(self, config):
+        """
+         Set supplied parameters
+         @param config: dict
+         @return:
+        """
+        if 'headerPrefix' in config:
+            self.headerPrefix = config['positionReportPrefix']
+        if 'customInfo' in config:
+            self.customInfo = config['customInfo']
 
     def _parseHeader(self):
         """
@@ -238,7 +343,6 @@ class PacketData(BasePacket):
 
         buffer = self._body[10:]
         items = []
-        print(self._offset)
         while self._offset < len(buffer):
             item = {}
             item['time'] = self.readFrom('>L', buffer)
@@ -260,8 +364,19 @@ class PacketData(BasePacket):
             item['ext_temperature_1'] = self.readFrom('>h', buffer)
             item['message'] = buffer[self._offset:].split(b'\x00')[0]
             self._offset += len(item['message']) + 1
-            print(item)
-            print(buffer[self._offset:])
+
+            # read custom information
+            fields = self.customInfo.split('%')
+            for field in fields:
+                if not field: continue
+                if field in self.customInfoTable:
+                    fmt, alias = self.customInfoTable[field]
+                    if fmt:
+                        item[alias] = self.readFrom(fmt, buffer)
+                    else:
+                        item[alias] = buffer[self._offset:].split(b'\x00')[0]
+                        self._offset += len(item[alias]) + 1
+
             items.append(item)
 
         # restores offset
@@ -288,48 +403,35 @@ class PacketData(BasePacket):
         buffer = pack('>H', self._length) + self._body
         return crc16.Crc16.calcBinaryString(buffer, crc16.INITIAL_DF1)
 
-
-
 # ---------------------------------------------------------------------------
 
-class PacketFactory:
+class PacketFactory(AbstractPacketFactory):
     """
      Packet factory
     """
 
-    @classmethod
-    def getPacketsFromBuffer(cls, data = None):
-        """
-         Returns an array of BasePacket instances from data
-         @param data: Input binary data
-         @return: array of BasePacket instances (empty array if no packet found)
-        """
-        packets = []
-        while True:
-            packet = cls.getInstance(data)
-            data = packet.rawDataTail
-            packets.append(packet)
-            if not data or len(data) == 0: break
-        return packets
-
-    @classmethod
-    def getInstance(cls, data = None):
+    def getInstance(self, data = None):
         """
           Returns a packet instance by its number
           @return: BasePacket instance
         """
         if data == None: return
-        CLASS = PacketData
+        CLASS = None
         # read prefix
         pka_HeaderPrefix = PacketKeepAlive.headerPrefix
         pcr_HeaderPrefix = PacketCommandResponse.headerPrefix
+        pcd_HeaderPrefix = PacketData.headerPrefix
+        if 'positionReportPrefix' in self.config:
+            pcd_HeaderPrefix = self.config['positionReportPrefix'].encode()
         if data[:len(pka_HeaderPrefix)] == pka_HeaderPrefix:
             CLASS = PacketKeepAlive
         elif data[:len(pcr_HeaderPrefix)] == pcr_HeaderPrefix:
             CLASS = PacketCommandResponse
+        elif data[:len(pcd_HeaderPrefix)] == pcd_HeaderPrefix:
+            CLASS = PacketData
         if not CLASS:
             raise Exception('Unknown packet structure')
-        return CLASS(data)
+        return CLASS(data, self.config)
 
 # ===========================================================================
 # TESTS
@@ -339,38 +441,39 @@ import unittest
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.factory = PacketFactory({
+            'positionReportPrefix': '@P',
+            'customInfo': '%SA%MV%GQ%CE%LC%CN%RL%AT%RP' +
+                          '%GS%DT%VN%MF%EL%TR%ET%FL%ML%FC'
+        })
 
     def test_keepAlivePacket(self):
         buffer = b'\xfe\x02\x00\x01A\x04\xd8\xdd\x8f(\x00\x01'
-        packets = PacketFactory.getPacketsFromBuffer(buffer)
+        packets = self.factory.getPacketsFromBuffer(buffer)
         p = packets[0]
         self.assertIsInstance(p, PacketKeepAlive)
         self.assertEqual(p.sequenceId, 1)
         self.assertEqual(p.unitId, '352964050784040')
 
-        pka2 = PacketKeepAlive({
-            'unitId': '352964050784040',
-            'sequenceId': 15
-        })
-        self.assertEqual(pka2.rawData,
-            b'\xfe\x02\x00\x01A\x04\xd8\xdd\x8f(\x00\x0f')
-
         pka = PacketKeepAlive()
         pka.unitId = '352964050784040'
+        pka.sequenceId = 15
+        self.assertEqual(pka.rawData,
+            b'\xfe\x02\x00\x01A\x04\xd8\xdd\x8f(\x00\x0f')
+
         pka.sequenceId = 22
         self.assertEqual(pka.rawData,
             b'\xfe\x02\x00\x01A\x04\xd8\xdd\x8f(\x00\x16')
 
     def test_commandResponse(self):
-        packets = PacketFactory.getPacketsFromBuffer(b'$OK\r\n')
+        packets = self.factory.getPacketsFromBuffer(b'$OK\r\n')
         p = packets[0]
         self.assertIsInstance(p, PacketCommandResponse)
         self.assertEqual(p.command, 'OK')
         self.assertEqual(p.rawData, b'$OK\r\n')
 
     def test_multipleCommandResponse(self):
-        packets = PacketFactory.getPacketsFromBuffer(
+        packets = self.factory.getPacketsFromBuffer(
             b'$UNID=352964050784041\r\n$UNID=352964050784041\r\n' +
             b'$UNID=352964050784041\r\n$UNID=352964050784041\r\n' +
             b'$UNID=352964050784041\r\n$UNID=352964050784041\r\n' +
@@ -399,7 +502,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(p.params[12], '0')
 
     def test_packetData(self):
-        packets = PacketFactory.getPacketsFromBuffer(
+        packets = self.factory.getPacketsFromBuffer(
             b'@P\xec\xc0\x00U\x00\x1a\x00\x01A\x04\xd8\xdd\x8f)Q\x90\xc2' +
             b'\xedQ\x90\xc2\xedQ\x94\xdc\xbc\x02>\xa5\xc0\x03SDt\x00\x00' +
             b'\x02\x00\x00\t\xcd\x00\x15\x00\x00\x00\x00\x00\x00\x00\x00' +
@@ -407,6 +510,7 @@ class TestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x9e\x00\x00\x02\x00\x00\x00\x00' +
             b'\x00\x00\xff\xd8\x00\x00\x00\x00\x00\x00'
         )
+        self.assertEqual(len(packets), 1)
         p = packets[0]
         self.assertIsInstance(p, PacketData)
         self.assertEqual(p.sequenceId, 26)

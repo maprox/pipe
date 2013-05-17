@@ -24,6 +24,14 @@ class AtrackHandler(AbstractHandler):
     """
     _packetsFactory = packets.PacketFactory
 
+    def initialization(self):
+        """
+         Initialization of the handler
+         @return:
+        """
+        self._packetsFactory = packets.PacketFactory()
+        return super(AtrackHandler, self).initialization()
+
     def processData(self, data):
         """
          Processing of data from socket / storage.
@@ -45,13 +53,27 @@ class AtrackHandler(AbstractHandler):
          @param protocolPacket: ATrack protocol packet
         """
         if isinstance(protocolPacket, packets.PacketKeepAlive):
-            log.debug('Keep alive packet received')
+            self.uid = protocolPacket.unitId
+            log.debug('Keep alive packet received. UnitId = %s' % self.uid)
 
         # sends the acknowledgment
         self.sendAcknowledgement(protocolPacket)
 
-        #if not self.uid:
-        #    self.sendCommand(packets.PacketCommand('UNID'))
+        if not isinstance(protocolPacket, packets.PacketData):
+            return
+
+        if not self.uid:
+            self.uid = protocolPacket.unitId
+            log.debug('Data packet received. UnitId = %s' % self.uid)
+
+        observerPackets = self.translate(protocolPacket)
+        if len(observerPackets) == 0:
+            log.info('Location packet not found. Exiting...')
+            return
+
+        log.info(observerPackets)
+        self._buffer = protocolPacket.rawData
+        self.store(observerPackets)
 
     def sendCommand(self, command):
         """
@@ -81,13 +103,34 @@ class AtrackHandler(AbstractHandler):
         if isinstance(packet, packets.PacketKeepAlive):
             pass
         elif isinstance(packet, packets.PacketData):
-            answer = packets.PacketKeepAlive({
-                'unitId': self.uid,
-                'sequenceId': 1
-            })
+            answer = packets.PacketKeepAlive()
+            answer.unitId = self.uid
+            answer.sequenceId = 1
         else:
             return None
         return answer.rawData
+
+    def translate(self, protocolPacket):
+        """
+         Translate gps-tracker data to observer pipe format
+         @param protocolPacket: Atrack protocol packet
+        """
+        list = []
+        if (protocolPacket == None): return list
+        if not isinstance(protocolPacket, packets.PacketData):
+            return list
+        if (len(protocolPacket.items) == 0):
+            return list
+        for item in protocolPacket.items:
+            packet = {'uid': self.uid}
+            packet.update(item)
+            packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            # sensors
+            sensor = packet['sensors'] or {}
+            sensor['sat_count'] = packet['satellitescount']
+            self.setPacketSensors(packet, sensor)
+            list.append(packet)
+        return list
 
 # ===========================================================================
 # TESTS

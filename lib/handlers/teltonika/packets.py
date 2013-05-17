@@ -2,13 +2,14 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Teltonika packets
-@copyright 2012, Maprox LLC
+@copyright 2012-2013, Maprox LLC
 '''
 
 from datetime import datetime
 from struct import *
 import lib.crc16 as crc16
 from lib.packets import *
+from lib.factory import AbstractPacketFactory
 
 # ---------------------------------------------------------------------------
 
@@ -534,28 +535,12 @@ CFG_IBUTTON_LAST = 1659
 
 # ---------------------------------------------------------------------------
 
-class PacketFactory:
+class PacketFactory(AbstractPacketFactory):
     """
      Packet factory
     """
 
-    @classmethod
-    def getPacketsFromBuffer(cls, data = None):
-        """
-         Returns an array of BasePacket instances from data
-         @param data: Input binary data
-         @return: array of BasePacket instances (empty array if no packet found)
-        """
-        packets = []
-        while True:
-            packet = cls.getInstance(data)
-            data = packet.rawDataTail
-            packets.append(packet)
-            if (len(data) == 0): break
-        return packets
-
-    @classmethod
-    def getInstance(cls, data = None):
+    def getInstance(self, data = None):
         """
           Returns a packet instance by its number
           @return: BasePacket instance
@@ -578,10 +563,10 @@ import unittest
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        pass
+        self.factory = PacketFactory()
 
     def test_headPacket(self):
-        packet = PacketFactory.getInstance(b'\x00\x0f012896001609129')
+        packet = self.factory.getInstance(b'\x00\x0f012896001609129')
         self.assertEqual(isinstance(packet, PacketHead), True)
         self.assertEqual(isinstance(packet, PacketData), False)
         self.assertEqual(packet.length, 15)
@@ -720,7 +705,7 @@ class TestCase(unittest.TestCase):
                b'\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x94T' +\
                b'\xdc4\x00\x16B7\x80!#2@\x01\x18\x00\x00\x08\x00\x00\x00' +\
                b'\x00\x00\x00\x00\x00\x19\x00\x00\x1bb'
-        packets = PacketFactory.getPacketsFromBuffer(data)
+        packets = self.factory.getPacketsFromBuffer(data)
         self.assertEqual(len(packets), 1)
         packet = packets[0]
         self.assertTrue(isinstance(packet, PacketData))

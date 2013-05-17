@@ -39,6 +39,14 @@ class AbstractHandler(object):
         log.debug('%s::__init__()', self.__class__)
         self.__store = store
         self.__thread = clientThread
+        self.initialization()
+
+    def initialization(self):
+        """
+         Initialization of the handler
+         @return:
+        """
+        pass
 
     def getStore(self):
         """ Returns store object """

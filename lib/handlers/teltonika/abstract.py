@@ -25,9 +25,18 @@ class TeltonikaHandler(AbstractHandler):
     """
      Base handler for Teltonika FMXXXXX protocol
     """
+    _packetsFactory = packets.PacketFactory
 
     # private buffer for headPacket data
     __headPacketRawData = None
+
+    def initialization(self):
+        """
+         Initialization of the handler
+         @return:
+        """
+        self._packetsFactory = packets.PacketFactory()
+        return super(TeltonikaHandler, self).initialization()
 
     def processData(self, data):
         """
@@ -36,7 +45,7 @@ class TeltonikaHandler(AbstractHandler):
          @param packnum: Number of socket packet (defaults to 0)
          @return: self
         """
-        protocolPackets = packets.PacketFactory.getPacketsFromBuffer(data)
+        protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
         for protocolPacket in protocolPackets:
             self.processProtocolPacket(protocolPacket)
 
@@ -350,7 +359,7 @@ class TestCase(unittest.TestCase):
                b'\x03\x00\x01\x46\x00\x00\x01\x5d\x00\x01\x00\x00\xcf\x77'
         packet = packets.PacketData(data)
         self.assertEqual(h.getAckPacket(packet), b'\x00\x00\x00\x01')
-        packet = packets.PacketFactory.getInstance(b'\x00\x0f012896001609129')
+        packet = h._packetsFactory.getInstance(b'\x00\x0f012896001609129')
         self.assertEqual(h.getAckPacket(packet), b'\x01')
 
     def test_getConfigurationSmsParts(self):

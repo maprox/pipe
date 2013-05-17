@@ -12,6 +12,7 @@ from struct import unpack, pack
 import lib.bits as bits
 import lib.crc16 as crc16
 from lib.packets import *
+from lib.factory import AbstractPacketFactory
 
 # ---------------------------------------------------------------------------
 
@@ -662,26 +663,10 @@ class PacketAnswerCommandGetImage(PacketAnswer):
 
 # ---------------------------------------------------------------------------
 
-class PacketFactory:
+class PacketFactory(AbstractPacketFactory):
     """
      Packet factory
     """
-
-    @classmethod
-    def getPacketsFromBuffer(cls, data = None):
-        """
-         Returns an array of BasePacket instances from data
-         @param data: Input binary data
-         @return: array of BasePacket instances (empty array if no packet found)
-        """
-        packets = []
-        if not data: return packets
-        while True:
-            packet = cls.getInstance(data)
-            data = packet.rawDataTail
-            packets.append(packet)
-            if len(data) == 0: break
-        return packets
 
     @classmethod
     def getClass(cls, number):
@@ -697,8 +682,7 @@ class PacketFactory:
             return None
         return classes[number]
 
-    @classmethod
-    def getInstance(cls, data = None):
+    def getInstance(self, data = None):
         """
           Returns a tag instance by its number
         """
@@ -708,7 +692,7 @@ class PacketFactory:
         length = unpack("<H", data[:2])[0]
         number = length >> 14
 
-        CLASS = cls.getClass(number)
+        CLASS = self.getClass(number)
         if not CLASS:
             raise Exception('Packet %s is not found' % number)
         if issubclass(CLASS, PacketAnswer):
@@ -743,10 +727,11 @@ class TestCase(unittest.TestCase):
 
     def setUp(self):
         self.maxDiff = None
+        self.factory = PacketFactory()
         pass
 
     def test_headPacket(self):
-        packet = PacketFactory.getInstance(
+        packet = self.factory.getInstance(
           b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9')
         self.assertEqual(isinstance(packet, PacketHead), True)
         self.assertEqual(isinstance(packet, PacketData), False)
@@ -756,7 +741,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.checksum, 47519)
 
     def test_setPacketBody(self):
-        packet = PacketFactory.getInstance(
+        packet = self.factory.getInstance(
           b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9')
         self.assertEqual(packet.length, 18)
         self.assertEqual(isinstance(packet, PacketHead), True)
@@ -770,13 +755,13 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.checksum, 13860)
 
     def test_packetTail(self):
-        packets = PacketFactory.getPacketsFromBuffer(
+        packets = self.factory.getPacketsFromBuffer(
             b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9' +
             b'\x12\x00\x22\x00012896001609129\x05$6')
         self.assertEqual(len(packets), 2)
 
     def test_dataPacket(self):
-        packets = PacketFactory.getPacketsFromBuffer(
+        packets = self.factory.getPacketsFromBuffer(
             b'\xdcC\x01\x00\xff\xffh)\x8f\xf0\\Q\x10\xe0l,\x03\xe8\xbc' +
             b'\xfd\x02\x00\x00\x00\x00\x00\x00\xff\x08\x98, \r%\x00\x00' +
             b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
@@ -898,7 +883,7 @@ class TestCase(unittest.TestCase):
 
     def test_commandAnswerGetImage(self):
         data = b'\x05\x80\x14\x00\xb1\x46\x00\x03\x84'
-        packets = PacketFactory.getPacketsFromBuffer(data)
+        packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         self.assertIsInstance(packet, PacketAnswerCommandGetImage)
         self.assertEqual(packet.command, 20)
@@ -931,7 +916,7 @@ class TestCase(unittest.TestCase):
                b'\x02\x03\x11\x04\x05!1\x06\x12AQ\x07aq\x13"2\x81\x08\x14B' +\
                b'\x91\xa1\xb1\xc1\t#3R\xf0\x15br\xd1\n\x16$4\xe1%\xf1\x17' +\
                b'\x18\x19\x1a&\'()*56789:CDEFGHIJSTUVWXYZcdefghijstuvw\xc1\xb0'
-        packets = PacketFactory.getPacketsFromBuffer(data)
+        packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         self.assertEqual(packet.chunkNumber, 0)
         self.assertEqual(len(packet.chunkData), 506)

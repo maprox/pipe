@@ -20,12 +20,22 @@ class SolidBinaryPacket(object):
     _rawData = None
     _rebuild = True       # flag to rebuild rawData
 
-    def __init__(self, data = None):
+    def __init__(self, data = None, config = None):
         """
          Constructor
          @param data: Input binary data
+         @param params: Input parameters
         """
+        self.configure(config)
         self.rawData = data
+
+    def configure(self, config):
+        """
+         Configuration
+         @param config: dict
+         @return:
+        """
+        pass
 
     @property
     def rawData(self):

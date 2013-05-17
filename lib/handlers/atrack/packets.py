@@ -190,6 +190,108 @@ class PacketCommandResponse(BinaryPacket):
 
 # ---------------------------------------------------------------------------
 
+class PacketData(BasePacket):
+    """
+      Position report of ATrack messaging protocol
+    """
+    # public properties
+    headerPrefix = b'@P'
+
+    # protected properties
+    _fmtHeader = '>HH'   # header format
+    _fmtLength = '>H'    # length format
+
+    # private properties
+    __sequenceId = None
+    __unitId = 0
+
+    @property
+    def unitId(self):
+        if self._rebuild: self._build()
+        return self.__unitId
+
+    @property
+    def sequenceId(self):
+        if self._rebuild: self._build()
+        return self.__sequenceId
+
+    def _parseHeader(self):
+        """
+         Parses packet header
+         @return: self
+        """
+        header, checksum = unpack('>HH', self._head)
+        self._checksum = checksum
+
+    def _parseBody(self):
+        """
+         Parses packet tail
+         @return: self
+        """
+        seqId, unitId  = unpack('>HQ', self._body[:10])
+        self.__sequenceId = seqId
+        self.__unitId = str(unitId)
+
+        # store current offset
+        savedOffset = self._offset
+        self._offset = 0
+
+        buffer = self._body[10:]
+        items = []
+        print(self._offset)
+        while self._offset < len(buffer):
+            item = {}
+            item['time'] = self.readFrom('>L', buffer)
+            item['time_rtc'] = self.readFrom('>L', buffer)
+            item['time_send'] = self.readFrom('>L', buffer)
+            item['longitude'] = self.readFrom('>l', buffer)
+            item['latitude'] = self.readFrom('>l', buffer)
+            item['azimuth'] = self.readFrom('>H', buffer)
+            item['report_id'] = self.readFrom('>B', buffer)
+            item['odometer'] = self.readFrom('>L', buffer)
+            item['hdop'] = self.readFrom('>H', buffer)
+            item['din'] = self.readFrom('>B', buffer)
+            item['speed'] = self.readFrom('>H', buffer)
+            item['dout'] = self.readFrom('>B', buffer)
+            item['ain'] = self.readFrom('>H', buffer)
+            item['driver_id'] = buffer[self._offset:].split(b'\x00')[0]
+            self._offset += len(item['driver_id']) + 1
+            item['ext_temperature_0'] = self.readFrom('>h', buffer)
+            item['ext_temperature_1'] = self.readFrom('>h', buffer)
+            item['message'] = buffer[self._offset:].split(b'\x00')[0]
+            self._offset += len(item['message']) + 1
+            print(item)
+            print(buffer[self._offset:])
+            items.append(item)
+
+        # restores offset
+        self._offset = savedOffset
+
+    def _parseTail(self):
+        """
+         Parses packet tail
+         @return: self
+        """
+        # checksum check
+        if not self._isCorrectChecksum():
+            raise Exception('Checksum is incorrect! ' +
+                str(self.checksum) + ' (given) != ' +\
+                str(self.calculateChecksum()) + ' (must be)')
+
+        return super(PacketData, self)._parseTail()
+
+    def calculateChecksum(self):
+        """
+         Returns calculated checksum
+         @return: int
+        """
+        buffer = pack('>H', self._length) + self._body
+        return crc16.Crc16.calcBinaryString(buffer, crc16.INITIAL_DF1)
+
+
+
+# ---------------------------------------------------------------------------
+
 class PacketFactory:
     """
      Packet factory
@@ -217,7 +319,7 @@ class PacketFactory:
           @return: BasePacket instance
         """
         if data == None: return
-        CLASS = PacketKeepAlive
+        CLASS = PacketData
         # read prefix
         pka_HeaderPrefix = PacketKeepAlive.headerPrefix
         pcr_HeaderPrefix = PacketCommandResponse.headerPrefix
@@ -305,4 +407,8 @@ class TestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x9e\x00\x00\x02\x00\x00\x00\x00' +
             b'\x00\x00\xff\xd8\x00\x00\x00\x00\x00\x00'
         )
-        pass
+        p = packets[0]
+        self.assertIsInstance(p, PacketData)
+        self.assertEqual(p.sequenceId, 26)
+        self.assertEqual(p.unitId, '352964050784041')
+        #self.assertEqual(

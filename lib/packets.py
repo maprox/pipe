@@ -138,6 +138,7 @@ class SolidBinaryPacket(object):
          Reads data from buffer, and increases offset
          @param fmt: pack() format string
          @param buffer: buffer from which we will get the result
+         @param offset: offset wich will be increased
          @return: int
         """
         if fmt is None:

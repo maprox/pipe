@@ -395,9 +395,11 @@ class PacketData(BasePacket):
                         sensor[alias] =\
                             buffer[self._offset:].split(b'\x00')[0].decode()
                         self._offset += len(sensor[alias]) + 1
-
-            if 'can_total_fuel_consumption' in sensor:
-                sensor['can_total_fuel_consumption'] /= 10
+                    if alias in [
+                        'can_total_fuel_consumption',
+                        'ext_battery_voltage',
+                        'int_battery_voltage']:
+                        sensor[alias] /= 10
 
             item['sensors'] = sensor
             self.__items.append(item)

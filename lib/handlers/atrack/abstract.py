@@ -105,8 +105,8 @@ class AtrackHandler(AbstractHandler):
             pass
         elif isinstance(packet, packets.PacketData):
             answer = packets.PacketKeepAlive()
-            answer.unitId = self.uid
-            answer.sequenceId = 1
+            answer.unitId = packet.unitId
+            answer.sequenceId = packet.sequenceId
         else:
             return None
         return answer.rawData
@@ -130,6 +130,7 @@ class AtrackHandler(AbstractHandler):
                 packet['time_rtc'].strftime('%Y-%m-%dT%H:%M:%S.%f')
             packet['time_send'] =\
                 packet['time_send'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            packet['altitude'] = item['sensors']['altitude']
             packet['satellitescount'] = item['sensors']['sat_count']
             # sensors
             sensor = packet['sensors'] or {}

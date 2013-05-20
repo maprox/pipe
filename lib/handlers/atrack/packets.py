@@ -374,11 +374,13 @@ class PacketData(BasePacket):
                 sensor['dout%d' % i] = int(bits.bitTest(dOut, i))
 
             sensor['ain0'] = self.readFrom('>H', buffer)
-            sensor['driver_id'] = buffer[self._offset:].split(b'\x00')[0]
+            sensor['driver_id'] =\
+                buffer[self._offset:].split(b'\x00')[0].decode()
             self._offset += len(sensor['driver_id']) + 1
             sensor['ext_temperature_0'] = self.readFrom('>h', buffer)
             sensor['ext_temperature_1'] = self.readFrom('>h', buffer)
-            sensor['message'] = buffer[self._offset:].split(b'\x00')[0]
+            sensor['message'] =\
+                buffer[self._offset:].split(b'\x00')[0].decode()
             self._offset += len(sensor['message']) + 1
 
             # read custom information
@@ -390,7 +392,8 @@ class PacketData(BasePacket):
                     if fmt:
                         sensor[alias] = self.readFrom(fmt, buffer)
                     else:
-                        sensor[alias] = buffer[self._offset:].split(b'\x00')[0]
+                        sensor[alias] =\
+                            buffer[self._offset:].split(b'\x00')[0].decode()
                         self._offset += len(sensor[alias]) + 1
 
             if 'can_total_fuel_consumption' in sensor:

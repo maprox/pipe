@@ -16,8 +16,9 @@ from kernel.logger import log
 from kernel.commandline import options
 
 conf = ConfigParser()
+conf.optionxform = str
 try:
-    conf.read(options.servconf);
+    conf.read(options.servconf)
 
     # server's base settings
     if options.port:

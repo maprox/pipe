@@ -328,7 +328,7 @@ class PacketData(BasePacket):
         if 'customInfo' in config:
             self.customInfo = config['customInfo']
         if 'timeFormat' in config:
-            self.timeFormat = config['timeFormat']
+            self.timeFormat = int(config['timeFormat'])
 
     def _parseHeader(self):
         """
@@ -476,14 +476,25 @@ class PacketFactory(AbstractPacketFactory):
 # ===========================================================================
 
 import unittest
+
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        self.factory = PacketFactory({
-            'positionReportPrefix': '@P',
-            'customInfo': '%SA%MV%GQ%CE%LC%CN%RL%AT%RP' +
-                          '%GS%DT%VN%MF%EL%TR%ET%FL%ML%FC'
-        })
+        from configparser import ConfigParser
+        conf = ConfigParser()
+        conf.optionxform = str
+        conf.read('conf/serv-atrack.conf')
+        section = conf['atrack.ax5']
+        config = {}
+        for key in section.keys():
+            config[key] = section[key]
+
+        self.factory = PacketFactory(config)
+        #self.factory = PacketFactory({
+        #    'positionReportPrefix': '@P',
+        #    'customInfo': '%SA%MV%GQ%CE%LC%CN%RL%AT%RP' +
+        #                  '%GS%DT%VN%MF%EL%TR%ET%FL%ML%FC'
+        #})
 
     def test_keepAlivePacket(self):
         buffer = b'\xfe\x02\x00\x01A\x04\xd8\xdd\x8f(\x00\x01'
@@ -563,3 +574,19 @@ class TestCase(unittest.TestCase):
         self.assertEqual(i['sensors']['ext_temperature_1'], 0)
         self.assertEqual(i['sensors']['sat_count'], 7)
         self.assertEqual(i['sensors']['can_total_fuel_consumption'], 0)
+
+    def test_packetData2(self):
+        packets = self.factory.getPacketsFromBuffer(
+            b'@P\x07(\x00U\x00\x04\x00\x01A\x04\xd8\xdd\x8f)Q\x97\xd7\x7f' +
+            b'Q\x97\xd7\x7fQ\x99\xcb\xc3\x02=B\xd3\x03Sjc\x01\x13\x02\x00' +
+            b'\x00\x0bP\x00\x0b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x06\x00\x82\x0br\x8f\x1ew\x00\x00a\xaa\x14\x00\x00' +
+            b'\x00\xbd\x00\x00\x08\x00\x00\x00\x00\x00\x00\xff\xd8\x00\x00' +
+            b'\x00\x00\x00\x00'
+        )
+        self.assertEqual(len(packets), 1)
+        p = packets[0]
+        self.assertIsInstance(p, PacketData)
+        self.assertEqual(p.sequenceId, 4)
+        self.assertEqual(p.unitId, '352964050784041')
+        self.assertEqual(len(p.items), 1)

@@ -332,3 +332,28 @@ class AbstractHandler(object):
             section = conf[self.confSectionName]
             return section.get(key, defaultValue)
         return defaultValue
+
+
+    def processCommandExecute(self, task, data):
+        """
+         Execute command for the device
+         @param task: id task
+         @param data: data dict()
+        """
+        log.info('processCommandExecute not implemented!')
+
+    def processCommandReadSettings(self, task, data):
+        """
+         Sending command to read all of device configuration
+         @param task: id task
+         @param data: data string
+        """
+        log.info('processCommandReadSettings not implemented!')
+
+    def processCommandSetOption(self, task, data):
+        """
+         Set device configuration
+         @param task: id task
+         @param data: data dict()
+        """
+        log.info('processCommandSetOption not implemented!')

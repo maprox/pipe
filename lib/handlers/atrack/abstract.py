@@ -6,13 +6,9 @@
 '''
 
 
-import json
-from datetime import datetime
-from struct import pack
-
+from kernel.config import conf
 from kernel.logger import log
 from lib.handler import AbstractHandler
-from lib.ip import get_ip
 import lib.handlers.atrack.packets as packets
 import binascii
 
@@ -29,7 +25,12 @@ class AtrackHandler(AbstractHandler):
          Initialization of the handler
          @return:
         """
-        self._packetsFactory = packets.PacketFactory()
+        config = {}
+        if conf.has_section(self.confSectionName):
+            section = conf[self.confSectionName]
+            for key in section.keys():
+                config[key] = section[key]
+        self._packetsFactory = packets.PacketFactory(config)
         return super(AtrackHandler, self).initialization()
 
     def processData(self, data):

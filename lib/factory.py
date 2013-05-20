@@ -16,7 +16,7 @@ class AbstractPacketFactory:
          Constructor of Packet Factory.
          @param params: Factory parameters
         """
-        self.config = config
+        self.config = config or {}
 
     def getPacketsFromBuffer(self, data = None):
         """

@@ -66,7 +66,7 @@ class GalileoHandler(AbstractHandler):
                 self.headpack = observerPackets[0]
                 self.uid = self.headpack['uid']
                 log.info('HeadPack is stored.')
-                if ('time' not in self.headpack):
+                if 'time' not in self.headpack:
                     observerPackets.remove(self.headpack)
 
         if protocolPacket.header == 4:

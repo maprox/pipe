@@ -7,6 +7,7 @@
 
 from datetime import datetime
 from struct import *
+import lib.bits as bits
 import lib.crc16 as crc16
 from lib.packets import *
 from lib.factory import AbstractPacketFactory
@@ -262,6 +263,7 @@ class PacketData(BasePacket):
     # public properties
     headerPrefix = b'@P'
     customInfo = ''
+    timeFormat = 0
 
     # protected properties
     _fmtHeader = '>L'   # header format
@@ -270,9 +272,10 @@ class PacketData(BasePacket):
     # private properties
     __sequenceId = None
     __unitId = 0
+    __items = None
 
     customInfoTable = {
-        'SA': ('>B', 'satellitescount'),
+        'SA': ('>B', 'sat_count'),
         'MV': ('>H', 'ext_battery_voltage'),
         'BV': ('>H', 'int_battery_voltage'),
         'GQ': ('>B', 'gsm_signal_quality'),
@@ -290,9 +293,9 @@ class PacketData(BasePacket):
         'EL': ('>B', 'can_engine_load'),
         'TR': ('>B', 'can_throttle_position'),
         'ET': ('>h', 'can_coolant_temperature'),
-        'FL': ('>B', 'can_fuel_level'),
-        'ML': ('>B', 'mil_status'), # (Malfunction Indicator Lamp)
-        'FC': ('>L', 'can_fuel_total'),
+        'FL': ('>B', 'can_fuel_percent'),
+        'ML': ('>B', 'can_mil_status'), # (Malfunction Indicator Lamp)
+        'FC': ('>L', 'can_total_fuel_consumption'),
         'CI': (None, 'custom_info'),
         'AV1': ('>H', 'ain0'),
         'NC': (None, 'gsm_neighbor_cell_info'),
@@ -309,6 +312,11 @@ class PacketData(BasePacket):
         if self._rebuild: self._build()
         return self.__sequenceId
 
+    @property
+    def items(self):
+        if self._rebuild: self._build()
+        return self.__items
+
     def configure(self, config):
         """
          Set supplied parameters
@@ -319,6 +327,8 @@ class PacketData(BasePacket):
             self.headerPrefix = config['positionReportPrefix']
         if 'customInfo' in config:
             self.customInfo = config['customInfo']
+        if 'timeFormat' in config:
+            self.timeFormat = config['timeFormat']
 
     def _parseHeader(self):
         """
@@ -342,28 +352,34 @@ class PacketData(BasePacket):
         self._offset = 0
 
         buffer = self._body[10:]
-        items = []
+        self.__items = []
         while self._offset < len(buffer):
             item = {}
-            item['time'] = self.readFrom('>L', buffer)
-            item['time_rtc'] = self.readFrom('>L', buffer)
-            item['time_send'] = self.readFrom('>L', buffer)
-            item['longitude'] = self.readFrom('>l', buffer)
-            item['latitude'] = self.readFrom('>l', buffer)
+            sensor = {}
+            item['time'] = self.getTimeFromBuffer(buffer)
+            item['time_rtc'] = self.getTimeFromBuffer(buffer)
+            item['time_send'] = self.getTimeFromBuffer(buffer)
+            item['longitude'] = self.readFrom('>l', buffer) / 1000000
+            item['latitude'] = self.readFrom('>l', buffer) / 1000000
             item['azimuth'] = self.readFrom('>H', buffer)
             item['report_id'] = self.readFrom('>B', buffer)
-            item['odometer'] = self.readFrom('>L', buffer)
-            item['hdop'] = self.readFrom('>H', buffer)
-            item['din'] = self.readFrom('>B', buffer)
+            item['odometer'] = self.readFrom('>L', buffer) * 100
+            item['hdop'] = self.readFrom('>H', buffer) / 10
+            dInp = self.readFrom('>B', buffer)
             item['speed'] = self.readFrom('>H', buffer)
-            item['dout'] = self.readFrom('>B', buffer)
-            item['ain'] = self.readFrom('>H', buffer)
-            item['driver_id'] = buffer[self._offset:].split(b'\x00')[0]
-            self._offset += len(item['driver_id']) + 1
-            item['ext_temperature_0'] = self.readFrom('>h', buffer)
-            item['ext_temperature_1'] = self.readFrom('>h', buffer)
-            item['message'] = buffer[self._offset:].split(b'\x00')[0]
-            self._offset += len(item['message']) + 1
+            dOut = self.readFrom('>B', buffer)
+            # digital inputs and outputs
+            for i in range(0, 8):
+                sensor['din%d' % i] = int(bits.bitTest(dInp, i))
+                sensor['dout%d' % i] = int(bits.bitTest(dOut, i))
+
+            sensor['ain0'] = self.readFrom('>H', buffer)
+            sensor['driver_id'] = buffer[self._offset:].split(b'\x00')[0]
+            self._offset += len(sensor['driver_id']) + 1
+            sensor['ext_temperature_0'] = self.readFrom('>h', buffer)
+            sensor['ext_temperature_1'] = self.readFrom('>h', buffer)
+            sensor['message'] = buffer[self._offset:].split(b'\x00')[0]
+            self._offset += len(sensor['message']) + 1
 
             # read custom information
             fields = self.customInfo.split('%')
@@ -372,14 +388,18 @@ class PacketData(BasePacket):
                 if field in self.customInfoTable:
                     fmt, alias = self.customInfoTable[field]
                     if fmt:
-                        item[alias] = self.readFrom(fmt, buffer)
+                        sensor[alias] = self.readFrom(fmt, buffer)
                     else:
-                        item[alias] = buffer[self._offset:].split(b'\x00')[0]
-                        self._offset += len(item[alias]) + 1
+                        sensor[alias] = buffer[self._offset:].split(b'\x00')[0]
+                        self._offset += len(sensor[alias]) + 1
 
-            items.append(item)
+            if 'can_total_fuel_consumption' in sensor:
+                sensor['can_total_fuel_consumption'] /= 10
 
-        # restores offset
+            item['sensors'] = sensor
+            self.__items.append(item)
+
+        # restore offset
         self._offset = savedOffset
 
     def _parseTail(self):
@@ -402,6 +422,24 @@ class PacketData(BasePacket):
         """
         buffer = pack('>H', self._length) + self._body
         return crc16.Crc16.calcBinaryString(buffer, crc16.INITIAL_DF1)
+
+    def getTimeFromBuffer(self, buffer):
+        """
+         Returns a datetime object read from buffer according to timeFormat
+         @param buffer:
+         @return: datetime
+        """
+        if self.timeFormat == 0:
+            return datetime.utcfromtimestamp(self.readFrom('>L', buffer))
+        else:
+            return datetime(
+                self.readFrom('>H', buffer), # year
+                self.readFrom('>B', buffer), # month
+                self.readFrom('>B', buffer), # day
+                self.readFrom('>B', buffer), # hour
+                self.readFrom('>B', buffer), # minute
+                self.readFrom('>B', buffer)  # second
+            )
 
 # ---------------------------------------------------------------------------
 
@@ -515,4 +553,13 @@ class TestCase(unittest.TestCase):
         self.assertIsInstance(p, PacketData)
         self.assertEqual(p.sequenceId, 26)
         self.assertEqual(p.unitId, '352964050784041')
-        #self.assertEqual(
+        self.assertEqual(len(p.items), 1)
+        i = p.items[0]
+        self.assertEqual(i['time'], datetime(2013, 5, 13, 10, 39, 41))
+        self.assertEqual(i['longitude'], 37.660096)
+        self.assertEqual(i['latitude'], 55.78866)
+        self.assertEqual(i['hdop'], 2.1)
+        self.assertEqual(i['sensors']['ext_temperature_0'], 0)
+        self.assertEqual(i['sensors']['ext_temperature_1'], 0)
+        self.assertEqual(i['sensors']['sat_count'], 7)
+        self.assertEqual(i['sensors']['can_total_fuel_consumption'], 0)

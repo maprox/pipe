@@ -126,6 +126,10 @@ class AtrackHandler(AbstractHandler):
             packet = {'uid': self.uid}
             packet.update(item)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            packet['time_rtc'] =\
+                packet['time_rtc'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            packet['time_send'] =\
+                packet['time_send'].strftime('%Y-%m-%dT%H:%M:%S.%f')
             packet['satellitescount'] = item['sensors']['sat_count']
             # sensors
             sensor = packet['sensors'] or {}

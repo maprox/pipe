@@ -146,8 +146,14 @@ class CameraChecker(object):
          @return: dict or False
         """
         emailFrom = email.utils.parseaddr(msg['From'])
+        emailFromAddress = emailFrom[1]
+        emailFromAddressParts = emailFromAddress.split('@')
+        emailFromAddressHost = None
+        if len(emailFromAddressParts) > 1:
+            emailFromAddressHost = emailFromAddressParts[1]
 
-        if emailFrom[1] != 'esbreceiver@yandex.ru':
+        if (emailFromAddress != 'esbreceiver@yandex.ru') and
+           (emailFromAddressHost != 'mail.messages.megafon.ru'):
             return False
 
         images = []
@@ -162,7 +168,7 @@ class CameraChecker(object):
                 filename = part.get_filename()
                 if not(filename): continue
 
-                if filename == 'PIC.JPG':
+                if filename in ['PIC.JPG', 'IMAGE0.JPG']:
                     images.append({
                         'mime': 'image/jpeg',
                         'content': part.get_payload()

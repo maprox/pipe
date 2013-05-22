@@ -85,12 +85,15 @@ class CameraChecker(object):
          Starting check for incoming emails
         """
         log.debug('CameraChecker::run()')
-        for email in self.getEmails():
-            data = self.parseEmail(email)
-            if not data:
-                continue
-            log.debug('Data found: %s, %s', data["uid"], data["time"])
-            self.store.send(data)
+        try:
+            for email in self.getEmails():
+                data = self.parseEmail(email)
+                if not data:
+                    continue
+                log.debug('Data found: %s, %s', data["uid"], data["time"])
+                self.store.send(data)
+        except Exception as E:
+            log.critical(E)
 
     def getEmails(self):
         """
@@ -152,7 +155,7 @@ class CameraChecker(object):
         if len(emailFromAddressParts) > 1:
             emailFromAddressHost = emailFromAddressParts[1]
 
-        if (emailFromAddress != 'esbreceiver@yandex.ru') and
+        if (emailFromAddress != 'esbreceiver@yandex.ru') and \
            (emailFromAddressHost != 'mail.messages.megafon.ru'):
             return False
 

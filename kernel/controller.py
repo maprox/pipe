@@ -168,7 +168,7 @@ class CameraChecker(object):
                 filename = part.get_filename()
                 if not(filename): continue
 
-                if filename in ['PIC.JPG', 'IMAGE0.JPG']:
+                if filename.upper() in ['PIC.JPG', 'IMAGE0.JPG']:
                     images.append({
                         'mime': 'image/jpeg',
                         'content': part.get_payload()

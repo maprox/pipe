@@ -222,25 +222,6 @@ class NavisetHandler(AbstractHandler):
             "message": command1
         }]
 
-    def processCommandReadSettings(self, task, data):
-        """
-         Sending command to read all of device configuration
-         @param task: id task
-         @param data: data string
-        """
-        pass
-
-    def processCommandSetOption(self, task, data):
-        """
-         Set device configuration
-         @param task: id task
-         @param data: data dict()
-        """
-        #current_db = db.get(self.uid)
-        #if not current_db.isReadingSettings():
-        #    pass
-        pass
-
 # ===========================================================================
 # TESTS
 # ===========================================================================

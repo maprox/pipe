@@ -66,6 +66,7 @@ class AbstractHandler(object):
         while len(buffer) > 0:
             self.processData(buffer)
             buffer = self.recv()
+        log.debug('%s::dispatch() - EXIT (empty buffer?)', self.__class__)
 
 
     def processData(self, data):
@@ -161,6 +162,7 @@ class AbstractHandler(object):
             try:
                 data = sock.recv(conf.socketPacketLength)
             except Exception as E:
+                log.debug(E)
                 break
             log.debug('Data chunk = %s', data)
             if not data: break

@@ -155,6 +155,9 @@ class CameraChecker(object):
         if len(emailFromAddressParts) > 1:
             emailFromAddressHost = emailFromAddressParts[1]
 
+        log.debug('emailFromAddress: %s', emailFromAddress)
+        log.debug('emailFromAddressHost: %s', emailFromAddressHost)
+
         if (emailFromAddress != 'esbreceiver@yandex.ru') and \
            (emailFromAddressHost != 'mail.messages.megafon.ru'):
             return False
@@ -163,9 +166,6 @@ class CameraChecker(object):
         if msg.is_multipart():
             for part in msg.walk():
                 if part.get_content_maintype() == 'multipart':
-                    continue
-
-                if part.get('Content-Disposition') is None:
                     continue
 
                 filename = part.get_filename()

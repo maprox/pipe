@@ -14,6 +14,10 @@ import urllib.parse
 import urllib.request
 
 import lib.falcon
+from lib.broker import broker
+
+# RabbitMQ processing features
+
 
 class Manager(Store):
     """
@@ -40,6 +44,8 @@ class Manager(Store):
               'key': conf.pipeKey,
               'packets': packets
             })}
+            # Let's send packets to AMQP broker
+            self.sendPacketsViaBroker(packets)
             # Connecting with the server and getting data
             params = urllib.parse.urlencode(url_data).encode('utf-8')
             request = urllib.request.Request(conf.pipeSetUrl)
@@ -54,3 +60,14 @@ class Manager(Store):
             result.error('500', ['Error sending packets: ' + str(E)])
             log.error(E)
         return result
+
+    def sendPacketsViaBroker(self, packets):
+        """
+         Sends data to the message broker (AMQP)
+         @param packets: list of packets
+         @return:
+        """
+        try:
+            broker.sendPackets(packets)
+        except Exception as E:
+            log.error(E)

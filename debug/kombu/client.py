@@ -1,4 +1,3 @@
-from kombu.utils import kwdict
 from kombu import Connection, Exchange, Queue
 
 def process_task(body, message):
@@ -12,21 +11,7 @@ device_exchange = Exchange(
     durable = True
 )
 
-import binascii
-
-queues = []
-for i in range(0, 16):
-    workerNum = hex(i)[2:].upper()
-    queues.append(Queue(
-        'packet.create.worker%s' % workerNum,
-        exchange = device_exchange,
-        routing_key = 'packet.create.worker%s' % workerNum
-    ))
-
 # connections
-#username = 'maprox'
-#password = 'gfhjkm'
-#host = 'localhost'
 username = 'guest'
 password = 'guest'
 host = '192.168.1.12'
@@ -34,8 +19,14 @@ url = 'amqp://{0}:{1}@{2}//'.format(username, password, host)
 
 with Connection(url) as conn:
 
-    with conn.Consumer(queues,
-        callbacks = [process_task]
-    ) as consumer:
-        while True:
-            conn.drain_events()
+    with conn.Consumer([Queue('maprox.mon.device.packet.create.worker6',
+            exchange = device_exchange,
+            routing_key='dhjsfkljhasdlfkhjasdhf')],
+                       callbacks = [process_task]) as consumer:
+        print('before')
+        try:
+            conn.drain_events(timeout=1)
+        except:
+            # no messages in queue
+            pass
+        print('after')

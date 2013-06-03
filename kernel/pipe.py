@@ -33,6 +33,7 @@ class Manager(Store):
             packets = list()
             if (isinstance(obj, list)):
                 # if multiple packets
+                
                 packets = obj
             elif (isinstance(obj, dict)):
                 # if one packet
@@ -71,3 +72,6 @@ class Manager(Store):
             broker.sendPackets(packets)
         except Exception as E:
             log.error(E)
+
+class TestManager(Manager):
+    pass

@@ -74,4 +74,20 @@ class Manager(Store):
             log.error(E)
 
 class TestManager(Manager):
-    pass
+    stored_packets = []
+    def send(self, obj):
+        result = lib.falcon.FalconAnswer()
+        packets = list()
+        if (isinstance(obj, list)):
+            # if multiple packets
+            packets = obj
+        elif (isinstance(obj, dict)):
+            # if one packet
+            packets.append(obj)
+        print('HHHHH')
+        self.stored_packets.extend(packets)
+        print("TESTING SEND")
+        return result
+    
+    def get_stored_packets(self):
+        return self.stored_packets

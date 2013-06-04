@@ -178,8 +178,10 @@ class AbstractHandler(object):
          Sends data to a socket
          @param data: data
         """
-        sock = self.getThread().request
-        sock.send(data)
+        thread = self.getThread()
+        if thread:
+            sock = thread.request
+            sock.send(data)
         return self
 
     def store(self, packets):
@@ -188,6 +190,7 @@ class AbstractHandler(object):
          @param packets: A list of packets
          @return: Instance of lib.falcon.answer.FalconAnswer
         """
+        print ("!!!!STORE IS CALLED!!!!")
         result = self.getStore().send(packets)
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)

@@ -591,6 +591,7 @@ class TestCase(unittest.TestCase):
         )
         self.assertEqual(len(packets), 1)
         p = packets[0]
+        
         self.assertIsInstance(p, PacketData)
         self.assertEqual(p.sequenceId, 4)
         self.assertEqual(p.unitId, '352964050784041')

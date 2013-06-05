@@ -759,6 +759,8 @@ class TestCase(unittest.TestCase):
             b'\x12\x00\x01\x00012896001609129\x06\x9f\xb9' +
             b'\x12\x00\x22\x00012896001609129\x05$6')
         self.assertEqual(len(packets), 2)
+        p = packets[0]
+        self.assertEqual(p.deviceImei, '012896001609129')
 
     def test_dataPacket(self):
         packets = self.factory.getPacketsFromBuffer(

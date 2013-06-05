@@ -33,6 +33,7 @@ class Manager(Store):
             packets = list()
             if (isinstance(obj, list)):
                 # if multiple packets
+                
                 packets = obj
             elif (isinstance(obj, dict)):
                 # if one packet
@@ -71,3 +72,25 @@ class Manager(Store):
             broker.sendPackets(packets)
         except Exception as E:
             log.error(E)
+
+class TestManager(Manager):
+    stored_packets = []
+    
+    def __init__(self):
+        self.stored_packets = []
+        super(TestManager, self).__init__
+    
+    def send(self, obj):
+        result = lib.falcon.FalconAnswer()
+        packets = list()
+        if (isinstance(obj, list)):
+            # if multiple packets
+            packets = obj
+        elif (isinstance(obj, dict)):
+            # if one packet
+            packets.append(obj)
+        self.stored_packets.extend(packets)
+        return result
+    
+    def get_stored_packets(self):
+        return self.stored_packets

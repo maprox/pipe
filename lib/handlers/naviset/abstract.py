@@ -48,8 +48,6 @@ class NavisetHandler(AbstractHandler):
          @return: self
         """
         
-        print("PROCESSING DATA")
-        
         try:
             protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
             for protocolPacket in protocolPackets:
@@ -65,8 +63,6 @@ class NavisetHandler(AbstractHandler):
          @type protocolPacket: packets.Packet
          @param protocolPacket: Naviset protocol packet
         """
-        
-        print("PROCESSING PROTOCOL PACKET")
         
         self.sendAcknowledgement(protocolPacket)
         self.receiveImage(protocolPacket)
@@ -333,13 +329,9 @@ class TestCase(unittest.TestCase):
             b'\x00\x00\x00=\xa9'
         )
         
-        #h.getStore().send()
-        #print("Running test_processData")
         h.processData(data)
         packets = h.getStore().get_stored_packets()
         
-        #print (type(packets))
-        #print (type(packets[0]))
         
         self.assertEqual(len(packets), 12)
         
@@ -359,9 +351,3 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packetItem2['sensors']['ext_battery_voltage'], 11450)
         self.assertEqual(packetItem2['sensors']['sat_antenna_connected'], 1)
         
-        
-        #self.assertEqual(packetItem['time'].
-        #    strftime('%Y-%m-%dT%H:%M:%S.%f'), '2013-04-04T03:22:34.000000')
-        
-        #self.assertEqual(isinstance(packet, PacketData), True)
-        #self.assertEqual(len(packets.items), 12)

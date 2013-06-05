@@ -24,7 +24,6 @@ class AbstractPacketFactory:
          @param data: Input binary data
          @return: array of BasePacket instances (empty array if no packet found)
         """
-        print ("Packets from buffer")
         packets = []
         while True:
             packet = self.getInstance(data)

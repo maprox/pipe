@@ -828,7 +828,6 @@ class TestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
             b'\x00\x00\x00=\xa9'
         )
-        #print(packets[0].items[3].params)
         self.assertEqual(len(packets), 1)
         packet = packets[0]
         self.assertEqual(isinstance(packet, PacketData), True)

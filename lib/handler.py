@@ -195,7 +195,6 @@ class AbstractHandler(object):
          @param packets: A list of packets
          @return: Instance of lib.falcon.answer.FalconAnswer
         """
-        print ("!!!!STORE IS CALLED!!!!")
         result = self.getStore().send(packets)
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)

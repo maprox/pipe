@@ -89,9 +89,7 @@ class TestManager(Manager):
         elif (isinstance(obj, dict)):
             # if one packet
             packets.append(obj)
-        print('HHHHH')
         self.stored_packets.extend(packets)
-        print("TESTING SEND")
         return result
     
     def get_stored_packets(self):

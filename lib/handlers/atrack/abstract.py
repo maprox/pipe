@@ -189,9 +189,6 @@ class TestCase(unittest.TestCase):
         
         stored_packets = h.getStore().get_stored_packets()
         
-        #print(stored_packets)
-        #print(stored_packets[0])
-        
         self.assertEqual(len(stored_packets), 1)
         packet = stored_packets[0]
         

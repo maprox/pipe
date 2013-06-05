@@ -567,7 +567,6 @@ class TestCase(unittest.TestCase):
 
     def test_headPacket(self):
         packet = self.factory.getInstance(b'\x00\x0f012896001609129')
-        print(type(packet))
         self.assertEqual(isinstance(packet, PacketHead), True)
         self.assertEqual(isinstance(packet, PacketData), False)
         self.assertEqual(packet.length, 15)
@@ -707,9 +706,6 @@ class TestCase(unittest.TestCase):
                b'\xdc4\x00\x16B7\x80!#2@\x01\x18\x00\x00\x08\x00\x00\x00' +\
                b'\x00\x00\x00\x00\x00\x19\x00\x00\x1bb'
         packets = self.factory.getPacketsFromBuffer(data)
-        #print("test_TeltonikaData:")
-        #print(type(packets[0].AvlDataArray.items[0].ioElement))
-        #print((packets[0].AvlDataArray.items[0]))
         self.assertEqual(len(packets), 1)
         packet = packets[0]
         self.assertTrue(isinstance(packet, PacketData))
@@ -717,8 +713,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(len(avl.items), 25)
         self.assertEqual(avl.codecId, 8)
         item = avl.items[0]
-        #print(item.__dict__)
-        #print(item._params['altitude'])
         self.assertEqual(item.ioElement, {
             'eventIoId': 0,
             'items': []

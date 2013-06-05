@@ -358,7 +358,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet['uid'], '868204001578425')
     
     def test_processData(self):
-        print("!!!!!!!! Now testing Galileo processData !!!!!!!!!!!")
         data = b'\x01\xaa\x03\x03868204001578425\x042\x00\x10\xe7\x04 ' + \
                b'$\x17\x11Q0\x10\x00\x00\x00\x00\x00\x00\x00\x003\x00' + \
                b'\x00\x00\x004\x00\x005\x00@\xc0#A\x00\x00B[\x0fC\x1a' +\
@@ -410,9 +409,6 @@ class TestCase(unittest.TestCase):
         h = self.handler
         h.processData(data)
         stored_packets = h.getStore().get_stored_packets()
-        
-        #print(len(stored_packets))
-        #print(stored_packets[0])
         
         self.assertEqual(len(stored_packets), 14)
         packet = stored_packets[6]

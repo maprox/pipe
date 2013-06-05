@@ -20,7 +20,7 @@ class MessageBroker:
         log.debug('%s::__init__()', self.__class__)
         try:
             self.initExchanges()
-            self.initQueues()
+            #self.initQueues()
         except:
             pass
 
@@ -42,13 +42,26 @@ class MessageBroker:
         self._queues = {}
         for i in range(0, 16):
             workerNum = hex(i)[2:].upper()
-            queueName = 'maprox.mon.device.' + \
-                        'packet.create.worker%s' % workerNum
+            queueName = self.getRoutingKey(workerNum)
             self._queues[queueName] = Queue(
                 queueName,
                 exchange = self._exchanges['maprox.mon.device'],
                 routing_key = queueName
             )
+
+    def getRoutingKey(self, imei):
+        """
+         Returns routing key name by device imei
+         @param imei: device ideintifier
+        """
+        workerNum = '0'
+        if imei and len(imei) > 0:
+            workerNum = imei[-1:].upper()
+        if workerNum not in '0123456789ABCDEF':
+            workerNum = '0'
+        routingKey = 'maprox.mon.device.' + \
+                    'packet.create.worker%s' % workerNum
+        return routingKey
 
     def sendPackets(self, packets):
         """
@@ -62,20 +75,10 @@ class MessageBroker:
             with conn.Producer(serializer = 'json') as producer:
                 for packet in packets:
                     uid = None if 'uid' not in packet else packet['uid']
-                    workerNum = '0'
-                    if uid and len(uid) > 0:
-                        workerNum = uid[-1:].upper()
-                    if workerNum not in '0123456789ABCDEF':
-                        workerNum = '0'
-                    queueName = 'maprox.mon.device.' + \
-                                'packet.create.worker%s' % workerNum
-                    if queueName not in self._queues:
-                        raise Exception('Invalid queueName: %s' % queueName)
                     producer.publish(
                         packet,
                         exchange = exchange,
-                        routing_key = queueName,
-                        declare = [self._queues[queueName]]
+                        routing_key = self.getRoutingKey(uid)
                     )
                     if uid:
                         log.debug('Packet for "%s" is sent via message broker'

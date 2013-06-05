@@ -46,9 +46,6 @@ class TeltonikaHandler(AbstractHandler):
          @return: self
         """
         protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
-        #print('processData output:')
-        #print(protocolPackets[0].AvlDataArray.items[0].__dict__)
-        #self.getStore().stored_protocol_packets = protocolPackets
         for protocolPacket in protocolPackets:
             self.processProtocolPacket(protocolPacket)
 
@@ -438,51 +435,12 @@ class TestCase(unittest.TestCase):
                b'\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x94T' +\
                b'\xdc4\x00\x16B7\x80!#2@\x01\x18\x00\x00\x08\x00\x00\x00' +\
                b'\x00\x00\x00\x00\x00\x19\x00\x00\x1bb'
-        data1 = b'\x00\x92\x8c\x00\x1b\x03\xe8\x00\x01\x30\x03\xf2\x00\x01' + \
-               b'\x31\x03\xf3\x00\x02\x32\x30\x03\xf4\x00\x02\x31\x30\x03' + \
-               b'\xfc\x00\x01\x30\x04\x06\x00\x01\x30\x04\x07\x00\x01\x30' + \
-               b'\x04\x08\x00\x01\x30\x04\x09\x00\x01\x30\x04\x0a\x00\x01' + \
-               b'\x30\x04\x10\x00\x01\x30\x04\x11\x00\x01\x30\x04\x12\x00' + \
-               b'\x01\x30\x04\x13\x00\x01\x30\x04\x14\x00\x01\x30\x04\x1a' +\
-               b'\x00\x01\x30\x04\x1b\x00\x01\x30\x04\x1c\x00\x01\x30\x04' +\
-               b'\x1d\x00\x01\x30\x04\x1e\x00\x01\x30\x04\x24\x00\x01\x30' +\
-               b'\x04\x25\x00\x01\x30\x04\x26\x00\x01\x30\x04\x27\x00\x01' +\
-               b'\x30\x04\x28\x00\x01\x30\x0c\xbd\x00\x0c+37044444444'
+               
         h.processData(data)
         stored_packets = h.getStore().get_stored_packets()
-        print("!!!!!!!!!!!!! Teltonika stored packets are: !!!!!!!!!!!")
-        print(stored_packets)
-        
-        #return
-        #print("!!!!!!!!!!!Teltonika processData:::!!!!!!!!!!")
-        #print(h.getStore())
-        #print(h.getStore().stored_protocol_packets[0].AvlDataArray.items[0]._params['longitude'])
-        """
-        stored_protocol_packets = h.getStore().stored_protocol_packets
-        packet_avl_data_array = stored_protocol_packets[0].AvlDataArray
-        packet_params =  packet_avl_data_array.items[0]._params
-        """
-        #print("Packet parameters:")
-        #print(packet_params)
-        """
-        self.assertEqual(len(packet_avl_data_array.items), 25)
-        self.assertEqual(packet_avl_data_array.items[0].ioElement, {
-            'eventIoId': 0,
-            'items': []
-        })
-        
-        self.assertEqual(packet_params['altitude'], 291)
-        self.assertEqual(packet_params['satellitescount'], 7)
-        """
-        #print(packet_avl_data_array.items[0].ioElement)        
-        #print (h.getStore().get_stored_packets())
-        
-        print(len(stored_packets))
         
         self.assertEqual(len(stored_packets), 25)
         packet = stored_packets[0]
-        
-        print(packet)
         
         self.assertEqual(packet['uid'], '012896001609129')
         self.assertEqual(packet['altitude'], 291)
@@ -490,6 +448,4 @@ class TestCase(unittest.TestCase):
         
         self.assertEqual(packet['sensors']['sat_count'], 7)
         self.assertEqual(packet['sensors']['altitude'], 291)
-        
-        
         

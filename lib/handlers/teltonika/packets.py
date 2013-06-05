@@ -41,9 +41,6 @@ class PacketHead(BasePacket):
          @protected
         """
         self._deviceImei = self.body.decode()
-        print("Imei is:")
-        print (type(self))
-        print (self._deviceImei)
         return self
 
     def _buildBody(self):

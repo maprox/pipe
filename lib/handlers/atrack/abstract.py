@@ -145,10 +145,62 @@ class AtrackHandler(AbstractHandler):
 import unittest
 #import time
 class TestCase(unittest.TestCase):
+    
+    def setUpFactory(self):
+        """
+        Method is taken from atrack.packets
+        Used to create factory with configs
+        Configs are needed to test the packets processing (test_processData)
+        """
+        from lib.handlers.atrack.packets import PacketFactory
+        from configparser import ConfigParser
+        conf = ConfigParser()
+        conf.optionxform = str
+        conf.read('conf/serv-atrack.conf')
+        section = conf['atrack.ax5']
+        config = {}
+        for key in section.keys():
+            config[key] = section[key]
 
+        self.factory = PacketFactory(config)
+    
     def setUp(self):
         import kernel.pipe as pipe
-        self.handler = AtrackHandler(pipe.Manager(), None)
+        self.handler = AtrackHandler(pipe.TestManager(), None)
+        self.setUpFactory()
 
     def test_packetData(self):
         h = self.handler
+    
+    def test_processData(self):
+        h = self.handler
+        h._packetsFactory = self.factory
+        
+        data = (
+            b'@P\x07(\x00U\x00\x04\x00\x01A\x04\xd8\xdd\x8f)Q\x97\xd7\x7f' +
+            b'Q\x97\xd7\x7fQ\x99\xcb\xc3\x02=B\xd3\x03Sjc\x01\x13\x02\x00' +
+            b'\x00\x0bP\x00\x0b\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
+            b'\x00\x00\x06\x00\x82\x0br\x8f\x1ew\x00\x00a\xaa\x14\x00\x00' +
+            b'\x00\xbd\x00\x00\x08\x00\x00\x00\x00\x00\x00\xff\xd8\x00\x00' +
+            b'\x00\x00\x00\x00'
+            )
+        
+        h.processData(data)
+        
+        stored_packets = h.getStore().get_stored_packets()
+        
+        #print(stored_packets)
+        #print(stored_packets[0])
+        
+        self.assertEqual(len(stored_packets), 1)
+        packet = stored_packets[0]
+        
+        self.assertEqual(len(packet), 14)
+        self.assertEqual(packet["uid"], '352964050784041')
+        self.assertEqual(packet["time_rtc"], '2013-05-18T19:33:19.000000')
+        self.assertEqual(packet["sensors"]["gsm_status"], 8)
+        
+        
+
+        
+        

@@ -334,12 +334,12 @@ class TestCase(unittest.TestCase):
         )
         
         #h.getStore().send()
-        print("Running test_processData")
+        #print("Running test_processData")
         h.processData(data)
         packets = h.getStore().get_stored_packets()
         
-        print (type(packets))
-        print (type(packets[0]))
+        #print (type(packets))
+        #print (type(packets[0]))
         
         self.assertEqual(len(packets), 12)
         

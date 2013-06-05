@@ -75,6 +75,11 @@ class Manager(Store):
 
 class TestManager(Manager):
     stored_packets = []
+    
+    def __init__(self):
+        self.stored_packets = []
+        super(TestManager, self).__init__
+    
     def send(self, obj):
         result = lib.falcon.FalconAnswer()
         packets = list()

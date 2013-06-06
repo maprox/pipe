@@ -737,6 +737,56 @@ class CommandChangeDevicePassword(Command):
         data = b''
         data += pack('<H', self.__devicePassword)
         return data
+
+class CommandSoftwareUpgrade(Command):
+    """
+     Change device GPRS params
+    """
+    _number = 19
+
+    # private params
+    __ip = ''
+    __port = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.ip = params['ip'] or ''
+        self.port = params['port'] or 0
+    
+    @property
+    def ip(self):
+        if self._rebuild: self._build()
+        return self.__ip
+
+    @ip.setter
+    def ip(self, value):
+        self.__ip = str(value)
+        self._rebuild = True
+
+    @property
+    def port(self):
+        if self._rebuild: self._build()
+        return self.__port
+
+    @port.setter
+    def port(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__port = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += socket.inet_aton(self.__ip)
+        data += pack('<H', self.__port)
+        return data
     
 # ---------------------------------------------------------------------------
 
@@ -1027,4 +1077,26 @@ class TestCase(unittest.TestCase):
         cmd.devicePassword = 2403
         self.assertEqual(cmd.devicePassword, 2403)
         self.assertEqual(cmd.rawData, b'\x02\x03c\t\x19j')
+    
+    #def test_commandAddRemoveKeyNumber(self):
+    #    cmd = CommandAddRemoveKeyNumber({
+    #        'process':
+    
+    #def test_commandSoftwareVersionUpgrade(self):
+    #    cmd = CommandSoftwareVersionUpgrade({
+    #        e
+    #    })
+    
+    def test_commandSoftwareUpgrade(self):
+        cmd = CommandSoftwareUpgrade({
+            "ip": '127.0.0.1',
+            "port": 20200
+        })
+        self.assertEqual(cmd.number, 19)
+        self.assertEqual(cmd.checksum, 10359)
+        self.assertEqual(cmd.rawData, b'\x02\x13\x7f\x00\x00\x01\xe8Nw('    )
+        # let's change port and ip
+        cmd.port = 20201
+        cmd.ip = '212.10.222.10'
+        self.assertEqual(cmd.rawData, b'\x02\x13\xd4\n\xde\n\xe9N\xbc\x88')
         

@@ -38,19 +38,6 @@ class TeltonikaHandler(AbstractHandler):
         self._packetsFactory = packets.PacketFactory()
         return super(TeltonikaHandler, self).initialization()
 
-    def processData(self, data):
-        """
-         Processing of data from socket / storage.
-         @param data: Data from socket
-         @param packnum: Number of socket packet (defaults to 0)
-         @return: self
-        """
-        protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
-        for protocolPacket in protocolPackets:
-            self.processProtocolPacket(protocolPacket)
-
-        return super(TeltonikaHandler, self).processData(data)
-
     def processProtocolPacket(self, protocolPacket):
         """
          Process teltonika packet.

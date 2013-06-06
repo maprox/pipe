@@ -40,23 +40,6 @@ class NavisetHandler(AbstractHandler):
         self._packetsFactory = packets.PacketFactory()
         return super(NavisetHandler, self).initialization()
 
-    def processData(self, data):
-        """
-         Processing of data from socket / storage.
-         @param data: Data from socket
-         @param packnum: Number of socket packet (defaults to 0)
-         @return: self
-        """
-        
-        try:
-            protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
-            for protocolPacket in protocolPackets:
-                self.processProtocolPacket(protocolPacket)
-        except Exception as E:
-            log.error("processData error: %s", E)
-
-        return super(NavisetHandler, self).processData(data)
-
     def processProtocolPacket(self, protocolPacket):
         """
          Process naviset packet.

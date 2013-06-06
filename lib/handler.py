@@ -68,6 +68,12 @@ class AbstractHandler(object):
             buffer = self.recv()
         log.debug('%s::dispatch() - EXIT (empty buffer?)', self.__class__)
 
+    def needProcessCommands(self):
+        """
+         Returns false if we can not process commands
+         @return: boolean
+        """
+        return self.uid
 
     def processData(self, data):
         """
@@ -75,8 +81,17 @@ class AbstractHandler(object):
          Must be overridden in child classes
          @param data: Data from socket
         """
-
-        if not self.uid: return self
+        
+        try:
+            protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
+            for protocolPacket in protocolPackets:
+                self.processProtocolPacket(protocolPacket)
+        except Exception as E:
+            print("error!")
+            print(type(self).__name__)
+            log.error("processData error: %s", E)
+        
+        if not self.needProcessCommands(): return self
         
         #try is now silently excepting all the errors
         #to avoid connection errors during testing

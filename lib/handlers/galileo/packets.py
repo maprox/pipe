@@ -12,6 +12,8 @@ import lib.bits as bits
 import lib.crc16 as crc16
 import lib.handlers.galileo.tags as tags
 
+from lib.factory import AbstractPacketFactory
+
 # ---------------------------------------------------------------------------
 
 class BasePacket(object):
@@ -312,6 +314,12 @@ class Packet(BasePacket):
         """
         self.addTagInstance(tags.Tag.getInstance(num, value))
         return self
+
+class PacketFactory(AbstractPacketFactory):
+    
+    def getInstance(self, data = None):
+        if data == None: return
+        return Packet(data)
 
 # ===========================================================================
 # TESTS

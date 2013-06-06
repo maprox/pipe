@@ -25,30 +25,31 @@ class GalileoHandler(AbstractHandler):
 
     # private buffer for headPacket data
     __headPacketRawData = None
-
-    def processData(self, data):
+    
+    def initialization(self):
         """
-         Processing of data from socket / storage.
-         @param data: Data from socket
-         @param packnum: Number of socket packet (defaults to 0)
-         @return: self
+         Initialization of the handler
+         @return:
         """
-        if (self.__packNum == 1) and (self.__imageReceivingConfig is None):
-            self.sendCommand("Makephoto 1")
-        self.__packNum += 1
+        self._packetsFactory = packets.PacketFactory()
+        return super(GalileoHandler, self).initialization()
 
-        protocolPackets = packets.Packet.getPacketsFromBuffer(data)
-        for protocolPacket in protocolPackets:
-            self.processProtocolPacket(protocolPacket)
-
-        if self.__imageReceivingConfig is None:
-            return super(GalileoHandler, self).processData(data)
+    def needCommandProcessing(self):
+        """
+         Returns false if we can not process commands
+         @return: boolean
+        """
+        return self.uid and self.__imageReceivingConfig is None
 
     def processProtocolPacket(self, protocolPacket):
         """
          Process galileo packet.
          @param protocolPacket: Galileo protocol packet
         """
+        #if (self.__packNum == 1) and (self.__imageReceivingConfig is None):
+        #    self.__packNum += 1
+        #    self.sendCommand("Makephoto 1")
+
         observerPackets = self.translate(protocolPacket)
         self.sendAcknowledgement(protocolPacket)
         if not self.__headPacketRawData:

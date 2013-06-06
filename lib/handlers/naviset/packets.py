@@ -663,6 +663,45 @@ class PacketAnswerCommandGetImage(PacketAnswer):
 
 # ---------------------------------------------------------------------------
 
+class CommandChangeDeviceNumber(Command):
+    """
+     Change device number
+    """
+    _number = 2
+
+    # private params
+    __deviceNumber = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.deviceNumber = params['deviceNumber'] or ''
+
+    @property
+    def deviceNumber(self):
+        if self._rebuild: self._build()
+        return self.__deviceNumber
+
+    @deviceNumber.setter
+    def deviceNumber(self, value):
+        if 0 <= value <= 0xFFFF:
+            self.__deviceNumber = value
+            self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += pack('<H', self.__deviceNumber)
+        return data
+
+# ---------------------------------------------------------------------------
+
 class PacketFactory(AbstractPacketFactory):
     """
      Packet factory
@@ -922,3 +961,15 @@ class TestCase(unittest.TestCase):
         packet = packets[0]
         self.assertEqual(packet.chunkNumber, 0)
         self.assertEqual(len(packet.chunkData), 506)
+
+    def test_commandChangeDeviceNumber(self):
+        cmd = CommandChangeDeviceNumber({
+            'deviceNumber': 1056
+        })
+        self.assertEqual(cmd.number, 2)
+        self.assertEqual(cmd.deviceNumber, 1056)
+        self.assertEqual(cmd.checksum, 24504)
+        self.assertEqual(cmd.rawData, b'\x02\x02\x20\x04\xb8_')
+        # let's change deviceNumber
+        cmd.deviceNumber = 8888
+        self.assertEqual(cmd.rawData, b'\x02\x02\xb8"RE')

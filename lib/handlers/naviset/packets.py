@@ -678,7 +678,7 @@ class CommandChangeDeviceNumber(Command):
          @param params:
          @return:
         """
-        self.deviceNumber = params['deviceNumber'] or ''
+        self.deviceNumber = params['deviceNumber'] or 0
 
     @property
     def deviceNumber(self):
@@ -700,6 +700,44 @@ class CommandChangeDeviceNumber(Command):
         data += pack('<H', self.__deviceNumber)
         return data
 
+class CommandChangeDevicePassword(Command):
+    """
+    Change device password
+    """
+    _number = 3
+    
+    # private params
+    __devicePassword = 0
+    
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        self.devicePassword = params['devicePassword'] or 0
+    
+    @property
+    def devicePassword(self):
+        pass
+        if self._rebuild: self._build()
+        return self.__devicePassword
+    
+    @devicePassword.setter
+    def devicePassword(self, value):
+        if 0 <= value <= 0xFFFF:
+            self.__devicePassword = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+        Builds body of the packet
+        @return: body binstring
+        """
+        data = b''
+        data += pack('<H', self.__devicePassword)
+        return data
+    
 # ---------------------------------------------------------------------------
 
 class PacketFactory(AbstractPacketFactory):
@@ -970,6 +1008,23 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.deviceNumber, 1056)
         self.assertEqual(cmd.checksum, 24504)
         self.assertEqual(cmd.rawData, b'\x02\x02\x20\x04\xb8_')
+        
         # let's change deviceNumber
         cmd.deviceNumber = 8888
         self.assertEqual(cmd.rawData, b'\x02\x02\xb8"RE')
+    
+    def test_commandChangeDevicePassword(self):
+        cmd = CommandChangeDevicePassword({
+            'devicePassword': 36718
+        })
+            
+        self.assertEqual(cmd.number, 3)
+        self.assertEqual(cmd.devicePassword, 36718)
+        self.assertEqual(cmd.checksum, 22684)
+        self.assertEqual(cmd.rawData, b'\x02\x03n\x8f\x9cX')
+        
+        #test password change
+        cmd.devicePassword = 2403
+        self.assertEqual(cmd.devicePassword, 2403)
+        self.assertEqual(cmd.rawData, b'\x02\x03c\t\x19j')
+        

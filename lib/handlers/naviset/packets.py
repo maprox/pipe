@@ -738,6 +738,32 @@ class CommandChangeDevicePassword(Command):
         data += pack('<H', self.__devicePassword)
         return data
 
+PROCESS_KEY_NUMBER_ACTION_ADD = 0
+PROCESS_KEY_NUMBER_ACTION_REMOVE = 1
+
+class CommandAddRemoveKeyNumber(Command):
+    """
+    Adds or removes device key for selected cell.
+    """
+    _number = 6
+    
+    # private params
+    __processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_ADD
+    __processCellNumber = 0
+    __keyNumber = 0
+    
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        self.processKeyNumberAction = params['processKeyNumberAction']
+        self.processCellNumber = params['processCellNumber']
+        self.keyNumber = params['keyNumber']
+        
+        
+
 class CommandSoftwareUpgrade(Command):
     """
      Change device GPRS params
@@ -827,6 +853,9 @@ class PacketFactory(AbstractPacketFactory):
         if not CLASS:
             raise Exception('Class for %s is not found' % data)
         return CLASS(data)
+
+
+
 
 import inspect
 import sys
@@ -1099,4 +1128,15 @@ class TestCase(unittest.TestCase):
         cmd.port = 20201
         cmd.ip = '212.10.222.10'
         self.assertEqual(cmd.rawData, b'\x02\x13\xd4\n\xde\n\xe9N\xbc\x88')
+    
+    def test_commandAddRemoveKeyNumber(self):
+        cmd = CommandAddRemoveKeyNumber({
+            "processKeyNumberAction": PROCESS_KEY_NUMBER_ACTION_ADD,
+            "processCellNumber": 14,
+            "keyNumber": 218875
+        })
         
+        self.assertEqual(cmd.number, 6)
+        
+        #self.assertEqual(1, 2, 3)
+        pass

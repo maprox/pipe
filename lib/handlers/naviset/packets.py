@@ -601,6 +601,158 @@ class CommandGetImage(Command):
         data += pack('<B', int(self.__type))
         return data
 
+class CommandGetConfiguration(Command):
+    """
+     Command for receiving configuration
+    """
+    _number = 21
+
+    # private params
+    __configurationNumber = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.configurationNumber = params['configurationNumber'] or 0
+
+    @property
+    def configurationNumber(self):
+        if self._rebuild: self._build()
+        return self.__configurationNumber
+
+    @configurationNumber.setter
+    def configurationNumber(self, value):
+        self.__configurationNumber = str(value)
+        self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += pack('<B', int(self.__configurationNumber))
+        return data
+
+class CommandSwitchToNewSim(Command):
+    """
+     Command for switching to new SIM number
+    """
+    _number = 23
+
+    # private params
+    __simNumber = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.simNumber = params['simNumber'] or 0
+
+    @property
+    def simNumber(self):
+        if self._rebuild: self._build()
+        return self.__simNumber
+
+    @simNumber.setter
+    def simNumber(self, value):
+        self.__simNumber = str(value)
+        self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += pack('<B', int(self.__simNumber))
+        return data
+
+SIM_AUTOSWITCHING_IS_DISALLOWED = 0
+SIM_AUTOSWITCHING_IS_ALLOWED = 1
+
+class CommandAllowDisallowSimAutoswitching(Command):
+    """
+     Command for switching to new SIM number
+    """
+    _number = 25
+
+    # private params
+    __simAutoswitchingIsAllowed = SIM_AUTOSWITCHING_IS_DISALLOWED
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.simAutoswitchingIsAllowed = params['simAutoswitchingIsAllowed'] or 0
+
+    @property
+    def simAutoswitchingIsAllowed(self):
+        if self._rebuild: self._build()
+        return self.__simAutoswitchingIsAllowed
+
+    @simAutoswitchingIsAllowed.setter
+    def simAutoswitchingIsAllowed(self, value):
+        if 0 <= value <= 1:
+            self.__simAutoswitchingIsAllowed = str(value)
+            self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += pack('<B', int(self.__simAutoswitchingIsAllowed))
+        return data
+
+SECURITY_MODE_IS_OFF = 0
+SECURITY_MODE_IS_ON = 1
+
+class CommandSwitchSecurityMode(Command):
+    """
+     Command for switching to new SIM number
+    """
+    _number = 14
+
+    # private params
+    __securityMode = SECURITY_MODE_IS_OFF
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.securityMode = params['securityMode'] or 0
+
+    @property
+    def securityMode(self):
+        if self._rebuild: self._build()
+        return self.__securityMode
+
+    @securityMode.setter
+    def securityMode(self, value):
+        if 0 <= value <= 1:
+            self.__securityMode = str(value)
+            self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += pack('<B', int(self.__securityMode))
+        return data
+
 # ---------------------------------------------------------------------------
 
 IMAGE_ANSWER_CODE_SIZE = 0
@@ -853,11 +1005,59 @@ class CommandSoftwareUpgrade(Command):
          @return: body binstring
         """
         data = b''
-        #print(data)
         data += socket.inet_aton(self.__ip)
-        #print(data)
         data += pack('<H', self.__port)
-        #print(data)
+        return data
+
+
+class CommandSwitchToConfigurationServer(Command):
+    """
+     Change device GPRS params
+    """
+    _number = 24
+
+    # private params
+    __ip = ''
+    __port = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.ip = params['ip'] or ''
+        self.port = params['port'] or 0
+    
+    @property
+    def ip(self):
+        if self._rebuild: self._build()
+        return self.__ip
+
+    @ip.setter
+    def ip(self, value):
+        self.__ip = str(value)
+        self._rebuild = True
+
+    @property
+    def port(self):
+        if self._rebuild: self._build()
+        return self.__port
+
+    @port.setter
+    def port(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__port = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += socket.inet_aton(self.__ip)
+        data += pack('<H', self.__port)
         return data
     
 # ---------------------------------------------------------------------------
@@ -1084,6 +1284,62 @@ class TestCase(unittest.TestCase):
 
         cmd.type = IMAGE_PACKET_CONFIRM_OK
         self.assertEqual(cmd.rawData, b'\x02\x14\x10\xde\xcc')
+    
+    def test_commandGetConfiguration(self):
+        cmd = CommandGetConfiguration({
+            'configurationNumber': 5
+        })
+        self.assertEqual(cmd.number, 21)
+        self.assertEqual(cmd.configurationNumber, '5')
+        self.assertEqual(cmd.checksum, 37662)
+        self.assertEqual(cmd.rawData, b'\x02\x15\x05\x1e\x93')
+
+        cmd.configurationNumber = 7
+        self.assertEqual(cmd.configurationNumber, '7')
+        self.assertEqual(cmd.checksum, 21151)
+        self.assertEqual(cmd.rawData, b'\x02\x15\x07\x9fR')
+    
+    def test_commandSwitchToNewSim(self):
+        cmd = CommandSwitchToNewSim({
+            'simNumber': 217
+        })
+        self.assertEqual(cmd.number, 23)
+        self.assertEqual(cmd.simNumber, '217')
+        self.assertEqual(cmd.checksum, 27166)
+        self.assertEqual(cmd.rawData, b'\x02\x17\xd9\x1ej')
+
+        cmd.simNumber = 119
+        self.assertEqual(cmd.simNumber, '119')
+        self.assertEqual(cmd.checksum, 54943)
+        self.assertEqual(cmd.rawData, b'\x02\x17w\x9f\xd6')
+    
+    def test_commandAllowDisallowSimAutoswitching(self):
+        cmd = CommandAllowDisallowSimAutoswitching({
+            'simAutoswitchingIsAllowed': SIM_AUTOSWITCHING_IS_ALLOWED
+        })
+        self.assertEqual(cmd.number, 25)
+        self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_ALLOWED))
+        self.assertEqual(cmd.checksum, 20506)
+        self.assertEqual(cmd.rawData, b'\x02\x19\x01\x1aP')
+
+        cmd.simAutoswitchingIsAllowed = SIM_AUTOSWITCHING_IS_DISALLOWED
+        self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_DISALLOWED))
+        self.assertEqual(cmd.checksum, 37083)
+        self.assertEqual(cmd.rawData, b'\x02\x19\x00\xdb\x90')
+    
+    def test_commandSwitchSecurityMode(self):
+        cmd = CommandSwitchSecurityMode({
+            'securityMode': SECURITY_MODE_IS_ON
+        })
+        self.assertEqual(cmd.number, 14)
+        self.assertEqual(cmd.securityMode, str(SECURITY_MODE_IS_ON))
+        self.assertEqual(cmd.checksum, 40981)
+        self.assertEqual(cmd.rawData, b'\x02\x0e\x01\x15\xa0')
+
+        cmd.securityMode = SECURITY_MODE_IS_OFF
+        self.assertEqual(cmd.securityMode, str(SECURITY_MODE_IS_OFF))
+        self.assertEqual(cmd.checksum, 24788)
+        self.assertEqual(cmd.rawData, b'\x02\x0e\x00\xd4`')
 
     def test_commandAnswerGetImage(self):
         data = b'\x05\x80\x14\x00\xb1\x46\x00\x03\x84'
@@ -1153,15 +1409,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.devicePassword, 2403)
         self.assertEqual(cmd.rawData, b'\x02\x03c\t\x19j')
     
-    #def test_commandAddRemoveKeyNumber(self):
-    #    cmd = CommandAddRemoveKeyNumber({
-    #        'process':
-    
-    #def test_commandSoftwareVersionUpgrade(self):
-    #    cmd = CommandSoftwareVersionUpgrade({
-    #        e
-    #    })
-    
+ 
     def test_commandSoftwareUpgrade(self):
         cmd = CommandSoftwareUpgrade({
             "ip": '127.0.0.1',
@@ -1171,11 +1419,26 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.port, 20200)
         self.assertEqual(cmd.ip, '127.0.0.1')
         self.assertEqual(cmd.checksum, 10359)
-        self.assertEqual(cmd.rawData, b'\x02\x13\x7f\x00\x00\x01\xe8Nw('    )
+        self.assertEqual(cmd.rawData, b'\x02\x13\x7f\x00\x00\x01\xe8Nw(')
         # let's change port and ip
         cmd.port = 20201
         cmd.ip = '212.10.222.10'
         self.assertEqual(cmd.rawData, b'\x02\x13\xd4\n\xde\n\xe9N\xbc\x88')
+    
+    def test_commandSwitchToConfigurationServer(self):
+        cmd = CommandSwitchToConfigurationServer({
+            "ip": '127.0.0.1',
+            "port": 20200
+        })
+        self.assertEqual(cmd.number, 24)
+        self.assertEqual(cmd.port, 20200)
+        self.assertEqual(cmd.ip, '127.0.0.1')
+        self.assertEqual(cmd.checksum, 59597)
+        self.assertEqual(cmd.rawData, b'\x02\x18\x7f\x00\x00\x01\xe8N\xcd\xe8')
+        # let's change port and ip
+        cmd.port = 20201
+        cmd.ip = '212.10.222.10'
+        self.assertEqual(cmd.rawData, b'\x02\x18\xd4\n\xde\n\xe9N\x06H')
     
     def test_commandAddRemoveKeyNumber(self):
         cmd = CommandAddRemoveKeyNumber({

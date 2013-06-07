@@ -761,7 +761,50 @@ class CommandAddRemoveKeyNumber(Command):
         self.processKeyNumberAction = params['processKeyNumberAction']
         self.processCellNumber = params['processCellNumber']
         self.keyNumber = params['keyNumber']
-        
+    
+    @property
+    def processKeyNumberAction(self):
+        if self._rebuild: self._build()
+        return self.__processKeyNumberAction
+    
+    @processKeyNumberAction.setter
+    def processKeyNumberAction(self, value):
+        if 0 <= value <= 1:
+            self.__processKeyNumberAction = value
+            self._rebuild = True
+    
+    @property
+    def processCellNumber(self):
+        if self._rebuild: self._build()
+        return self.__processCellNumber
+    
+    @processCellNumber.setter
+    def processCellNumber(self, value):
+        if 0 <= value <= 15:
+            self.__processCellNumber = value
+            self._rebuild = True
+    
+    @property
+    def keyNumber(self):
+        if self._rebuild: self._build()
+        return self.__keyNumber
+    
+    @keyNumber.setter
+    def keyNumber(self, value):
+        if 0 <= value <= 256**6 - 1:
+            self.__keyNumber = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+        Builds body of the packet
+        @return: body binstring
+        """
+        data = b''
+        processPacked = 16 * self.processKeyNumberAction + self.processCellNumber
+        data += pack('<B', processPacked)
+        data += pack('<Q', self.__keyNumber)[:-2]
+        return data
         
 
 class CommandSoftwareUpgrade(Command):
@@ -810,8 +853,11 @@ class CommandSoftwareUpgrade(Command):
          @return: body binstring
         """
         data = b''
+        #print(data)
         data += socket.inet_aton(self.__ip)
+        #print(data)
         data += pack('<H', self.__port)
+        #print(data)
         return data
     
 # ---------------------------------------------------------------------------
@@ -1122,6 +1168,8 @@ class TestCase(unittest.TestCase):
             "port": 20200
         })
         self.assertEqual(cmd.number, 19)
+        self.assertEqual(cmd.port, 20200)
+        self.assertEqual(cmd.ip, '127.0.0.1')
         self.assertEqual(cmd.checksum, 10359)
         self.assertEqual(cmd.rawData, b'\x02\x13\x7f\x00\x00\x01\xe8Nw('    )
         # let's change port and ip
@@ -1138,5 +1186,19 @@ class TestCase(unittest.TestCase):
         
         self.assertEqual(cmd.number, 6)
         
-        #self.assertEqual(1, 2, 3)
-        pass
+        self.assertEqual(cmd.processKeyNumberAction, PROCESS_KEY_NUMBER_ACTION_ADD)
+        self.assertEqual(cmd.processCellNumber, 14)
+        self.assertEqual(cmd.keyNumber, 218875)
+        self.assertEqual(cmd.checksum, 47393)
+        self.assertEqual(cmd.rawData, b'\x02\x06\x0e\xfbV\x03\x00\x00\x00!\xb9')
+        #change some data
+        cmd.processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_REMOVE
+        cmd.processCellNumber = 7
+        cmd.keyNumber = 11246
+        
+        self.assertEqual(cmd.processKeyNumberAction, PROCESS_KEY_NUMBER_ACTION_REMOVE)
+        self.assertEqual(cmd.processCellNumber, 7)
+        self.assertEqual(cmd.keyNumber, 11246)
+        self.assertEqual(cmd.checksum, 62407)
+        self.assertEqual(cmd.rawData, b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')
+    

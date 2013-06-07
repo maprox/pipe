@@ -1262,85 +1262,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.checksum, 54208)
         self.assertEqual(cmd.rawData, b'\x02\x05\xc0\xd3')
 
-    def test_gprsCommandsPacket(self):
-        cmd = CommandSetGprsParams({
-            "ip": '127.0.0.1',
-            "port": 20200
-        })
-        self.assertEqual(cmd.number, 4)
-        self.assertEqual(cmd.checksum, 10512)
-        self.assertEqual(cmd.rawData, b'\x02\x04\x7f\x00\x00\x01\xe8N\x10)')
-        # let's change port and ip
-        cmd.port = 20201
-        cmd.ip = '212.10.222.10'
-        self.assertEqual(cmd.rawData, b'\x02\x04\xd4\n\xde\n\xe9N\xdb\x89')
-
-    def test_getImageCommandsPacket(self):
-        cmd = CommandGetImage({
-            'type': IMAGE_RESOLUTION_640x480
-        })
-        self.assertEqual(cmd.number, 20)
-        self.assertEqual(cmd.rawData, b'\x02\x14\x03\x9f\x01')
-
-        cmd.type = IMAGE_PACKET_CONFIRM_OK
-        self.assertEqual(cmd.rawData, b'\x02\x14\x10\xde\xcc')
-    
-    def test_commandGetConfiguration(self):
-        cmd = CommandGetConfiguration({
-            'configurationNumber': 5
-        })
-        self.assertEqual(cmd.number, 21)
-        self.assertEqual(cmd.configurationNumber, '5')
-        self.assertEqual(cmd.checksum, 37662)
-        self.assertEqual(cmd.rawData, b'\x02\x15\x05\x1e\x93')
-
-        cmd.configurationNumber = 7
-        self.assertEqual(cmd.configurationNumber, '7')
-        self.assertEqual(cmd.checksum, 21151)
-        self.assertEqual(cmd.rawData, b'\x02\x15\x07\x9fR')
-    
-    def test_commandSwitchToNewSim(self):
-        cmd = CommandSwitchToNewSim({
-            'simNumber': 217
-        })
-        self.assertEqual(cmd.number, 23)
-        self.assertEqual(cmd.simNumber, '217')
-        self.assertEqual(cmd.checksum, 27166)
-        self.assertEqual(cmd.rawData, b'\x02\x17\xd9\x1ej')
-
-        cmd.simNumber = 119
-        self.assertEqual(cmd.simNumber, '119')
-        self.assertEqual(cmd.checksum, 54943)
-        self.assertEqual(cmd.rawData, b'\x02\x17w\x9f\xd6')
-    
-    def test_commandAllowDisallowSimAutoswitching(self):
-        cmd = CommandAllowDisallowSimAutoswitching({
-            'simAutoswitchingIsAllowed': SIM_AUTOSWITCHING_IS_ALLOWED
-        })
-        self.assertEqual(cmd.number, 25)
-        self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_ALLOWED))
-        self.assertEqual(cmd.checksum, 20506)
-        self.assertEqual(cmd.rawData, b'\x02\x19\x01\x1aP')
-
-        cmd.simAutoswitchingIsAllowed = SIM_AUTOSWITCHING_IS_DISALLOWED
-        self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_DISALLOWED))
-        self.assertEqual(cmd.checksum, 37083)
-        self.assertEqual(cmd.rawData, b'\x02\x19\x00\xdb\x90')
-    
-    def test_commandSwitchSecurityMode(self):
-        cmd = CommandSwitchSecurityMode({
-            'securityMode': SECURITY_MODE_IS_ON
-        })
-        self.assertEqual(cmd.number, 14)
-        self.assertEqual(cmd.securityMode, str(SECURITY_MODE_IS_ON))
-        self.assertEqual(cmd.checksum, 40981)
-        self.assertEqual(cmd.rawData, b'\x02\x0e\x01\x15\xa0')
-
-        cmd.securityMode = SECURITY_MODE_IS_OFF
-        self.assertEqual(cmd.securityMode, str(SECURITY_MODE_IS_OFF))
-        self.assertEqual(cmd.checksum, 24788)
-        self.assertEqual(cmd.rawData, b'\x02\x0e\x00\xd4`')
-
     def test_commandAnswerGetImage(self):
         data = b'\x05\x80\x14\x00\xb1\x46\x00\x03\x84'
         packets = self.factory.getPacketsFromBuffer(data)
@@ -1409,36 +1330,18 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.devicePassword, 2403)
         self.assertEqual(cmd.rawData, b'\x02\x03c\t\x19j')
     
- 
-    def test_commandSoftwareUpgrade(self):
-        cmd = CommandSoftwareUpgrade({
+    def test_gprsCommandsPacket(self):
+        cmd = CommandSetGprsParams({
             "ip": '127.0.0.1',
             "port": 20200
         })
-        self.assertEqual(cmd.number, 19)
-        self.assertEqual(cmd.port, 20200)
-        self.assertEqual(cmd.ip, '127.0.0.1')
-        self.assertEqual(cmd.checksum, 10359)
-        self.assertEqual(cmd.rawData, b'\x02\x13\x7f\x00\x00\x01\xe8Nw(')
+        self.assertEqual(cmd.number, 4)
+        self.assertEqual(cmd.checksum, 10512)
+        self.assertEqual(cmd.rawData, b'\x02\x04\x7f\x00\x00\x01\xe8N\x10)')
         # let's change port and ip
         cmd.port = 20201
         cmd.ip = '212.10.222.10'
-        self.assertEqual(cmd.rawData, b'\x02\x13\xd4\n\xde\n\xe9N\xbc\x88')
-    
-    def test_commandSwitchToConfigurationServer(self):
-        cmd = CommandSwitchToConfigurationServer({
-            "ip": '127.0.0.1',
-            "port": 20200
-        })
-        self.assertEqual(cmd.number, 24)
-        self.assertEqual(cmd.port, 20200)
-        self.assertEqual(cmd.ip, '127.0.0.1')
-        self.assertEqual(cmd.checksum, 59597)
-        self.assertEqual(cmd.rawData, b'\x02\x18\x7f\x00\x00\x01\xe8N\xcd\xe8')
-        # let's change port and ip
-        cmd.port = 20201
-        cmd.ip = '212.10.222.10'
-        self.assertEqual(cmd.rawData, b'\x02\x18\xd4\n\xde\n\xe9N\x06H')
+        self.assertEqual(cmd.rawData, b'\x02\x04\xd4\n\xde\n\xe9N\xdb\x89')
     
     def test_commandAddRemoveKeyNumber(self):
         cmd = CommandAddRemoveKeyNumber({
@@ -1464,4 +1367,102 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.keyNumber, 11246)
         self.assertEqual(cmd.checksum, 62407)
         self.assertEqual(cmd.rawData, b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')
+    
+    def test_commandSwitchSecurityMode(self):
+        cmd = CommandSwitchSecurityMode({
+            'securityMode': SECURITY_MODE_IS_ON
+        })
+        self.assertEqual(cmd.number, 14)
+        self.assertEqual(cmd.securityMode, str(SECURITY_MODE_IS_ON))
+        self.assertEqual(cmd.checksum, 40981)
+        self.assertEqual(cmd.rawData, b'\x02\x0e\x01\x15\xa0')
+
+        cmd.securityMode = SECURITY_MODE_IS_OFF
+        self.assertEqual(cmd.securityMode, str(SECURITY_MODE_IS_OFF))
+        self.assertEqual(cmd.checksum, 24788)
+        self.assertEqual(cmd.rawData, b'\x02\x0e\x00\xd4`')
+    
+    def test_commandSoftwareUpgrade(self):
+        cmd = CommandSoftwareUpgrade({
+            "ip": '127.0.0.1',
+            "port": 20200
+        })
+        self.assertEqual(cmd.number, 19)
+        self.assertEqual(cmd.port, 20200)
+        self.assertEqual(cmd.ip, '127.0.0.1')
+        self.assertEqual(cmd.checksum, 10359)
+        self.assertEqual(cmd.rawData, b'\x02\x13\x7f\x00\x00\x01\xe8Nw(')
+        # let's change port and ip
+        cmd.port = 20201
+        cmd.ip = '212.10.222.10'
+        self.assertEqual(cmd.rawData, b'\x02\x13\xd4\n\xde\n\xe9N\xbc\x88')
+    
+    def test_getImageCommandsPacket(self):
+        cmd = CommandGetImage({
+            'type': IMAGE_RESOLUTION_640x480
+        })
+        self.assertEqual(cmd.number, 20)
+        self.assertEqual(cmd.rawData, b'\x02\x14\x03\x9f\x01')
+
+        cmd.type = IMAGE_PACKET_CONFIRM_OK
+        self.assertEqual(cmd.rawData, b'\x02\x14\x10\xde\xcc')
+    
+    def test_commandGetConfiguration(self):
+        cmd = CommandGetConfiguration({
+            'configurationNumber': 5
+        })
+        self.assertEqual(cmd.number, 21)
+        self.assertEqual(cmd.configurationNumber, '5')
+        self.assertEqual(cmd.checksum, 37662)
+        self.assertEqual(cmd.rawData, b'\x02\x15\x05\x1e\x93')
+
+        cmd.configurationNumber = 7
+        self.assertEqual(cmd.configurationNumber, '7')
+        self.assertEqual(cmd.checksum, 21151)
+        self.assertEqual(cmd.rawData, b'\x02\x15\x07\x9fR')
+    
+    def test_commandSwitchToNewSim(self):
+        cmd = CommandSwitchToNewSim({
+            'simNumber': 217
+        })
+        self.assertEqual(cmd.number, 23)
+        self.assertEqual(cmd.simNumber, '217')
+        self.assertEqual(cmd.checksum, 27166)
+        self.assertEqual(cmd.rawData, b'\x02\x17\xd9\x1ej')
+
+        cmd.simNumber = 119
+        self.assertEqual(cmd.simNumber, '119')
+        self.assertEqual(cmd.checksum, 54943)
+        self.assertEqual(cmd.rawData, b'\x02\x17w\x9f\xd6')
+    
+    def test_commandSwitchToConfigurationServer(self):
+        cmd = CommandSwitchToConfigurationServer({
+            "ip": '127.0.0.1',
+            "port": 20200
+        })
+        self.assertEqual(cmd.number, 24)
+        self.assertEqual(cmd.port, 20200)
+        self.assertEqual(cmd.ip, '127.0.0.1')
+        self.assertEqual(cmd.checksum, 59597)
+        self.assertEqual(cmd.rawData, b'\x02\x18\x7f\x00\x00\x01\xe8N\xcd\xe8')
+        # let's change port and ip
+        cmd.port = 20201
+        cmd.ip = '212.10.222.10'
+        self.assertEqual(cmd.rawData, b'\x02\x18\xd4\n\xde\n\xe9N\x06H')
+    
+    def test_commandAllowDisallowSimAutoswitching(self):
+        cmd = CommandAllowDisallowSimAutoswitching({
+            'simAutoswitchingIsAllowed': SIM_AUTOSWITCHING_IS_ALLOWED
+        })
+        self.assertEqual(cmd.number, 25)
+        self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_ALLOWED))
+        self.assertEqual(cmd.checksum, 20506)
+        self.assertEqual(cmd.rawData, b'\x02\x19\x01\x1aP')
+
+        cmd.simAutoswitchingIsAllowed = SIM_AUTOSWITCHING_IS_DISALLOWED
+        self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_DISALLOWED))
+        self.assertEqual(cmd.checksum, 37083)
+        self.assertEqual(cmd.rawData, b'\x02\x19\x00\xdb\x90')
+    
+    
     

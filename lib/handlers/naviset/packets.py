@@ -506,6 +506,81 @@ class CommandRestart(Command): _number = 18
 
 # ---------------------------------------------------------------------------
 
+class CommandChangeDeviceNumber(Command):
+    """
+     Change device number
+    """
+    _number = 2
+
+    # private params
+    __deviceNumber = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.deviceNumber = params['deviceNumber'] or 0
+
+    @property
+    def deviceNumber(self):
+        if self._rebuild: self._build()
+        return self.__deviceNumber
+
+    @deviceNumber.setter
+    def deviceNumber(self, value):
+        if 0 <= value <= 0xFFFF:
+            self.__deviceNumber = value
+            self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += pack('<H', self.__deviceNumber)
+        return data
+
+class CommandChangeDevicePassword(Command):
+    """
+    Change device password
+    """
+    _number = 3
+    
+    # private params
+    __devicePassword = 0
+    
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        self.devicePassword = params['devicePassword'] or 0
+    
+    @property
+    def devicePassword(self):
+        pass
+        if self._rebuild: self._build()
+        return self.__devicePassword
+    
+    @devicePassword.setter
+    def devicePassword(self, value):
+        if 0 <= value <= 0xFFFF:
+            self.__devicePassword = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+        Builds body of the packet
+        @return: body binstring
+        """
+        data = b''
+        data += pack('<H', self.__devicePassword)
+        return data
+
 class CommandSetGprsParams(Command):
     """
      Change device GPRS params
@@ -556,7 +631,166 @@ class CommandSetGprsParams(Command):
         data += pack('<H', self.__port)
         return data
 
+PROCESS_KEY_NUMBER_ACTION_ADD = 0
+PROCESS_KEY_NUMBER_ACTION_REMOVE = 1
+
+class CommandAddRemoveKeyNumber(Command):
+    """
+    Adds or removes device key for selected cell.
+    """
+    _number = 6
+    
+    # private params
+    __processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_ADD
+    __processCellNumber = 0
+    __keyNumber = 0
+    
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        self.processKeyNumberAction = params['processKeyNumberAction']
+        self.processCellNumber = params['processCellNumber']
+        self.keyNumber = params['keyNumber']
+    
+    @property
+    def processKeyNumberAction(self):
+        if self._rebuild: self._build()
+        return self.__processKeyNumberAction
+    
+    @processKeyNumberAction.setter
+    def processKeyNumberAction(self, value):
+        if 0 <= value <= 1:
+            self.__processKeyNumberAction = value
+            self._rebuild = True
+    
+    @property
+    def processCellNumber(self):
+        if self._rebuild: self._build()
+        return self.__processCellNumber
+    
+    @processCellNumber.setter
+    def processCellNumber(self, value):
+        if 0 <= value <= 15:
+            self.__processCellNumber = value
+            self._rebuild = True
+    
+    @property
+    def keyNumber(self):
+        if self._rebuild: self._build()
+        return self.__keyNumber
+    
+    @keyNumber.setter
+    def keyNumber(self, value):
+        if 0 <= value <= 256**6 - 1:
+            self.__keyNumber = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+        Builds body of the packet
+        @return: body binstring
+        """
+        data = b''
+        processPacked = 16 * self.processKeyNumberAction + self.processCellNumber
+        data += pack('<B', processPacked)
+        data += pack('<Q', self.__keyNumber)[:-2]
+        return data
+
+SECURITY_MODE_IS_OFF = 0
+SECURITY_MODE_IS_ON = 1
+
+class CommandSwitchSecurityMode(Command):
+    """
+     Command for switching to new SIM number
+    """
+    _number = 14
+
+    # private params
+    __securityMode = SECURITY_MODE_IS_OFF
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.securityMode = params['securityMode'] or 0
+
+    @property
+    def securityMode(self):
+        if self._rebuild: self._build()
+        return self.__securityMode
+
+    @securityMode.setter
+    def securityMode(self, value):
+        if 0 <= value <= 1:
+            self.__securityMode = str(value)
+            self._rebuild = True
+
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += pack('<B', int(self.__securityMode))
+        return data 
+
 # ---------------------------------------------------------------------------
+
+
+class CommandSoftwareUpgrade(Command):
+    """
+     Change device GPRS params
+    """
+    _number = 19
+
+    # private params
+    __ip = ''
+    __port = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.ip = params['ip'] or ''
+        self.port = params['port'] or 0
+    
+    @property
+    def ip(self):
+        if self._rebuild: self._build()
+        return self.__ip
+
+    @ip.setter
+    def ip(self, value):
+        self.__ip = str(value)
+        self._rebuild = True
+
+    @property
+    def port(self):
+        if self._rebuild: self._build()
+        return self.__port
+
+    @port.setter
+    def port(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__port = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += socket.inet_aton(self.__ip)
+        data += pack('<H', self.__port)
+        return data
 
 IMAGE_RESOLUTION_80x64 = 0
 IMAGE_RESOLUTION_160x128 = 1
@@ -673,6 +907,60 @@ class CommandSwitchToNewSim(Command):
         data += pack('<B', int(self.__simNumber))
         return data
 
+
+class CommandSwitchToConfigurationServer(Command):
+    """
+     Change device GPRS params
+    """
+    _number = 24
+
+    # private params
+    __ip = ''
+    __port = 0
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.ip = params['ip'] or ''
+        self.port = params['port'] or 0
+    
+    @property
+    def ip(self):
+        if self._rebuild: self._build()
+        return self.__ip
+
+    @ip.setter
+    def ip(self, value):
+        self.__ip = str(value)
+        self._rebuild = True
+
+    @property
+    def port(self):
+        if self._rebuild: self._build()
+        return self.__port
+
+    @port.setter
+    def port(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__port = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+         Builds body of the packet
+         @return: body binstring
+        """
+        data = b''
+        data += socket.inet_aton(self.__ip)
+        data += pack('<H', self.__port)
+        return data
+    
+# ---------------------------------------------------------------------------
+ 
+
 SIM_AUTOSWITCHING_IS_DISALLOWED = 0
 SIM_AUTOSWITCHING_IS_ALLOWED = 1
 
@@ -711,46 +999,6 @@ class CommandAllowDisallowSimAutoswitching(Command):
         """
         data = b''
         data += pack('<B', int(self.__simAutoswitchingIsAllowed))
-        return data
-
-SECURITY_MODE_IS_OFF = 0
-SECURITY_MODE_IS_ON = 1
-
-class CommandSwitchSecurityMode(Command):
-    """
-     Command for switching to new SIM number
-    """
-    _number = 14
-
-    # private params
-    __securityMode = SECURITY_MODE_IS_OFF
-
-    def setParams(self, params):
-        """
-         Initialize command with params
-         @param params:
-         @return:
-        """
-        self.securityMode = params['securityMode'] or 0
-
-    @property
-    def securityMode(self):
-        if self._rebuild: self._build()
-        return self.__securityMode
-
-    @securityMode.setter
-    def securityMode(self, value):
-        if 0 <= value <= 1:
-            self.__securityMode = str(value)
-            self._rebuild = True
-
-    def _buildBody(self):
-        """
-         Builds body of the packet
-         @return: body binstring
-        """
-        data = b''
-        data += pack('<B', int(self.__securityMode))
         return data
 
 # ---------------------------------------------------------------------------
@@ -813,253 +1061,6 @@ class PacketAnswerCommandGetImage(PacketAnswer):
                     str(len(self.__chunkData)) + ' (given) != ' +\
                     str(chunkLength) + ' (must be)')
 
-# ---------------------------------------------------------------------------
-
-class CommandChangeDeviceNumber(Command):
-    """
-     Change device number
-    """
-    _number = 2
-
-    # private params
-    __deviceNumber = 0
-
-    def setParams(self, params):
-        """
-         Initialize command with params
-         @param params:
-         @return:
-        """
-        self.deviceNumber = params['deviceNumber'] or 0
-
-    @property
-    def deviceNumber(self):
-        if self._rebuild: self._build()
-        return self.__deviceNumber
-
-    @deviceNumber.setter
-    def deviceNumber(self, value):
-        if 0 <= value <= 0xFFFF:
-            self.__deviceNumber = value
-            self._rebuild = True
-
-    def _buildBody(self):
-        """
-         Builds body of the packet
-         @return: body binstring
-        """
-        data = b''
-        data += pack('<H', self.__deviceNumber)
-        return data
-
-class CommandChangeDevicePassword(Command):
-    """
-    Change device password
-    """
-    _number = 3
-    
-    # private params
-    __devicePassword = 0
-    
-    def setParams(self, params):
-        """
-        Initialize command with params
-        @param params:
-        @return:
-        """
-        self.devicePassword = params['devicePassword'] or 0
-    
-    @property
-    def devicePassword(self):
-        pass
-        if self._rebuild: self._build()
-        return self.__devicePassword
-    
-    @devicePassword.setter
-    def devicePassword(self, value):
-        if 0 <= value <= 0xFFFF:
-            self.__devicePassword = value
-            self._rebuild = True
-    
-    def _buildBody(self):
-        """
-        Builds body of the packet
-        @return: body binstring
-        """
-        data = b''
-        data += pack('<H', self.__devicePassword)
-        return data
-
-PROCESS_KEY_NUMBER_ACTION_ADD = 0
-PROCESS_KEY_NUMBER_ACTION_REMOVE = 1
-
-class CommandAddRemoveKeyNumber(Command):
-    """
-    Adds or removes device key for selected cell.
-    """
-    _number = 6
-    
-    # private params
-    __processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_ADD
-    __processCellNumber = 0
-    __keyNumber = 0
-    
-    def setParams(self, params):
-        """
-        Initialize command with params
-        @param params:
-        @return:
-        """
-        self.processKeyNumberAction = params['processKeyNumberAction']
-        self.processCellNumber = params['processCellNumber']
-        self.keyNumber = params['keyNumber']
-    
-    @property
-    def processKeyNumberAction(self):
-        if self._rebuild: self._build()
-        return self.__processKeyNumberAction
-    
-    @processKeyNumberAction.setter
-    def processKeyNumberAction(self, value):
-        if 0 <= value <= 1:
-            self.__processKeyNumberAction = value
-            self._rebuild = True
-    
-    @property
-    def processCellNumber(self):
-        if self._rebuild: self._build()
-        return self.__processCellNumber
-    
-    @processCellNumber.setter
-    def processCellNumber(self, value):
-        if 0 <= value <= 15:
-            self.__processCellNumber = value
-            self._rebuild = True
-    
-    @property
-    def keyNumber(self):
-        if self._rebuild: self._build()
-        return self.__keyNumber
-    
-    @keyNumber.setter
-    def keyNumber(self, value):
-        if 0 <= value <= 256**6 - 1:
-            self.__keyNumber = value
-            self._rebuild = True
-    
-    def _buildBody(self):
-        """
-        Builds body of the packet
-        @return: body binstring
-        """
-        data = b''
-        processPacked = 16 * self.processKeyNumberAction + self.processCellNumber
-        data += pack('<B', processPacked)
-        data += pack('<Q', self.__keyNumber)[:-2]
-        return data
-        
-
-class CommandSoftwareUpgrade(Command):
-    """
-     Change device GPRS params
-    """
-    _number = 19
-
-    # private params
-    __ip = ''
-    __port = 0
-
-    def setParams(self, params):
-        """
-         Initialize command with params
-         @param params:
-         @return:
-        """
-        self.ip = params['ip'] or ''
-        self.port = params['port'] or 0
-    
-    @property
-    def ip(self):
-        if self._rebuild: self._build()
-        return self.__ip
-
-    @ip.setter
-    def ip(self, value):
-        self.__ip = str(value)
-        self._rebuild = True
-
-    @property
-    def port(self):
-        if self._rebuild: self._build()
-        return self.__port
-
-    @port.setter
-    def port(self, value):
-        if (0 <= value <= 0xFFFF):
-            self.__port = value
-            self._rebuild = True
-    
-    def _buildBody(self):
-        """
-         Builds body of the packet
-         @return: body binstring
-        """
-        data = b''
-        data += socket.inet_aton(self.__ip)
-        data += pack('<H', self.__port)
-        return data
-
-
-class CommandSwitchToConfigurationServer(Command):
-    """
-     Change device GPRS params
-    """
-    _number = 24
-
-    # private params
-    __ip = ''
-    __port = 0
-
-    def setParams(self, params):
-        """
-         Initialize command with params
-         @param params:
-         @return:
-        """
-        self.ip = params['ip'] or ''
-        self.port = params['port'] or 0
-    
-    @property
-    def ip(self):
-        if self._rebuild: self._build()
-        return self.__ip
-
-    @ip.setter
-    def ip(self, value):
-        self.__ip = str(value)
-        self._rebuild = True
-
-    @property
-    def port(self):
-        if self._rebuild: self._build()
-        return self.__port
-
-    @port.setter
-    def port(self, value):
-        if (0 <= value <= 0xFFFF):
-            self.__port = value
-            self._rebuild = True
-    
-    def _buildBody(self):
-        """
-         Builds body of the packet
-         @return: body binstring
-        """
-        data = b''
-        data += socket.inet_aton(self.__ip)
-        data += pack('<H', self.__port)
-        return data
-    
 # ---------------------------------------------------------------------------
 
 class PacketFactory(AbstractPacketFactory):
@@ -1366,7 +1367,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.processCellNumber, 7)
         self.assertEqual(cmd.keyNumber, 11246)
         self.assertEqual(cmd.checksum, 62407)
-        self.assertEqual(cmd.rawData, b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')
+        self.assertEqual(cmd.rawData, b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')        
     
     def test_commandSwitchSecurityMode(self):
         cmd = CommandSwitchSecurityMode({

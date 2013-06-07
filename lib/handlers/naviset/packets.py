@@ -699,6 +699,108 @@ class CommandAddRemoveKeyNumber(Command):
         data += pack('<Q', self.__keyNumber)[:-2]
         return data
 
+ACTIVE_LEVEL_LOW_OR_HIGH = 0
+ACTIVE_LEVEL_LOW = 1
+ACTIVE_LEVEL_FREE = 2
+ACTIVE_LEVEL_HIGH = 3
+ACTIVE_LEVEL_LOW_WITH_HYSTERESIS = 4
+ACTIVE_LEVEL_HIGH_WITH_HYSTERESIS = 5
+
+class CommandConfigureInputs(Command):
+    """
+    Configures device inputs.
+    """
+    
+    _number = 12
+    
+    # private params
+    __inputActActiveLevel = ACTIVE_LEVEL_LOW_OR_HIGH
+    __inputActInputNumber = 0
+    __lowerBorder = 0
+    __upperBorder = 0
+    __filterLength = 0
+    
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        self.inputActActiveLevel = params['inputActActiveLevel']
+        self.inputActInputNumber = params['inputActInputNumber']
+        self.lowerBorder = params['lowerBorder']
+        self.upperBorder = params['upperBorder']
+        self.filterLength = params['filterLength']
+    
+    @property
+    def inputActActiveLevel(self):
+        if self._rebuild: self._build()
+        return self.__inputActActiveLevel
+    
+    @inputActActiveLevel.setter
+    def inputActActiveLevel(self, value):
+        if 0 <= value <= 5:
+            self.__inputActActiveLevel = value
+            self._rebuild = True
+    
+    @property
+    def inputActInputNumber(self):
+        if self._rebuild: self._build()
+        return self.__inputActInputNumber
+    
+    @inputActInputNumber.setter
+    def inputActInputNumber(self, value):
+        if 0 <= value <= 0xF:
+            self.__inputActInputNumber = value
+            self._rebuild = True
+    
+    @property
+    def lowerBorder(self):
+        if self._rebuild: self._build()
+        return self.__lowerBorder
+    
+    @lowerBorder.setter
+    def lowerBorder(self, value):
+        if 0 <= value <= 0xFFFF:
+            self.__lowerBorder = value
+            self._rebuild = True
+    
+    @property
+    def upperBorder(self):
+        if self._rebuild: self._build()
+        return self.__upperBorder
+    
+    @upperBorder.setter
+    def upperBorder(self, value):
+        if 0 <= value <= 0xFFFF:
+            self.__upperBorder = value
+            self._rebuild = True
+    
+    @property
+    def filterLength(self):
+        if self._rebuild: self._build()
+        return self.__filterLength
+    
+    @filterLength.setter
+    def filterLength(self, value):
+        if 0 <= value <= 0xFF:
+            self.__filterLength = value
+            self._rebuild = True
+    
+    def _buildBody(self):
+        """
+        Builds body of the packet
+        @return: body binstring
+        """
+        data = b''
+        inputActPacked = 16 * self.__inputActActiveLevel + self.__inputActInputNumber 
+        data += pack('<B', inputActPacked)
+        data += pack('<H', self.__lowerBorder)
+        data += pack('<H', self.__upperBorder)
+        data += pack('<B', self.__filterLength)
+        return data    
+    
+
 SECURITY_MODE_IS_OFF = 0
 SECURITY_MODE_IS_ON = 1
 
@@ -1367,7 +1469,41 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.processCellNumber, 7)
         self.assertEqual(cmd.keyNumber, 11246)
         self.assertEqual(cmd.checksum, 62407)
-        self.assertEqual(cmd.rawData, b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')        
+        self.assertEqual(cmd.rawData, b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')
+
+    def test_commandConfigureInputs(self):
+        cmd = CommandConfigureInputs({
+            "inputActActiveLevel": ACTIVE_LEVEL_LOW_WITH_HYSTERESIS,
+            "inputActInputNumber": 9,
+            "lowerBorder": 17281,
+            "upperBorder": 21817,
+            "filterLength": 93
+        })
+        
+        self.assertEqual(cmd.number, 12)
+        
+        self.assertEqual(cmd.inputActActiveLevel, ACTIVE_LEVEL_LOW_WITH_HYSTERESIS)
+        self.assertEqual(cmd.inputActInputNumber, 9)
+        self.assertEqual(cmd.lowerBorder, 17281)
+        self.assertEqual(cmd.upperBorder, 21817)
+        self.assertEqual(cmd.filterLength, 93)
+        self.assertEqual(cmd.checksum, 47393)
+        self.assertEqual(cmd.rawData, b'\x02\x06\x0e\xfbV\x03\x00\x00\x00!\xb9')
+        
+        #change some data
+        cmd.inputActActiveLevel = ACTIVE_LEVEL_FREE
+        cmd.inputActInputNumber = 11
+        cmd.lowerBorder = 9703
+        cmd.upperBorder = 19517
+        cmd.filterLength = 27
+        
+        self.assertEqual(cmd.inputActActiveLevel, ACTIVE_LEVEL_LOW_WITH_HYSTERESIS)
+        self.assertEqual(cmd.inputActInputNumber, 11)
+        self.assertEqual(cmd.lowerBorder, 9703)
+        self.assertEqual(cmd.upperBorder, 19517)
+        self.assertEqual(cmd.filterLength, 27)
+        self.assertEqual(cmd.checksum, 47393)
+        self.assertEqual(cmd.rawData, b'\x02\x06\x0e\xfbV\x03\x00\x00\x00!\xb9')       
     
     def test_commandSwitchSecurityMode(self):
         cmd = CommandSwitchSecurityMode({

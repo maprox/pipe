@@ -1847,6 +1847,25 @@ IMAGE_ANSWER_CODE_DATA = 1
 IMAGE_ANSWER_CODE_CAMERA_NOT_FOUND = 2
 IMAGE_ANSWER_CODE_CAMERA_IS_BUSY = 3
 
+class PacketAnswerCommandChangeDeviceNumber(PacketAnswer): _number = 2
+class PacketAnswerCommandChangeDevicePassword(PacketAnswer): _number = 3
+class PacketAnswerCommandSetGprsParams(PacketAnswer): _number = 4
+class PacketAnswerCommandAddRemoveKeyNumber(PacketAnswer): _number = 6
+class PacketAnswerCommandAddRemovePhoneNumber(PacketAnswer): _number = 8
+class PacketAnswerCommandProtocolTypeStructure(PacketAnswer): _number = 9
+class PacketAnswerCommandFiltrationDrawingParameters(PacketAnswer): _number = 11
+class PacketAnswerCommandConfigureInputs(PacketAnswer): _number = 12
+class PacketAnswerCommandConfigureOutputs(PacketAnswer): _number = 13
+class PacketAnswerCommandTemporarySecurityParameters(PacketAnswer): _number = 15
+class PacketAnswerCommandRemoveTrackFromBuffer(PacketAnswer): _number = 16
+class PacketAnswerCommandVoiceConnectionParameters(PacketAnswer): _number = 17
+class PacketAnswerCommandRestart(PacketAnswer): _number = 18
+class PacketAnswerCommandSoftwareUpgrade(PacketAnswer): _number = 19
+class PacketAnswerCommandSwitchToNewSim(PacketAnswer): _number = 23
+class PacketAnswerCommandSwitchToConfigurationServer(PacketAnswer): _number = 24
+class PacketAnswerCommandAllowDisallowSimAutoswitching(PacketAnswer): _number = 25
+
+
 class PacketAnswerCommandGetImage(PacketAnswer):
     """
      Answer on CommandGetImage
@@ -1901,6 +1920,73 @@ class PacketAnswerCommandGetImage(PacketAnswer):
                     str(chunkLength) + ' (must be)')
 
 # ---------------------------------------------------------------------------
+
+class PacketAnswerCommandGetPhones(PacketAnswer):
+    """
+     Answer on CommandGetPhones
+    """
+    _command = 7
+    def _parseBody(self):
+        print("Got phones!")
+        buffer = self.body
+        print(buffer)
+
+class PacketAnswerCommandGetImei(PacketAnswer):
+    """
+     Answer on CommandGetImei
+    """
+    _command = 1
+    
+    __imei = 0
+    
+    @property
+    def imei(self):
+        if self._rebuild: self._build()
+        return self.__imei
+    
+    def _parseBody(self):
+        print("Got Imei!")
+        buffer = self.body
+        print(buffer)
+        print(unpack("<Q", buffer))
+
+class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
+    """
+     Answer on CommandGetRegisteredIButtons
+    """
+    _command = 5
+    def _parseBody(self):
+        print("Got IButtons!")
+        buffer = self.body
+        
+        def chunks(l, n):
+            return [l[i:i+n] for i in range(0, len(l), n)]
+        
+        print(buffer)
+        for chunk in chunks(buffer, 6):
+            print(chunk)
+        #print(unpack("<s", buffer))
+
+class PacketAnswerCommandGetTrackParams(PacketAnswer):
+    """
+     Answer on CommandGetTrackParams
+    """
+    _command = 10
+    def _parseBody(self):
+        print("Got tracker parameters")
+        buffer = self.body
+        print(buffer)
+
+class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
+    """
+    Answer on CommandSwitchSecurityMode
+    """
+    _command = 14
+    def _parseBody(self):
+        print("Got service message 200")
+        buffer = self.body
+        #print(unpack("<H", buffer))
+    
 
 class PacketFactory(AbstractPacketFactory):
     """
@@ -2595,6 +2681,46 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_DISALLOWED))
         self.assertEqual(cmd.checksum, 37083)
         self.assertEqual(cmd.rawData, b'\x02\x19\x00\xdb\x90')
-    
-    
+
+
+"""    
+Command()
+
+commands["CommandProtocolTypeStructure"]
+obj = commands.CommandProtocolTypeStructure()
+
+
+
+
+commands_list = ["CommandSetGprsParameters", 4, 654, [["ip", "ip"], ["port", "H"]]]
+
+
+#ip, B, 4B
+commands_dict = {
+    "name": " CommandSetGprsParameters",
+    "number": 4,
+    "fields": [{
+        "name": "ip",
+        "type": "ip"
+    }, {
+        "name": "port",
+        "type": "H"
+    }]
+}
+
+
+generate_classes(commands_list)
+"""
+
+
+
+
+
+
+
+
+
+
+
+
     

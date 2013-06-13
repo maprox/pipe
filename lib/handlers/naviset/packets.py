@@ -1885,14 +1885,10 @@ class PacketAnswerCommandGetImei(PacketAnswer):
          @param body: Body bytes
          @protected
         """
-        print(self.body)
-        print("Got Imei!")
         super(PacketAnswerCommandGetImei, self)._parseBody()
-        buffer = self.body   
-        print( buffer)     
+        buffer = self.body       
         self._command = unpack('<B', buffer[:1])[0]
         self.__imei = buffer.decode("ascii")[1:]
-        print("Imei is %s" % self.__imei)
 
 
 class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
@@ -1908,17 +1904,11 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
         if self._rebuild: self._build()
         return self.__numbers
     
-    def _parseBody(self):
-        print("Got IButtons!")
-        
+    def _parseBody(self):        
         super(PacketAnswerCommandGetRegisteredIButtons, self)._parseBody()
         buffer = self.body
-        print(buffer)
-        self._command = unpack('<B', buffer[:1])[0]
-        
-        print(self._command)
-        
-        numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00') for i in range(0,5)]  #divide buffer into 5 chunks, add 2 zero bytes for unpacking and unpack as Q
+        self._command = unpack('<B', buffer[:1])[0]        
+        numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00')[0] for i in range(0,5)]  #divide buffer into 5 chunks, add 2 zero bytes for unpacking and unpack as Q
         self.__numbers = numbers
         
 
@@ -2090,7 +2080,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
         print(_filter)
         print(_filter >> 7)
         print((_filter >> 7) & 1)
-        self.__filterCoordinates = (_filter >> 7) & 1
+        self.__  = (_filter >> 7) & 1
         self.__filterStraightPath = (_filter >> 6) & 1
         self.__filterRestructuring = (_filter >> 5) & 1
         self.__filterWriteOnEvent = (_filter >> 4) & 1
@@ -2100,20 +2090,20 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
         #print(self.__filterRestructuring)
         #print(self.__filterWriteOnEvent)
         
-        self.__accelerometerSensitivity = unpack("<B", buffer[1:2])
-        self.__timeToStandby = unpack("<H", buffer[2:4])
-        self.__timeRecordingStandby = unpack("<H", buffer[4:6])
-        self.__timeRecordingMoving = unpack("<H", buffer[6:8])
-        self.__timeRecordingDistance = unpack("<H", buffer[8:10])
-        self.__drawingOnAngles = unpack("<B", buffer[10:11])
-        self.__minSpeed = unpack("<B", buffer[11:12])
-        self.__HDOP = unpack("<B", buffer[12:13])
-        self.__minspeed = unpack("<B", buffer[13:14])
-        self.__maxspeed = unpack("<B", buffer[14:15])
-        self.__acceleration = unpack("<B", buffer[15:16])
-        self.__jump = unpack("<B", buffer[16:17])
-        self.__idle = unpack("<B", buffer[17:18])
-        self.__courseDeviation = unpack("<B", buffer[18:19])
+        self.__accelerometerSensitivity = unpack("<H", buffer[1:3])[0]
+        self.__timeToStandby = unpack("<H", buffer[3:5])[0]
+        self.__timeRecordingStandby = unpack("<H", buffer[5:7])[0]
+        self.__timeRecordingMoving = unpack("<H", buffer[7:9])[0]
+        self.__timeRecordingDistance = unpack("<B", buffer[9:10])[0]
+        self.__drawingOnAngles = unpack("<B", buffer[10:11])[0]
+        self.__minSpeed = unpack("<B", buffer[11:12])[0]
+        self.__HDOP = unpack("<B", buffer[12:13])[0]
+        self.__minspeed = unpack("<B", buffer[13:14])[0]
+        self.__maxspeed = unpack("<B", buffer[14:15])[0]
+        self.__acceleration = unpack("<B", buffer[15:16])[0]
+        self.__jump = unpack("<B", buffer[16:17])[0]
+        self.__idle = unpack("<B", buffer[17:18])[0]
+        self.__courseDeviation = unpack("<B", buffer[18:19])[0]
         
         print("Jump is %d" % self.__jump)
 
@@ -2445,7 +2435,34 @@ class TestCase(unittest.TestCase):
     def test_commandPacketAnswerCommandGetRegisteredIButtons(self):
         data = b'\x1f\x80\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00i\xc6'
         packets = self.factory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertEqual(packet._command, 5)
+        self.assertEqual(len(packet.numbers), 5)
+        self.assertEqual(packet.numbers[3], 0)
     
+    def test_commandPacketAnswerCommandGetTrackParams(self):
+        data = b'\x14\x80\n\x00 \x03<\x00\x14\x00\x1e\x00\x1e\x05\x03(\x03\x96\x1e2\x1e\x05O\xcc'
+        packets = self.factory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertEqual(packet.filterCoordinates, 0)
+        self.assertEqual(packet.filterStraightPath, 0)
+        self.assertEqual(packet.filterRestructuring, 0)
+        self.assertEqual(packet.filterWriteOnEvent, 0)
+        self.assertEqual(packet.accelerometerSensitivity, 8192)
+        self.assertEqual(packet.timeToStandby, 15363)
+        self.assertEqual(packet.timeRecordingStandby, 5120)
+        self.assertEqual(packet.timeRecordingMoving, 30)
+        self.assertEqual(packet.timeRecordingDistance, 30)
+        self.assertEqual(packet.drawingOnAngles, 30)
+        self.assertEqual(packet.minSpeed, 30)
+        self.assertEqual(packet.HDOP, 30)
+        self.assertEqual(packet.minspeed, 30)
+        self.assertEqual(packet.miaxspeed, 30)
+        self.assertEqual(packet.acceleration, 30)
+        self.assertEqual(packet.jump, 30)
+        self.assertEqual(packet.idle, 30)
+        self.assertEqual(packet.courseDeviation, 30)
+        
 
     def test_commandChangeDeviceNumber(self):
         cmd = CommandChangeDeviceNumber({

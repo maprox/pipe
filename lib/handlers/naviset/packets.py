@@ -11,7 +11,7 @@ from datetime import datetime
 from struct import unpack, pack
 import lib.bits as bits
 import lib.crc16 as crc16
-from lib.packets import *
+from lib.packets import *   
 from lib.factory import AbstractPacketFactory
 
 # ---------------------------------------------------------------------------
@@ -1937,7 +1937,7 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     """
     _command = 1
     
-    __imei = 0
+    __imei = "000000000000000"
     
     @property
     def imei(self):
@@ -1945,26 +1945,79 @@ class PacketAnswerCommandGetImei(PacketAnswer):
         return self.__imei
     
     def _parseBody(self):
+        """
+         Parses body of the packet
+         @param body: Body bytes
+         @protected
+        """
         print("Got Imei!")
-        buffer = self.body
-        print(buffer)
-        print(unpack("<Q", buffer))
+        super(PacketAnswerCommandGetImei, self)._parseBody()
+        buffer = self.body        
+        self._command = unpack('<B', buffer[:1])[0]
+        self.__imei = buffer.decode("ascii")[1:]
+        print("Imei is %s" % self.__imei)
 
 class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     """
      Answer on CommandGetRegisteredIButtons
     """
     _command = 5
+    
+    __number0 = 0
+    __number1 = 0
+    __number2 = 0
+    __number3 = 0
+    __number4 = 0
+    
+    @property
+    def number0(self):
+        if self._rebuild: self._build()
+        return self.__number0
+    
+    @property
+    def number1(self):
+        if self._rebuild: self._build()
+        return self.__number1
+    
+    @property
+    def number2(self):
+        if self._rebuild: self._build()
+        return self.__number2
+    
+    @property
+    def number3(self):
+        if self._rebuild: self._build()
+        return self.__number3
+    
+    @property
+    def number4(self):
+        if self._rebuild: self._build()
+        return self.__number4
+    
     def _parseBody(self):
         print("Got IButtons!")
+        
+        super(PacketAnswerCommandGetRegisteredIButtons, self)._parseBody()
         buffer = self.body
-        
-        def chunks(l, n):
-            return [l[i:i+n] for i in range(0, len(l), n)]
-        
         print(buffer)
-        for chunk in chunks(buffer, 6):
-            print(chunk)
+        self._command = unpack('<B', buffer[:1])[0]
+        
+        print(self._command)
+        
+        numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00') for i in range(0,5)]  #divide buffer into 5 chunks, add 2 zero bytes for unpacking and unpack as Q
+        __number0 = numbers[0]
+        __number1 = numbers[1]
+        __number2 = numbers[2]
+        __number3 = numbers[3]
+        __number4 = numbers[4]
+        
+        
+        #def chunks(l, n):
+        #    return [l[i:i+n] for i in range(0, len(l), n)]
+        
+        #print(buffer)
+        #for chunk in chunks(buffer, 6):
+        #    print(chunk)
         #print(unpack("<s", buffer))
 
 class PacketAnswerCommandGetTrackParams(PacketAnswer):

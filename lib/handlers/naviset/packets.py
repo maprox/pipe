@@ -1866,61 +1866,6 @@ class PacketAnswerCommandSwitchToConfigurationServer(PacketAnswer): _number = 24
 class PacketAnswerCommandAllowDisallowSimAutoswitching(PacketAnswer): _number = 25
 
 
-class PacketAnswerCommandGetImage(PacketAnswer):
-    """
-     Answer on CommandGetImage
-    """
-    _command = 20
-
-    __code = 0
-    __imageSize = 0
-    __chunkNumber = 0
-    __chunkData = None
-
-    @property
-    def code(self):
-        if self._rebuild: self._build()
-        return self.__code
-
-    @property
-    def imageSize(self):
-        if self._rebuild: self._build()
-        return self.__imageSize
-
-    @property
-    def chunkNumber(self):
-        if self._rebuild: self._build()
-        return self.__chunkNumber
-
-    @property
-    def chunkData(self):
-        if self._rebuild: self._build()
-        return self.__chunkData
-
-    def _parseBody(self):
-        """
-         Parses body of the packet
-         @param body: Body bytes
-         @protected
-        """
-        super(PacketAnswerCommandGetImage, self)._parseBody()
-        buffer = self._body
-        self._command = unpack('<B', buffer[:1])[0]
-        self.__code = unpack('<B', buffer[1:2])[0]
-        if self.__code == IMAGE_ANSWER_CODE_SIZE:
-            b, w = unpack('<HB', buffer[2:5])
-            self.__imageSize = b | (w << 16)
-        elif self.__code == IMAGE_ANSWER_CODE_DATA:
-            self.__chunkNumber = unpack('<B', buffer[2:3])[0]
-            chunkLength = unpack('<H', buffer[3:5])[0]
-            self.__chunkData = buffer[5:5 + chunkLength]
-            if len(self.__chunkData) != chunkLength:
-                raise Exception('Incorrect image chunk length! ' +\
-                    str(len(self.__chunkData)) + ' (given) != ' +\
-                    str(chunkLength) + ' (must be)')
-
-# ---------------------------------------------------------------------------
-
 class PacketAnswerCommandGetImei(PacketAnswer):
     """
      Answer on CommandGetImei
@@ -1940,12 +1885,42 @@ class PacketAnswerCommandGetImei(PacketAnswer):
          @param body: Body bytes
          @protected
         """
+        print(self.body)
         print("Got Imei!")
         super(PacketAnswerCommandGetImei, self)._parseBody()
-        buffer = self.body        
+        buffer = self.body   
+        print( buffer)     
         self._command = unpack('<B', buffer[:1])[0]
         self.__imei = buffer.decode("ascii")[1:]
         print("Imei is %s" % self.__imei)
+
+
+class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
+    """
+     Answer on CommandGetRegisteredIButtons
+    """
+    _command = 5
+    
+    __numbers = [0]*5
+    
+    @property
+    def numbers(self):
+        if self._rebuild: self._build()
+        return self.__numbers
+    
+    def _parseBody(self):
+        print("Got IButtons!")
+        
+        super(PacketAnswerCommandGetRegisteredIButtons, self)._parseBody()
+        buffer = self.body
+        print(buffer)
+        self._command = unpack('<B', buffer[:1])[0]
+        
+        print(self._command)
+        
+        numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00') for i in range(0,5)]  #divide buffer into 5 chunks, add 2 zero bytes for unpacking and unpack as Q
+        self.__numbers = numbers
+        
 
 class PacketAnswerCommandGetPhones(PacketAnswer):
     """
@@ -1990,32 +1965,6 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
 
 
 
-class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
-    """
-     Answer on CommandGetRegisteredIButtons
-    """
-    _command = 5
-    
-    __numbers = [0]*5
-    
-    @property
-    def numbers(self):
-        if self._rebuild: self._build()
-        return self.__numbers
-    
-    def _parseBody(self):
-        print("Got IButtons!")
-        
-        super(PacketAnswerCommandGetRegisteredIButtons, self)._parseBody()
-        buffer = self.body
-        print(buffer)
-        self._command = unpack('<B', buffer[:1])[0]
-        
-        print(self._command)
-        
-        numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00') for i in range(0,5)]  #divide buffer into 5 chunks, add 2 zero bytes for unpacking and unpack as Q
-        self.__numbers = numbers
-        
 
 class PacketAnswerCommandGetTrackParams(PacketAnswer):
     """
@@ -2188,7 +2137,63 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
         self._command = unpack('<B', buffer[:1])[0]
         
         self.__serviceMessage200 = unpack('<H', buffer[1:3]) 
-    
+   
+
+class PacketAnswerCommandGetImage(PacketAnswer):
+    """
+     Answer on CommandGetImage
+    """
+    _command = 20
+
+    __code = 0
+    __imageSize = 0
+    __chunkNumber = 0
+    __chunkData = None
+
+    @property
+    def code(self):
+        if self._rebuild: self._build()
+        return self.__code
+
+    @property
+    def imageSize(self):
+        if self._rebuild: self._build()
+        return self.__imageSize
+
+    @property
+    def chunkNumber(self):
+        if self._rebuild: self._build()
+        return self.__chunkNumber
+
+    @property
+    def chunkData(self):
+        if self._rebuild: self._build()
+        return self.__chunkData
+
+    def _parseBody(self):
+        """
+         Parses body of the packet
+         @param body: Body bytes
+         @protected
+        """
+        super(PacketAnswerCommandGetImage, self)._parseBody()
+        buffer = self._body
+        self._command = unpack('<B', buffer[:1])[0]
+        self.__code = unpack('<B', buffer[1:2])[0]
+        if self.__code == IMAGE_ANSWER_CODE_SIZE:
+            b, w = unpack('<HB', buffer[2:5])
+            self.__imageSize = b | (w << 16)
+        elif self.__code == IMAGE_ANSWER_CODE_DATA:
+            self.__chunkNumber = unpack('<B', buffer[2:3])[0]
+            chunkLength = unpack('<H', buffer[3:5])[0]
+            self.__chunkData = buffer[5:5 + chunkLength]
+            if len(self.__chunkData) != chunkLength:
+                raise Exception('Incorrect image chunk length! ' +\
+                    str(len(self.__chunkData)) + ' (given) != ' +\
+                    str(chunkLength) + ' (must be)')
+
+# ---------------------------------------------------------------------------
+ 
 
 class PacketFactory(AbstractPacketFactory):
     """
@@ -2429,6 +2434,18 @@ class TestCase(unittest.TestCase):
         packet = packets[0]
         self.assertEqual(packet.chunkNumber, 0)
         self.assertEqual(len(packet.chunkData), 506)
+    
+    def test_commandPacketAnswerCommandGetImei(self):
+        data = b'\x10\x80\x01868204003057949W!'
+        packets = self.factory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertEqual(packet._command, 1)
+        self.assertEqual(packet.imei, '868204003057949')
+    
+    def test_commandPacketAnswerCommandGetRegisteredIButtons(self):
+        data = b'\x1f\x80\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00i\xc6'
+        packets = self.factory.getPacketsFromBuffer(data)
+    
 
     def test_commandChangeDeviceNumber(self):
         cmd = CommandChangeDeviceNumber({

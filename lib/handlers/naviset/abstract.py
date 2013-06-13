@@ -74,8 +74,8 @@ class NavisetHandler(AbstractHandler):
         #self.sendCommand(packets.CommandGetPhones())
         
         #b'\x01868204003057949'
-        self.sendCommand(packets.CommandGetImei())
-        #self.sendCommand(packets.CommandGetRegisteredIButtons())
+        #self.sendCommand(packets.CommandGetImei())
+        self.sendCommand(packets.CommandGetRegisteredIButtons())
         #self.sendCommand(packets.CommandSwitchSecurityMode())
         #self.sendCommand(packets.CommandGetTrackParams())
         

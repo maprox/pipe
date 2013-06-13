@@ -1921,16 +1921,6 @@ class PacketAnswerCommandGetImage(PacketAnswer):
 
 # ---------------------------------------------------------------------------
 
-class PacketAnswerCommandGetPhones(PacketAnswer):
-    """
-     Answer on CommandGetPhones
-    """
-    _command = 7
-    def _parseBody(self):
-        print("Got phones!")
-        buffer = self.body
-        print(buffer)
-
 class PacketAnswerCommandGetImei(PacketAnswer):
     """
      Answer on CommandGetImei
@@ -1957,42 +1947,61 @@ class PacketAnswerCommandGetImei(PacketAnswer):
         self.__imei = buffer.decode("ascii")[1:]
         print("Imei is %s" % self.__imei)
 
+class PacketAnswerCommandGetPhones(PacketAnswer):
+    """
+     Answer on CommandGetPhones
+    """
+    _command = 7
+    
+    __phones = [0]*5
+    __call_sms_calls = [0] * 5
+    __call_sms_smss = [0] * 5
+    
+    @property
+    def phones(self):
+        if self._rebuild: self._build()
+        return self.__phones
+    
+    @property
+    def call_sms_calls(self):
+        if self._rebuild: self._build()
+        return self.__call_sms_calls
+    
+    @property
+    def call_sms_smss(self):
+        if self._rebuild: self._build()
+        return self.__call_sms_smss
+    
+    def _parseBody(self):
+        print("Got phones!")
+        super(PacketAnswerCommandGetPhones, self)._parseBody()
+        buffer = self.body
+        self._command = unpack('<B', buffer[:1])[0]
+        
+        
+        for i in range(0, 5):
+            self.__phones[i] = buffer.decode("ascii")[i*11:(i+1)*11 - 1]
+            call_sms = unpack("<B", buffer[(i+1)*11-1:(i+1)*11])[0]
+            self.__call_sms_calls[i] = call_sms >> 4
+            self.__call_sms_smss[i] = call_sms & 15
+        
+        
+        print(buffer)
+
+
+
 class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     """
      Answer on CommandGetRegisteredIButtons
     """
     _command = 5
     
-    __number0 = 0
-    __number1 = 0
-    __number2 = 0
-    __number3 = 0
-    __number4 = 0
+    __numbers = [0]*5
     
     @property
-    def number0(self):
+    def numbers(self):
         if self._rebuild: self._build()
-        return self.__number0
-    
-    @property
-    def number1(self):
-        if self._rebuild: self._build()
-        return self.__number1
-    
-    @property
-    def number2(self):
-        if self._rebuild: self._build()
-        return self.__number2
-    
-    @property
-    def number3(self):
-        if self._rebuild: self._build()
-        return self.__number3
-    
-    @property
-    def number4(self):
-        if self._rebuild: self._build()
-        return self.__number4
+        return self.__numbers
     
     def _parseBody(self):
         print("Got IButtons!")
@@ -2005,40 +2014,180 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
         print(self._command)
         
         numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00') for i in range(0,5)]  #divide buffer into 5 chunks, add 2 zero bytes for unpacking and unpack as Q
-        __number0 = numbers[0]
-        __number1 = numbers[1]
-        __number2 = numbers[2]
-        __number3 = numbers[3]
-        __number4 = numbers[4]
+        self.__numbers = numbers
         
-        
-        #def chunks(l, n):
-        #    return [l[i:i+n] for i in range(0, len(l), n)]
-        
-        #print(buffer)
-        #for chunk in chunks(buffer, 6):
-        #    print(chunk)
-        #print(unpack("<s", buffer))
 
 class PacketAnswerCommandGetTrackParams(PacketAnswer):
     """
      Answer on CommandGetTrackParams
     """
     _command = 10
+    
+    __filterCoordinates = 0
+    __filterStraightPath = 0
+    __filterRestructuring = 0
+    __filterWriteOnEvent = 0
+    __accelerometerSensitivity = 0
+    __timeToStandby = 0
+    __timeRecordingStandby = 0
+    __timeRecordingMoving = 0
+    __timeRecordingDistance = 0
+    __drawingOnAngles = 0
+    __minSpeed = 0
+    __HDOP = 0
+    __minspeed = 0
+    __maxspeed = 0
+    __acceleration = 0
+    __jump = 0
+    __idle = 0
+    __courseDeviation = 0
+    
+    @property
+    def filterCoordinates(self):
+        if self._rebuild: self._build()
+        return self.__filterCoordinates
+        
+    @property
+    def filterStraightPath(self):
+        if self._rebuild: self._build()
+        return self.__filterStraightPath
+        
+    @property
+    def filterRestructuring(self):
+        if self._rebuild: self._build()
+        return self.__filterRestructuring
+        
+    @property
+    def filterWriteOnEvent(self):
+        if self._rebuild: self._build()
+        return self.__filterWriteOnEvent
+    
+    @property
+    def accelerometerSensitivity(self):
+        if self._rebuild: self._build()
+        return self.__accelerometerSensitivity
+    
+    @property
+    def timeToStandby(self):
+        if self._rebuild: self._build()
+        return self.__timeToStandby
+    
+    @property
+    def timeRecordingStandby(self):
+        if self._rebuild: self._build()
+        return self.__timeRecordingStandby
+    
+    @property
+    def timeRecordingMoving(self):
+        if self._rebuild: self._build()
+        return self.__timeRecordingMoving
+    
+    @property
+    def timeRecordingDistance(self):
+        if self._rebuild: self._build()
+        return self.__timeRecordingDistance
+    
+    @property
+    def drawingOnAngles(self):
+        if self._rebuild: self._build()
+        return self.__drawingOnAngles
+    
+    @property
+    def minSpeed(self):
+        if self._rebuild: self._build()
+        return self.__minSpeed
+    
+    @property
+    def HDOP(self):
+        if self._rebuild: self._build()
+        return self.__HDOP
+    
+    @property
+    def minspeed(self):
+        if self._rebuild: self._build()
+        return self.__minspeed
+    
+    @property
+    def maxspeed(self):
+        if self._rebuild: self._build()
+        return self.__maxspeed
+    
+    @property
+    def acceleration(self):
+        if self._rebuild: self._build()
+        return self.__acceleration
+    
+    @property
+    def jump(self):
+        if self._rebuild: self._build()
+        return self.__jump
+    
+    @property
+    def idle(self):
+        if self._rebuild: self._build()
+        return self.__idle
+    
+    @property
+    def courseDeviation(self):
+        if self._rebuild: self._build()
+        return self.__courseDeviation
+    
+    
     def _parseBody(self):
         print("Got tracker parameters")
         buffer = self.body
-        print(buffer)
+        _filter = unpack("<B", buffer[0:1])[0]
+        print("Filter:")
+        print(_filter)
+        print(_filter >> 7)
+        print((_filter >> 7) & 1)
+        self.__filterCoordinates = (_filter >> 7) & 1
+        self.__filterStraightPath = (_filter >> 6) & 1
+        self.__filterRestructuring = (_filter >> 5) & 1
+        self.__filterWriteOnEvent = (_filter >> 4) & 1
+        
+        #print(self.__filterCoordinates)
+        #print(self.__filterStraightPath)
+        #print(self.__filterRestructuring)
+        #print(self.__filterWriteOnEvent)
+        
+        self.__accelerometerSensitivity = unpack("<B", buffer[1:2])
+        self.__timeToStandby = unpack("<H", buffer[2:4])
+        self.__timeRecordingStandby = unpack("<H", buffer[4:6])
+        self.__timeRecordingMoving = unpack("<H", buffer[6:8])
+        self.__timeRecordingDistance = unpack("<H", buffer[8:10])
+        self.__drawingOnAngles = unpack("<B", buffer[10:11])
+        self.__minSpeed = unpack("<B", buffer[11:12])
+        self.__HDOP = unpack("<B", buffer[12:13])
+        self.__minspeed = unpack("<B", buffer[13:14])
+        self.__maxspeed = unpack("<B", buffer[14:15])
+        self.__acceleration = unpack("<B", buffer[15:16])
+        self.__jump = unpack("<B", buffer[16:17])
+        self.__idle = unpack("<B", buffer[17:18])
+        self.__courseDeviation = unpack("<B", buffer[18:19])
+        
+        print("Jump is %d" % self.__jump)
 
 class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     """
     Answer on CommandSwitchSecurityMode
     """
     _command = 14
+    
+    __serviceMessage200 = 0
+    
+    @property
+    def serviceMessage200(self):
+        if self._rebuild: self._build()
+        return self.__serviceMessage200
+    
     def _parseBody(self):
         print("Got service message 200")
+        super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()
         buffer = self.body
-        #print(unpack("<H", buffer))
+        self._command = unpack('<B', buffer[:1])[0]
+        
+        self.__serviceMessage200 = unpack('<H', buffer[1:3]) 
     
 
 class PacketFactory(AbstractPacketFactory):

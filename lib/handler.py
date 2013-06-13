@@ -89,7 +89,9 @@ class AbstractHandler(object):
         except Exception as E:
             print("error!")
             print(type(self).__name__)
+            print(E)
             log.error("processData error: %s", E)
+            raise E
         
         if not self.needProcessCommands(): return self
         

@@ -94,7 +94,9 @@ class AbstractHandler(object):
             raise E
         
         if not self.needProcessCommands(): return self
-        
+
+        self.processAmqpCommands()
+
         #try is now silently excepting all the errors
         #to avoid connection errors during testing
         try:
@@ -115,6 +117,11 @@ class AbstractHandler(object):
         except:
             pass
         return self
+
+    def processAmqpCommands(self):
+        """
+        """
+        pass
 
     def processRequest(self, data):
         """

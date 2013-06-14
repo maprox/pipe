@@ -435,6 +435,7 @@ class PacketAnswer(NavisetPacket):
         CLASS = None
         if data:
             command = unpack('<B', data[2:3])[0]
+            #print("Command is: %d" % command)
             CLASS = getAnswerClassByNumber(command)
         return CLASS
 
@@ -1938,20 +1939,19 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
         return self.__call_sms_smss
     
     def _parseBody(self):
-        print("Got phones!")
+        #print("Got phones!")
         super(PacketAnswerCommandGetPhones, self)._parseBody()
         buffer = self.body
         self._command = unpack('<B', buffer[:1])[0]
         
-        
         for i in range(0, 5):
-            self.__phones[i] = buffer.decode("ascii")[i*11:(i+1)*11 - 1]
+            self.__phones[i] = (buffer.decode("ascii")[i*11:(i+1)*11 - 1])
             call_sms = unpack("<B", buffer[(i+1)*11-1:(i+1)*11])[0]
             self.__call_sms_calls[i] = call_sms >> 4
             self.__call_sms_smss[i] = call_sms & 15
         
         
-        print(buffer)
+        #print(buffer)
 
 
 
@@ -2073,13 +2073,15 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     
     
     def _parseBody(self):
-        print("Got tracker parameters")
+        #print("Got tracker parameters")
+        super(PacketAnswerCommandGetTrackParams, self)._parseBody()
         buffer = self.body
-        _filter = unpack("<B", buffer[0:1])[0]
-        print("Filter:")
-        print(_filter)
-        print(_filter >> 7)
-        print((_filter >> 7) & 1)
+        self._command = unpack('<B', buffer[:1])[0]
+        _filter = unpack("<B", buffer[1:2])[0]
+        #print("Filter:")
+        #print(_filter)
+        #print(_filter >> 7)
+        #print((_filter >> 7) & 1)
         self.__  = (_filter >> 7) & 1
         self.__filterStraightPath = (_filter >> 6) & 1
         self.__filterRestructuring = (_filter >> 5) & 1
@@ -2090,28 +2092,28 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
         #print(self.__filterRestructuring)
         #print(self.__filterWriteOnEvent)
         
-        self.__accelerometerSensitivity = unpack("<H", buffer[1:3])[0]
-        self.__timeToStandby = unpack("<H", buffer[3:5])[0]
-        self.__timeRecordingStandby = unpack("<H", buffer[5:7])[0]
-        self.__timeRecordingMoving = unpack("<H", buffer[7:9])[0]
-        self.__timeRecordingDistance = unpack("<B", buffer[9:10])[0]
-        self.__drawingOnAngles = unpack("<B", buffer[10:11])[0]
-        self.__minSpeed = unpack("<B", buffer[11:12])[0]
-        self.__HDOP = unpack("<B", buffer[12:13])[0]
-        self.__minspeed = unpack("<B", buffer[13:14])[0]
-        self.__maxspeed = unpack("<B", buffer[14:15])[0]
-        self.__acceleration = unpack("<B", buffer[15:16])[0]
-        self.__jump = unpack("<B", buffer[16:17])[0]
-        self.__idle = unpack("<B", buffer[17:18])[0]
-        self.__courseDeviation = unpack("<B", buffer[18:19])[0]
+        self.__accelerometerSensitivity = unpack("<H", buffer[2:4])[0]
+        self.__timeToStandby = unpack("<H", buffer[4:6])[0]
+        self.__timeRecordingStandby = unpack("<H", buffer[6:8])[0]
+        self.__timeRecordingMoving = unpack("<H", buffer[8:10])[0]
+        self.__timeRecordingDistance = unpack("<B", buffer[10:11])[0]
+        self.__drawingOnAngles = unpack("<B", buffer[11:12])[0]
+        self.__minSpeed = unpack("<B", buffer[12:13])[0]
+        self.__HDOP = unpack("<B", buffer[13:14])[0]
+        self.__minspeed = unpack("<B", buffer[14:15])[0]
+        self.__maxspeed = unpack("<B", buffer[15:16])[0]
+        self.__acceleration = unpack("<B", buffer[16:17])[0]
+        self.__jump = unpack("<B", buffer[17:18])[0]
+        self.__idle = unpack("<B", buffer[18:19])[0]
+        self.__courseDeviation = unpack("<B", buffer[19:20])[0]
         
-        print("Jump is %d" % self.__jump)
+        #print("Jump is %d" % self.__jump)
 
 class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     """
     Answer on CommandSwitchSecurityMode
     """
-    _command = 14
+    _command = 200
     
     __serviceMessage200 = 0
     
@@ -2121,12 +2123,15 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
         return self.__serviceMessage200
     
     def _parseBody(self):
-        print("Got service message 200")
+        #print("Got service message 200")
         super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()
         buffer = self.body
         self._command = unpack('<B', buffer[:1])[0]
         
-        self.__serviceMessage200 = unpack('<H', buffer[1:3]) 
+        self.__serviceMessage200 = unpack('<H', buffer[1:3])[0]
+        #print("And command is: %d" % self._command)
+        #print("And service message 200 is: %d" % self.__serviceMessage200)
+         
    
 
 class PacketAnswerCommandGetImage(PacketAnswer):
@@ -2213,6 +2218,8 @@ class PacketFactory(AbstractPacketFactory):
         # read header and length
         length = unpack("<H", data[:2])[0]
         number = length >> 14
+        
+        #print("Number is: %d" % number)
 
         CLASS = self.getClass(number)
         if not CLASS:
@@ -2444,25 +2451,46 @@ class TestCase(unittest.TestCase):
         data = b'\x14\x80\n\x00 \x03<\x00\x14\x00\x1e\x00\x1e\x05\x03(\x03\x96\x1e2\x1e\x05O\xcc'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
+        
+        self.assertEqual(packet._command, 10)
         self.assertEqual(packet.filterCoordinates, 0)
         self.assertEqual(packet.filterStraightPath, 0)
         self.assertEqual(packet.filterRestructuring, 0)
         self.assertEqual(packet.filterWriteOnEvent, 0)
-        self.assertEqual(packet.accelerometerSensitivity, 8192)
-        self.assertEqual(packet.timeToStandby, 15363)
-        self.assertEqual(packet.timeRecordingStandby, 5120)
+        self.assertEqual(packet.accelerometerSensitivity, 800)
+        self.assertEqual(packet.timeToStandby, 60)
+        self.assertEqual(packet.timeRecordingStandby, 20)
         self.assertEqual(packet.timeRecordingMoving, 30)
         self.assertEqual(packet.timeRecordingDistance, 30)
-        self.assertEqual(packet.drawingOnAngles, 30)
-        self.assertEqual(packet.minSpeed, 30)
-        self.assertEqual(packet.HDOP, 30)
-        self.assertEqual(packet.minspeed, 30)
-        self.assertEqual(packet.miaxspeed, 30)
+        self.assertEqual(packet.drawingOnAngles, 5)
+        self.assertEqual(packet.minSpeed, 3)
+        self.assertEqual(packet.HDOP, 40)
+        self.assertEqual(packet.minspeed, 3)
+        self.assertEqual(packet.maxspeed, 150)
         self.assertEqual(packet.acceleration, 30)
-        self.assertEqual(packet.jump, 30)
+        self.assertEqual(packet.jump, 50)
         self.assertEqual(packet.idle, 30)
-        self.assertEqual(packet.courseDeviation, 30)
+        self.assertEqual(packet.courseDeviation, 5)
+    
+    def test_commandPacketAnswerCommandSwitchSecurityMode(self):    
+        data = b'\x03\x80\xc8\x00\x02I\xff'
+        #print(unpack("<B", data[:1]))
+        packets = self.factory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertEqual(packet._command, 200)
+        self.assertEqual(packet.serviceMessage200, 512)
         
+    
+    def test_commandPacketAnswerCommandGetPhones(self):
+        data = b'8\x80\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05E'
+        #print("GetPhones:")
+        #print(unpack("<B", data[:1]))
+        packets = self.factory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertEqual(packet._command, 7)
+        self.assertEqual(packet.phones[3], '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+        self.assertEqual(packet.call_sms_calls[4], 0)
+        self.assertEqual(packet.call_sms_smss[2], 0)
 
     def test_commandChangeDeviceNumber(self):
         cmd = CommandChangeDeviceNumber({

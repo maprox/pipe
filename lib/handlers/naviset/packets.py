@@ -435,7 +435,6 @@ class PacketAnswer(NavisetPacket):
         CLASS = None
         if data:
             command = unpack('<B', data[2:3])[0]
-            #print("Command is: %d" % command)
             CLASS = getAnswerClassByNumber(command)
         return CLASS
 
@@ -1939,7 +1938,6 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
         return self.__call_sms_smss
     
     def _parseBody(self):
-        #print("Got phones!")
         super(PacketAnswerCommandGetPhones, self)._parseBody()
         buffer = self.body
         self._command = unpack('<B', buffer[:1])[0]
@@ -1949,12 +1947,6 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
             call_sms = unpack("<B", buffer[(i+1)*11-1:(i+1)*11])[0]
             self.__call_sms_calls[i] = call_sms >> 4
             self.__call_sms_smss[i] = call_sms & 15
-        
-        
-        #print(buffer)
-
-
-
 
 class PacketAnswerCommandGetTrackParams(PacketAnswer):
     """
@@ -2073,25 +2065,16 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     
     
     def _parseBody(self):
-        #print("Got tracker parameters")
         super(PacketAnswerCommandGetTrackParams, self)._parseBody()
         buffer = self.body
         self._command = unpack('<B', buffer[:1])[0]
         _filter = unpack("<B", buffer[1:2])[0]
-        #print("Filter:")
-        #print(_filter)
-        #print(_filter >> 7)
-        #print((_filter >> 7) & 1)
+
         self.__  = (_filter >> 7) & 1
         self.__filterStraightPath = (_filter >> 6) & 1
         self.__filterRestructuring = (_filter >> 5) & 1
         self.__filterWriteOnEvent = (_filter >> 4) & 1
-        
-        #print(self.__filterCoordinates)
-        #print(self.__filterStraightPath)
-        #print(self.__filterRestructuring)
-        #print(self.__filterWriteOnEvent)
-        
+                
         self.__accelerometerSensitivity = unpack("<H", buffer[2:4])[0]
         self.__timeToStandby = unpack("<H", buffer[4:6])[0]
         self.__timeRecordingStandby = unpack("<H", buffer[6:8])[0]
@@ -2106,8 +2089,6 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
         self.__jump = unpack("<B", buffer[17:18])[0]
         self.__idle = unpack("<B", buffer[18:19])[0]
         self.__courseDeviation = unpack("<B", buffer[19:20])[0]
-        
-        #print("Jump is %d" % self.__jump)
 
 class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     """
@@ -2123,16 +2104,11 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
         return self.__serviceMessage200
     
     def _parseBody(self):
-        #print("Got service message 200")
         super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()
         buffer = self.body
         self._command = unpack('<B', buffer[:1])[0]
         
-        self.__serviceMessage200 = unpack('<H', buffer[1:3])[0]
-        #print("And command is: %d" % self._command)
-        #print("And service message 200 is: %d" % self.__serviceMessage200)
-         
-   
+        self.__serviceMessage200 = unpack('<H', buffer[1:3])[0]   
 
 class PacketAnswerCommandGetImage(PacketAnswer):
     """
@@ -2218,8 +2194,6 @@ class PacketFactory(AbstractPacketFactory):
         # read header and length
         length = unpack("<H", data[:2])[0]
         number = length >> 14
-        
-        #print("Number is: %d" % number)
 
         CLASS = self.getClass(number)
         if not CLASS:
@@ -2474,7 +2448,6 @@ class TestCase(unittest.TestCase):
     
     def test_commandPacketAnswerCommandSwitchSecurityMode(self):    
         data = b'\x03\x80\xc8\x00\x02I\xff'
-        #print(unpack("<B", data[:1]))
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         self.assertEqual(packet._command, 200)
@@ -2483,8 +2456,6 @@ class TestCase(unittest.TestCase):
     
     def test_commandPacketAnswerCommandGetPhones(self):
         data = b'8\x80\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05E'
-        #print("GetPhones:")
-        #print(unpack("<B", data[:1]))
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         self.assertEqual(packet._command, 7)

@@ -270,7 +270,7 @@ class BasePacket(BinaryPacket):
          Parses packet header
          @return: self
         """
-        print (self._rawData)
+        #print (self._rawData)
         super(BasePacket, self)._parseHead()
         buffer = self._rawData
         self._head = b''

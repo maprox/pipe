@@ -30,8 +30,8 @@ class MessageBroker:
          @return:
         """
         self._exchanges = {
-            'maprox.mon.device': Exchange(
-                'maprox.mon.device', 'topic', durable = True)
+            'mon.device': Exchange(
+                'mon.device', 'topic', durable = True)
         }
 
     def initQueues(self):
@@ -45,7 +45,7 @@ class MessageBroker:
             queueName = self.getRoutingKey(workerNum)
             self._queues[queueName] = Queue(
                 queueName,
-                exchange = self._exchanges['maprox.mon.device'],
+                exchange = self._exchanges['mon.device'],
                 routing_key = queueName
             )
 
@@ -54,13 +54,14 @@ class MessageBroker:
          Returns routing key name by device imei
          @param imei: device ideintifier
         """
-        workerNum = '0'
-        if imei and len(imei) > 0:
-            workerNum = imei[-1:].upper()
-        if workerNum not in '0123456789ABCDEF':
-            workerNum = '0'
-        routingKey = 'maprox.mon.device.' + \
-                    'packet.create.worker%s' % workerNum
+        #workerNum = '0'
+        #if imei and len(imei) > 0:
+        #    workerNum = imei[-1:].upper()
+        #if workerNum not in '0123456789ABCDEF':
+        #    workerNum = '0'
+        #routingKey = 'maprox.mon.device.' + \
+        #            'packet.create.worker%s' % workerNum
+        routingKey = 'maprox.mon.device.packet.create.*'
         return routingKey
 
     def sendPackets(self, packets):
@@ -69,7 +70,7 @@ class MessageBroker:
          @param packets: list of dict
          @return:
         """
-        exchange = self._exchanges['maprox.mon.device']
+        exchange = self._exchanges['mon.device']
         with Connection(conf.amqpConnection) as conn:
             log.debug('BROKER: Connected to %s' % conf.amqpConnection)
             with conn.Producer(serializer = 'json') as producer:

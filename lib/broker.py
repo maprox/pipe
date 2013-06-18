@@ -61,7 +61,7 @@ class MessageBroker:
         #    workerNum = '0'
         #routingKey = 'maprox.mon.device.' + \
         #            'packet.create.worker%s' % workerNum
-        routingKey = 'maprox.mon.device.packet.create.*'
+        routingKey = 'production.mon.device.packet.create.*'
         return routingKey
 
     def sendPackets(self, packets):

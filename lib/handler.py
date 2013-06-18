@@ -221,10 +221,19 @@ class AbstractHandler(object):
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)
         else:
-            log.error('%s::store():\n %s',
-              self.__class__, result.getErrorsList())
-            # send data to storage on error to save packets
-            storage.save(self.uid if self.uid else 'unknown', self._buffer)
+            errorsList = result.getErrorsList()
+            log.error('%s::store():\n %s', self.__class__, errorsList)
+            savePackets = True
+            if len(errorsList) > 0:
+                e = errorsList[0]
+                if 'params' in e:
+                    params = e['params']
+                    if len(params) > 1:
+                        savePackets != (params[1] == 404)
+            if savePackets:
+                # send data to storage on error to save packets
+                storage.save(self.uid if self.uid else 'unknown',
+                    self._buffer)
         return result
 
     def translate(self, data):

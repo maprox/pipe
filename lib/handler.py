@@ -23,6 +23,7 @@ class AbstractHandler(object):
      Abstract class for all implemented protocols
     """
     _buffer = None # buffer of the current dispatch loop (for storage save)
+    _packetsFactory = None # packets factory link
 
     uid = False
     """ Uid of currently connected device """
@@ -81,15 +82,15 @@ class AbstractHandler(object):
          Must be overridden in child classes
          @param data: Data from socket
         """
-        
-        try:
-            protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
-            for protocolPacket in protocolPackets:
-                self.processProtocolPacket(protocolPacket)
-        except Exception as E:
-            print("error!")
-            print(E)
-            log.error("processData error: %s", E)
+        if self._packetsFactory:
+            try:
+                protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
+                for protocolPacket in protocolPackets:
+                    self.processProtocolPacket(protocolPacket)
+            except Exception as E:
+                print("error!")
+                print(E)
+                log.error("processData error: %s", E)
         
         if not self.needProcessCommands(): return self
 

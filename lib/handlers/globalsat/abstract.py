@@ -29,7 +29,7 @@ class GlobalsatHandler(AbstractHandler):
     re_patterns = {
       'line': '(?P<line>(?P<head>GS\w){fields})\*(?P<checksum>\w+)!',
       'field': ',(?P<{field}>{value})',
-      'unknownField': '[\w\.]+',
+      'unknownField': '[\w\.]*',
       'service': {
         'I': '\w+',
         'T': '[0-3]',
@@ -199,6 +199,7 @@ class GlobalsatHandler(AbstractHandler):
         sensor = {}
         for char in data:
             value = data[char]
+            if value == '': value = '0'
             # IMEI / UID
             if char == "S":
                 packet['uid'] = value

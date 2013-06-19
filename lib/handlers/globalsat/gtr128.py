@@ -45,6 +45,7 @@ class Handler(GlobalsatHandler):
         sensor = packet['sensors'] or {}
         for char in data:
             value = data[char]
+            if value == '': value = '0'
             if char == "a":
                 sensor['ain0'] = float(value)
             if char == "c":
@@ -103,3 +104,14 @@ class TestCase(unittest.TestCase):
         rc = h.re_compiled['report']
         m = rc.search(data, 0)
         self.assertIsNone(m)
+
+    def test_inputDataCorrupted(self):
+        h = self.handler
+        data = 'GSr,012896007472407,0000,8,8080,8080,3,130313,084744,' + \
+               'E03739.6939,N5547.2671,134,10.92,264,9,1.0,13660mV,0,0,*77!'
+        rc = h.re_compiled['report']
+        m = rc.search(data, 0)
+        self.assertIsNotNone(m)
+        packet = h.translate(m.groupdict())
+        self.assertEqual(packet['uid'], "012896007472407")
+

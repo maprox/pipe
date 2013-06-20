@@ -75,10 +75,19 @@ class MessageBroker:
             with conn.Producer(serializer = 'json') as producer:
                 for packet in packets:
                     uid = None if 'uid' not in packet else packet['uid']
+                    routing_key = self.getRoutingKey(uid)
+                    
+                    packet_queue = Queue(
+                        routing_key,
+                        exchange = exchange,
+                        routing_key = routing_key
+                    )
+                    
                     producer.publish(
                         packet,
                         exchange = exchange,
-                        routing_key = self.getRoutingKey(uid)
+                        routing_key = routing_key,
+                        declare = [packet_queue]
                     )
                     if uid:
                         log.debug('Packet for "%s" is sent via message broker'

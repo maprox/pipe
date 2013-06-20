@@ -87,6 +87,11 @@ class NavisetHandler(AbstractHandler):
     def storeCommandPacket(self, commandPacket):
         print("Called command packet storing procedure")
         print(commandPacket)
+        print(str(commandPacket.__dict__))
+        
+        stored_information = [{"guid": "GUID", "status": 2, "data": str(commandPacket.__dict__)}]
+        
+        self.store(stored_information)
         
 
     def sendCommand(self, command):

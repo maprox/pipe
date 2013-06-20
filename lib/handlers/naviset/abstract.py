@@ -54,8 +54,16 @@ class NavisetHandler(AbstractHandler):
             log.info('HeadPack is stored.')
             self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
-
+        
+        if isinstance(protocolPacket, packets.PacketAnswer):
+            log.info("Storing command answer packet")
+            self.storeCommandPacket(protocolPacket)
+            return
+        
         if not isinstance(protocolPacket, packets.PacketData):
+            print("Paket ne dannyh!")
+            print(type(protocolPacket))
+            print(isinstance(protocolPacket, packets.PacketAnswer))
             return
 
         if not self.__headPacketRawData:
@@ -68,16 +76,22 @@ class NavisetHandler(AbstractHandler):
 
         log.info(observerPackets)
         self._buffer = self.__headPacketRawData + protocolPacket.rawData
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  OBSERVER PACKETS  !!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        print(observerPackets)
         self.store(observerPackets)
 
         #self.sendCommand(packets.CommandGetStatus())
         #self.sendCommand(packets.CommandGetPhones())
         
         #b'\x01868204003057949'
-        #self.sendCommand(packets.CommandGetImei())
+        self.sendCommand(packets.CommandGetImei())
         #self.sendCommand(packets.CommandGetRegisteredIButtons())
         #self.sendCommand(packets.CommandSwitchSecurityMode({'securityMode': 0}))
         #self.sendCommand(packets.CommandGetTrackParams())
+    
+    def storeCommandPacket(self, commandPacket):
+        print("Called command packet storing procedure")
+        print(commandPacket)
         
 
     def sendCommand(self, command):

@@ -70,8 +70,6 @@ class Manager(Store):
         """
         try:
             broker.sendPackets(packets)
-            print("~~~~~~~~~~~~~~~~~~~~~~~SENDING PACKETS VIA BROKER~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            print(packets)
         except Exception as E:
             log.error(E)
 

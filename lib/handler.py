@@ -93,10 +93,6 @@ class AbstractHandler(object):
         
         if not self.needProcessCommands(): return self
         
-        print(type(protocolPackets[0]))
-        print(protocolPackets[0].to_string())
-        print(protocolPackets[0]._rawData)
-        
         self.processAmqpCommands()
 
         #try is now silently excepting all the errors

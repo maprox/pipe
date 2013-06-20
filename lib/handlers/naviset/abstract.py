@@ -61,9 +61,6 @@ class NavisetHandler(AbstractHandler):
             return
         
         if not isinstance(protocolPacket, packets.PacketData):
-            print("Paket ne dannyh!")
-            print(type(protocolPacket))
-            print(isinstance(protocolPacket, packets.PacketAnswer))
             return
 
         if not self.__headPacketRawData:
@@ -76,8 +73,6 @@ class NavisetHandler(AbstractHandler):
 
         log.info(observerPackets)
         self._buffer = self.__headPacketRawData + protocolPacket.rawData
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  OBSERVER PACKETS  !!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        print(observerPackets)
         self.store(observerPackets)
 
         #self.sendCommand(packets.CommandGetStatus())

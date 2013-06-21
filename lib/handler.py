@@ -23,6 +23,7 @@ class AbstractHandler(object):
      Abstract class for all implemented protocols
     """
     _buffer = None # buffer of the current dispatch loop (for storage save)
+    _packetsFactory = None # packets factory link
 
     uid = False
     """ Uid of currently connected device """
@@ -81,15 +82,15 @@ class AbstractHandler(object):
          Must be overridden in child classes
          @param data: Data from socket
         """
-        
-        try:
-            protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
-            for protocolPacket in protocolPackets:
-                self.processProtocolPacket(protocolPacket)
-        except Exception as E:
-            print("error!")
-            print(E)
-            log.error("processData error: %s", E)
+        if self._packetsFactory:
+            try:
+                protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
+                for protocolPacket in protocolPackets:
+                    self.processProtocolPacket(protocolPacket)
+            except Exception as E:
+                print("error!")
+                print(E)
+                log.error("processData error: %s", E)
         
         if not self.needProcessCommands(): return self
         
@@ -221,10 +222,19 @@ class AbstractHandler(object):
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)
         else:
-            log.error('%s::store():\n %s',
-              self.__class__, result.getErrorsList())
-            # send data to storage on error to save packets
-            storage.save(self.uid if self.uid else 'unknown', self._buffer)
+            errorsList = result.getErrorsList()
+            log.error('%s::store():\n %s', self.__class__, errorsList)
+            savePackets = True
+            if len(errorsList) > 0:
+                e = errorsList[0]
+                if 'params' in e:
+                    params = e['params']
+                    if len(params) > 1:
+                        savePackets != (params[1] == 404)
+            if savePackets:
+                # send data to storage on error to save packets
+                storage.save(self.uid if self.uid else 'unknown',
+                    self._buffer)
         return result
 
     def translate(self, data):

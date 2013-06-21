@@ -48,15 +48,15 @@ class Manager(Store):
             # Let's send packets to AMQP broker
             self.sendPacketsViaBroker(packets)
             # Connecting with the server and getting data
-            params = urllib.parse.urlencode(url_data).encode('utf-8')
-            request = urllib.request.Request(conf.pipeSetUrl)
-            request.add_header("Content-Type",
-              "application/x-www-form-urlencoded;charset=utf-8")
-            connection = urllib.request.urlopen(request, params)
-            answer_str = connection.read()
-            log.debug(answer_str)
-            answer_dec = json.loads(answer_str.decode())
-            result.load(answer_dec)
+            #params = urllib.parse.urlencode(url_data).encode('utf-8')
+            #request = urllib.request.Request(conf.pipeSetUrl)
+            #request.add_header("Content-Type",
+            #  "application/x-www-form-urlencoded;charset=utf-8")
+            #connection = urllib.request.urlopen(request, params)
+            #answer_str = connection.read()
+            #log.debug(answer_str)
+            #answer_dec = json.loads(answer_str.decode())
+            #result.load(answer_dec)
         except Exception as E:
             result.error('500', ['Error sending packets: ' + str(E)])
             log.error(E)

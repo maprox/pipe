@@ -69,7 +69,9 @@ class AbstractHandler(object):
         """
         log.debug('%s::dispatch()', self.__class__)
         buffer = self.recv()
+        print("!!!!!!!!!!!!!!!!!!!!!Recved buffer!!!!!!!!!!!!!!!!!!!!!!!!!!!: %s" % buffer)
         while len(buffer) > 0:
+            print("$$$$$$$$$$$$$$$$$$Caliing processData$$$$$$$$$$$$$$$$$$")
             self.processData(buffer)
             buffer = self.recv()
         log.debug('%s::dispatch() - EXIT (empty buffer?)', self.__class__)
@@ -87,6 +89,10 @@ class AbstractHandler(object):
          Must be overridden in child classes
          @param data: Data from socket
         """
+        
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!CALLING PROCESS AMQP COMMAND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        self.processAmqpCommands()
+        
         if self._packetsFactory:
             try:
                 protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
@@ -99,11 +105,8 @@ class AbstractHandler(object):
         
         if not self.needProcessCommands(): return self
         
-        try:
-            pass
-            self.processAmqpCommands(123)
-        except Exception as E:
-            print E
+        
+        
 
         #try is now silently excepting all the errors
         #to avoid connection errors during testing
@@ -214,7 +217,13 @@ class AbstractHandler(object):
          @param the_socket: Instance of a socket object
          @return: String representation of data
         """
-       
+        
+        
+        
+        
+        #self.processAmqpCommands("Calling ProcessAmqp from recv!")
+        
+        
         sock = self.getThread().request
         sock.settimeout(conf.socketTimeout)
         total_data = []
@@ -232,19 +241,20 @@ class AbstractHandler(object):
             # so let's do break here
             if len(data) < conf.socketPacketLength: break
         log.debug('Total data = %s', total_data)
+        
         return b''.join(total_data)
- 
-    def processAmqpCommands(self, data):
+    
+    def processAmqpCommands(self):
         from lib.broker import broker
         try:
             receivedPackets = broker.receivePackets()
-            #print("Type of received packets are: %s" % type(receivedPackets))
-            #print("Received packets are: %s" % receivedPackets)
+            print("Type of received packets are: %s" % type(receivedPackets))
+            print("Received packets are: %s" % receivedPackets)
             if receivedPackets:
-                self.processAmqpCommand(receivedPackets, data)
+                self.processAmqpCommand(receivedPackets)
         except Exception as E:
             print(E)
-
+        
     def processAmqpCommand(self, data):
         print("Got data: %s" % data)
         print("Our class is: %s" % self)
@@ -252,6 +262,7 @@ class AbstractHandler(object):
             print(i, data[i])
         
         
+        print("Processing command to packet")
         import lib.handlers.naviset.packets as packetsModule
         
         commandName = data["command"]
@@ -259,15 +270,23 @@ class AbstractHandler(object):
         commandTransport = data["transport"]
         commandParams = data["params"]
         
-        CommandClass = packetsModule.__dict__[commandName]
-        
-        
-        print("Command class is %s: " % CommandClass)
-        
-        command = CommandClass(commandParams)
+        print(commandName, commandUid, commandTransport, commandParams)
         
         try:
-            print("Sending command???????????????????????")
+            CommandClass = packetsModule.__dict__[commandName]
+            
+            
+            
+            print("Command class is %s: " % CommandClass)
+            
+            command = CommandClass(commandParams)
+        except Exception as E:
+            print("Error is %s" % E)
+        
+        
+        
+        try:
+            print("Sending command???????????????????????//")
             self.sendCommand(command)
         except Exception as E:
             print(E)

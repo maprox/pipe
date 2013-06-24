@@ -190,8 +190,8 @@ class NavisetHandler(AbstractHandler):
             list.append(packet)
         return list
     
-    def processAmqpCommand(self):
-        print("Naviset amqp processing")
+    #def processAmqpCommand(self):
+    #    print("Naviset amqp processing")
     
     def sendAcknowledgement(self, packet):
         """

@@ -111,7 +111,7 @@ class MessageBroker:
         self._drainedBody = body
         message.ack()
     
-    def receivePackets(self):
+    def receivePackets(self, uid):
         """
         Receives packets from the message broker.
         Runs until receives packet or timeout passes
@@ -141,7 +141,7 @@ class MessageBroker:
         url = 'amqp://{0}:{1}@{2}//'.format(username, password, host)
 
         with Connection(url) as conn:
-            routing_key = 'production.mon.device.command.create'
+            routing_key = 'production.mon.device.command.' + uid
             command_queue = Queue(routing_key, exchange = device_exchange, routing_key = routing_key)
             print(1111111)
             with conn.Consumer([command_queue], callbacks = [self.receiveCallback]) as consumer:

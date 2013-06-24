@@ -235,6 +235,53 @@ class NavisetHandler(AbstractHandler):
         }, {
             "message": command1
         }]
+    
+    def processAmqpCommands(self):
+        from lib.broker import broker
+        try:
+            receivedPackets = broker.receivePackets()
+            print("Type of received packets are: %s" % type(receivedPackets))
+            print("Received packets are: %s" % receivedPackets)
+            if receivedPackets:
+                self.processAmqpCommand(receivedPackets)
+        except Exception as E:
+            print(E)
+        
+    def processAmqpCommand(self, data):
+        print("Got data: %s" % data)
+        print("Our class is: %s" % self)
+        for i in data:
+            print(i, data[i])
+        
+        
+        print("Processing command to packet")
+        import lib.handlers.naviset.packets as packetsModule
+        
+        commandName = data["command"]
+        commandUid = data["uid"]
+        commandTransport = data["transport"]
+        commandParams = data["params"]
+        
+        print(commandName, commandUid, commandTransport, commandParams)
+        
+        try:
+            CommandClass = packetsModule.__dict__[commandName]
+            
+            
+            
+            print("Command class is %s: " % CommandClass)
+            
+            command = CommandClass(commandParams)
+        except Exception as E:
+            print("Error is %s" % E)
+        
+        try:
+            print("Sending command???????????????????????//")
+            self.sendCommand(command)
+        except Exception as E:
+            print(E)
+        
+        print("Command is: %s" % command)
 
 # ===========================================================================
 # TESTS

@@ -18,12 +18,13 @@ from urllib.request import urlopen
 import http.client
 from lib.ip import get_ip
 
+from lib.broker import MessageBroker
+
 class AbstractHandler(object):
     """
      Abstract class for all implemented protocols
     """
     _buffer = None # buffer of the current dispatch loop (for storage save)
-    _packetsFactory = None # packets factory link
 
     uid = False
     """ Uid of currently connected device """
@@ -56,12 +57,7 @@ class AbstractHandler(object):
     def getThread(self):
         """ Returns clientThread object """
         return self.__thread
-    
-    def amqp_dispatch(self):
-        while True:
-            print("Dispatching AMQP")
-    
-    
+
     def dispatch(self):
         """
           Data processing method (after validation) from the device:
@@ -87,67 +83,68 @@ class AbstractHandler(object):
          Must be overridden in child classes
          @param data: Data from socket
         """
-        if self._packetsFactory:
-            try:
-                protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
-                for protocolPacket in protocolPackets:
-                    self.processProtocolPacket(protocolPacket)
-            except Exception as E:
-                print("error!")
-                print(E)
-                log.error("processData error: %s", E)
+        print("processing commands!")
+        #print(data)
+        
+        try:
+            protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
+            for protocolPacket in protocolPackets:
+                #print(protocolPacket)
+                self.processProtocolPacket(protocolPacket)
+                #print(protocolPacket.__doc__)
+        except Exception as E:
+            print("error!")
+            log.error("processData error: %s", E)
+            print(E)
         
         if not self.needProcessCommands(): return self
         
-        #self.processAmqpCommands()
+        print("need! need!!")
+        
+        print("Protocol Packet is:")
+        packetString = protocolPacket.toString()
+        
+        broker = MessageBroker()
+        
+        if packetString!="Packet string":
+            broker.sendPackets([packetString], True)
+        
+        self.processAmqpCommands()
 
         #try is now silently excepting all the errors
         #to avoid connection errors during testing
         try:
+            print(1)
             current_db = db.get(self.uid)
-            self.processRequest(current_db.getCommands())
+            print(2)
+            gcm = current_db.getCommands()
+            print(2.5)
+            self.processRequest(gcm)
+            print(3)
 
             current_db = db.get(self.uid)
+            print(4)
             if current_db.isSettingsReady():
                 send = {}
                 config = self.translateConfig(current_db.getSettings())
                 send['config'] = json.dumps(config, separators=(',',':'))
                 send['id_action'] = current_db.getSettingsTaskId()
                 log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
+                
                 connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
                 answer = connection.read()
                 log.debug('Config answered: ' + answer.decode())
                 current_db.deleteSettings()
-        except:
+        except Exception as E:
+            print("Bazooshibka!")
+            print(E)
             pass
         return self
-    
-    
-    
-    """
-    @classmethod
-    def processAmqpCommands(cls, message):        
-        print("Processing AMQP")
-        print("Message is: %s" % message)
-        print("Cls is: %s" % cls)
-        print("Method is: %s" % cls.parsePacketFromAmqp)
-        try:
-            cls.parsePacketFromAmqp(message)
-        except Exception as E:
-            print(E)
+
+    def processAmqpCommands(self):
+        """
+        """
         pass
-    
-    @classmethod
-    def parsePacketFromAmqp(cls, data):
-        print("Parsing packet!")
-        import anyjson
-        print("Unparsed packet type is: %s" % type(data))
-        print("Unparsed packet is: %s" % data)
-        packet = anyjson.deserialize(data)
-        print("Parsed packet is %s" % packet)
-        for i in packet:
-            print(i, packet[i])
-    """
 
     def processRequest(self, data):
         """
@@ -210,18 +207,10 @@ class AbstractHandler(object):
          @param the_socket: Instance of a socket object
          @return: String representation of data
         """
-        
-        from lib.broker import broker
-        
-        
-        #self.processAmqpCommands("Calling ProcessAmqp from recv!")
-        
-        
         sock = self.getThread().request
         sock.settimeout(conf.socketTimeout)
         total_data = []
         while True:
-            print("Recving!!!")
             try:
                 data = sock.recv(conf.socketPacketLength)
             except Exception as E:
@@ -234,45 +223,7 @@ class AbstractHandler(object):
             # so let's do break here
             if len(data) < conf.socketPacketLength: break
         log.debug('Total data = %s', total_data)
-        
-        try:
-            receivedPackets = broker.receivePackets()
-            #print("Type of received packets are: %s" % type(receivedPackets))
-            #print("Received packets are: %s" % receivedPackets)
-            if receivedPackets:
-                self.processAmqpCommands(receivedPackets)
-        except Exception as E:
-            print(E)
         return b''.join(total_data)
-    
-    def processAmqpCommands(self, data):
-        print("Got data: %s" % data)
-        print("Our class is: %s" % self)
-        for i in data:
-            print(i, data[i])
-        
-        
-        import lib.handlers.naviset.packets as packetsModule
-        
-        commandName = data["command"]
-        commandUid = data["uid"]
-        commandTransport = data["transport"]
-        commandParams = data["params"]
-        
-        CommandClass = packetsModule.__dict__[commandName]
-        
-        
-        print("Command class is %s: " % CommandClass)
-        
-        command = CommandClass(commandParams)
-        
-        try:
-            print("Sending command???????????????????????//")
-            self.sendCommand(command)
-        except Exception as E:
-            print(E)
-        
-        print("Command is: %s" % command)
 
     def send(self, data):
         """
@@ -293,21 +244,15 @@ class AbstractHandler(object):
         """
         result = self.getStore().send(packets)
         if (result.isSuccess()):
+            print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!Saved to store!!!!!!!!!!!!!!!!!!!!!!!!")
             log.debug('%s::store() ... OK', self.__class__)
         else:
-            errorsList = result.getErrorsList()
-            log.error('%s::store():\n %s', self.__class__, errorsList)
-            savePackets = True
-            if len(errorsList) > 0:
-                e = errorsList[0]
-                if 'params' in e:
-                    params = e['params']
-                    if len(params) > 1:
-                        savePackets != (params[1] == 404)
-            if savePackets:
-                # send data to storage on error to save packets
-                storage.save(self.uid if self.uid else 'unknown',
-                    self._buffer)
+            print("Cannot save to store!")
+            log.error('%s::store():\n %s',
+              self.__class__, result.getErrorsList())
+            
+            # send data to storage on error to save packets
+            storage.save(self.uid if self.uid else 'unknown', self._buffer)
         return result
 
     def translate(self, data):

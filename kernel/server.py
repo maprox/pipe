@@ -29,6 +29,7 @@ class ClientThread(BaseRequestHandler):
 
     def handle(self):
         try:
+            #print("Dispatching!")
             disp.dispatch(self)
         except Exception as E:
             log.error("Dispatch error: %s", traceback.format_exc())
@@ -43,6 +44,49 @@ class ThreadingServer(ThreadingMixIn, TCPServer):
     """
     allow_reuse_address = True
 
+def amqp_get_commands():
+    from lib.handlers.list import handlersList
+    from kombu import Connection, Exchange, Queue
+    
+    for h in handlersList:
+        print(h)
+
+    def process_task(body, message):
+        #print(message.headers)
+        print("Type of body is: %s" % type(body))
+        print("Body is: %s" % body)
+        for Handler in handlersList:
+            #print(h.super().__dict__)
+            try:
+                Handler.processAmqpCommands(body)
+            except E:
+                print(E)
+        message.ack()
+    
+    device_exchange = Exchange('production.mon.device.command.create', 'topic', durable = True)
+    
+    # connections
+    username = 'guest'
+    password = 'guest'
+    host = '10.233.10.13'
+    url = 'amqp://{0}:{1}@{2}//'.format(username, password, host)
+    
+    with Connection(url) as conn:
+        routing_key = 'production.mon.device.command.create'
+        command_queue = Queue(routing_key, exchange = device_exchange, routing_key = routing_key)
+        with conn.Consumer([command_queue], callbacks = [process_task]) as consumer:
+            print('before')
+            while True:
+                try:
+                    conn.drain_events(timeout=1)
+                    print(disp)
+                except KeyboardInterrupt:
+                    break
+                except:
+                    #print("No messages")
+                    # no messages in queue
+                    pass
+            print('after')
 
 # ===========================================================================
 class Server():
@@ -68,8 +112,16 @@ class Server():
         """
         log.debug("Server::run()")
         self.server_thread = Thread(target = self.server.serve_forever)
+        #self.server_thread.daemon = True
         self.server_thread.setDaemon(conf.setDaemon)
         self.server_thread.start()
+        
+        
+        #Uncomment when talking with AMQP server in thread
+        #self.amqp_thread  = Thread(target = amqp_get_commands())
+        #self.amqp_thread.daemon = True
+        #self.amqp_thread.start()
+        
         log.info("Server is started on port %s", self.port)
 
     # -----------------------------

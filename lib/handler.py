@@ -129,6 +129,11 @@ class AbstractHandler(object):
             pass
         return self
     
+    def processAmqpCommands(self):
+        raise Exception("processAmqpCommands not implemented!")
+    
+    def processAmqpCommand(self, data):
+        raise Exception("processAmqpCommand not implemented!")
     
     
     """

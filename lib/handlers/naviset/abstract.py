@@ -264,8 +264,37 @@ class NavisetHandler(AbstractHandler):
         
         print(commandName, commandUid, commandTransport, commandParams)
         
+        amqp_name_mapper = {
+            "get_status": "CommandGetStatus",
+            "get_gsm_module_imei": "CommandGetImei",
+            "change_device_number": "CommandChangeDeviceNumber",
+            "change_device_password": "CommandChangeDevicePassword",
+            "set_gprs_parameters": "CommandSetGprsParams",
+            "get_registered_ibuttons": "CommandGetRegisteredIButtons",
+            "add_remove_keynumber": "CommandAddRemoveKeyNumber",
+            "get_phone_numbers": "CommandGetPhones",
+            "add_remove_phone_number": "CommandAddRemovePhoneNumber",
+            "set_protocol_type_structure": "CommandProtocolTypeStructure",
+            "get_tracker_parameters": "CommandGetTrackParams",
+            "set_filtration_drawing_parameters": "CommandFiltrationDrawingParameters",
+            "configure_inputs": "CommandConfigureInputs",
+            "configure_outputs": "CommandConfigureOutputs",
+            "switch_security_mode": "CommandSwitchSecurityMode",
+            "set_temporary_security_parameters": "CommandTemporarySecurityParameters",
+            "remove_track_from_buffer": "CommandRemoveTrackFromBuffer",
+            "set_voice_connection_parameters": "CommandVoiceConnectionParameters",
+            "restart_tracker": "CommandRestart",
+            "upgrade_software": "CommandSoftwareUpgrade",
+            "get_image": "CommandGetImage",
+            "get_configuration": "CommandGetConfiguration",
+            "write_configuration": "CommandWriteConfiguration",
+            "switch_to_new_sim": "CommandSwitchToNewSim",
+            "switch_to_new_configuration_server": "CommandSwitchToConfigurationServer",
+            "toggle_sim_autoswitching": "CommandAllowDisallowSimAutoswitching"
+        }
+        
         try:
-            CommandClass = packetsModule.__dict__[commandName]
+            CommandClass = packetsModule.__dict__[amqp_name_mapper[commandName]]
             
             
             

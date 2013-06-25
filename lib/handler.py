@@ -98,10 +98,13 @@ class AbstractHandler(object):
                 protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
                 for protocolPacket in protocolPackets:
                     self.processProtocolPacket(protocolPacket)
+                    print("####################################### PROTOCOL PACKET IS: #################################")
+                    print(protocolPacket)
             except Exception as E:
                 print("error!")
                 print(E)
                 log.error("processData error: %s", E)
+                
         
         if not self.needProcessCommands(): return self
         
@@ -269,6 +272,8 @@ class AbstractHandler(object):
          @return: Instance of lib.falcon.answer.FalconAnswer
         """
         result = self.getStore().send(packets)
+        print("%%%%%%%%%%%%%%%%%%%%%%getStore got the store!!!%%%%%%%%%%%%%%%%%")
+        print(self.getStore())
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)
         else:

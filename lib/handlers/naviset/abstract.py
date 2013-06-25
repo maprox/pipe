@@ -59,7 +59,8 @@ class NavisetHandler(AbstractHandler):
         
         if isinstance(protocolPacket, packets.PacketAnswer):
             log.info("Storing command answer packet")
-            self.storeCommandPacket(protocolPacket)
+            broker.sendAmqpAnswer(protocolPacket)
+            #self.storeCommandPacket(protocolPacket)
             return
         
         if not isinstance(protocolPacket, packets.PacketData):
@@ -315,6 +316,7 @@ class NavisetHandler(AbstractHandler):
 
             print("Sending command???????????????????????//")
             print("Command is: %s" % command)
+            broker.current_tracker_command = data
             self.sendCommand(command)
         except Exception as E:
             print("Error is %s" % E)

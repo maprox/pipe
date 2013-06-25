@@ -18,8 +18,9 @@ class MessageBroker:
          Constructor. Creates local storage to be used by protocol handlers
         """
         log.debug('%s::__init__()', self.__class__)
-        self._drainedBody = 0
+        self._drainedBody = None
         self.mon_device_command = {}
+        self.current_tracker_command = None
         
         self.connection = Connection(conf.amqpConnection)
         
@@ -113,11 +114,56 @@ class MessageBroker:
                     log.debug('Packet is sent via message broker')
         log.debug('BROKER: Disconnected')
     
+    def sendAmqpAnswer(self, data):
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^NOW WE ARE SENDING AMQP ANSWER^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        
+        if self._drainedMessage == None:
+            print("Error: no message to answer!")
+            return 
+        
+        print(self._drainedMessage)
+        print("Drained body is:")
+        print(self._drainedBody)
+        print("Current command is:")
+        print(self.current_tracker_command)
+        print(data)
+        print(data.imei)
+        #print(dir(data))
+        print(data.__dict__)
+        
+        
+        
+        
+        guid = self._drainedBody['guid']
+        answer_update = {"guid": guid, "status":"2", "data":str(data.__dict__)}
+        
+        print("Sending answer:")
+        print(answer_update)
+        
+        self.sendPackets([answer_update], routing_key = "production.mon.device.command.update")
+        
+        print("Sent answer!") 
+        
+        self._drainedMessage.ack()
+        
+        self.connection.release()
+        self.connection = Connection(conf.amqpConnection)
+        
+        self._drainedBody = None
+        self._drainedMessage = None
+        
+        pass
+    
     def sendAmqpError(self, data, error):
+        
+        if self._drainedMessage == None:
+            print("Error: no message to answer!")
+            return
+        
         print("Data of setAmqpError is %s" % data)
         guid = data["guid"]
         print(guid)
-        error_update = {"guid": guid, "status":"3", "error":error}
+        error_update = {"guid": guid, "status":"3", "data":error}
         print(error_update)
         print(self.mon_device_command)
         error_command = self.mon_device_command.pop(guid)
@@ -126,10 +172,16 @@ class MessageBroker:
         
         print(1111)
         #error_command.ack()
-        self._drainedMessage.ack()
+        
         print(2222)
         self.sendPackets([error_update], routing_key = "production.mon.device.command.update")
         print(3333)
+        
+        self._drainedMessage.ack()
+        self.connection.release()
+        self.connection = Connection(conf.amqpConnection)
+        self._drainedBody = None
+        self._drainedMessage = None
     
     
     def receiveCallback(self, body, message):
@@ -157,7 +209,7 @@ class MessageBroker:
         @return: received packets
         """
               
-        self._drainedBody = 0
+        #self._drainedBody = 0
         
         device_exchange = Exchange(
             'maprox.mon.device',

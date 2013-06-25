@@ -19,6 +19,10 @@ class MessageBroker:
         """
         log.debug('%s::__init__()', self.__class__)
         self._drainedBody = 0
+        self.mon_device_command = {}
+        
+        self.connection = Connection(conf.amqpConnection)
+        
         try:
             self.initExchanges()
             #self.initQueues()
@@ -68,50 +72,85 @@ class MessageBroker:
         routingKey = 'production.mon.device.packet.create.*'
         return routingKey
 
-    def sendPackets(self, packets):
+    def sendPackets(self, packets, routing_key = 'production.mon.device.packet.create'):
         """
          Sends packets to the message broker
          @param packets: list of dict
          @return:
         """
         exchange = self._exchanges['mon.device']
-        with Connection(conf.amqpConnection) as conn:
-            log.debug('BROKER: Connected to %s' % conf.amqpConnection)
-            with conn.Producer(serializer = 'json') as producer:
-                for packet in packets:
-                    uid = None if 'uid' not in packet else packet['uid']
-                    #routing_key = self.getRoutingKey(uid)
-                    
-                    routing_key = 'production.mon.device.packet.create'
-                    
-                    packet_queue = Queue(
-                        routing_key,
-                        exchange = exchange,
-                        routing_key = routing_key
-                    )
-                    
-                    producer.publish(
-                        packet,
-                        exchange = exchange,
-                        routing_key = routing_key,
-                        declare = [packet_queue]
-                    )
-                    if uid:
-                        log.debug('Packet for "%s" is sent via message broker'
-                            % uid)
-                    else:
-                        log.debug('Packet is sent via message broker')
+        
+        
+        #with Connection(conf.amqpConnection) as conn:
+        conn = self.connection
+        
+        
+        
+        log.debug('BROKER: Connected to %s' % conf.amqpConnection)
+        with conn.Producer(serializer = 'json') as producer:
+            for packet in packets:
+                uid = None if 'uid' not in packet else packet['uid']
+                #routing_key = self.getRoutingKey(uid)
+                
+                
+                
+                packet_queue = Queue(
+                    routing_key,
+                    exchange = exchange,
+                    routing_key = routing_key
+                )
+                
+                producer.publish(
+                    packet,
+                    exchange = exchange,
+                    routing_key = routing_key,
+                    declare = [packet_queue]
+                )
+                if uid:
+                    log.debug('Packet for "%s" is sent via message broker'
+                        % uid)
+                else:
+                    log.debug('Packet is sent via message broker')
         log.debug('BROKER: Disconnected')
+    
+    def sendAmqpError(self, data, error):
+        print("Data of setAmqpError is %s" % data)
+        guid = data["guid"]
+        print(guid)
+        error_update = {"guid": guid, "status":"3", "error":error}
+        print(error_update)
+        print(self.mon_device_command)
+        error_command = self.mon_device_command.pop(guid)
+        print(self.mon_device_command)
+        print(error_command)
+        
+        print(1111)
+        #error_command.ack()
+        self._drainedMessage.ack()
+        print(2222)
+        self.sendPackets([error_update], routing_key = "production.mon.device.command.update")
+        print(3333)
     
     
     def receiveCallback(self, body, message):
         print(message.headers)
+        print("Type of message is: %s" % type(message))
+        print("Message is: %s" % message)
         print("Type of body is: %s" % type(body))
         print("Body is: %s" % body)
         self._drainedBody = body
-        message.ack()
+        self._drainedMessage = message
+        
+        print("Body guid is: %s" % body["guid"])
+        
+        self.mon_device_command[body["guid"]] = message
+        
+        print(self.mon_device_command)
+        
+        #acknowledging message when delivered
+        #message.ack()
     
-    def receivePackets(self):
+    def receivePackets(self, imei):
         """
         Receives packets from the message broker.
         Runs until receives packet or timeout passes
@@ -126,35 +165,32 @@ class MessageBroker:
             durable = True
         )
         
-        #device_exchange = self._receive_exchange
-        
-        def process_task(body, message):
-            print(message.headers)
-            print("Type of body is: %s" % type(body))
-            print("Body is: %s" % body)
-            self.drainedBody = body
-            message.ack()
+        #device_exchange = self._receive_exchange    
         
         username = 'guest'
         password = 'guest'
         host = '10.233.10.13'
         url = 'amqp://{0}:{1}@{2}//'.format(username, password, host)
 
-        with Connection(url) as conn:
-            routing_key = 'production.mon.device.command.create'
-            command_queue = Queue(routing_key, exchange = device_exchange, routing_key = routing_key)
-            print(1111111)
-            with conn.Consumer([command_queue], callbacks = [self.receiveCallback]) as consumer:
-                print(222222)
-                print('before')
-                try:
-                    conn.drain_events(timeout=1)    
-                except:
-                    print("No messages")
-                    #no messages in queue
-                    pass
-                print("Consuming: %s" % consumer.consume())
-                print('after')
+        #with Connection(conf.amqpConnection) as conn:
+        
+        conn = self.connection
+        
+        routing_key = 'production.mon.device.command.' + str(imei)
+        command_queue = Queue(routing_key, exchange = device_exchange, routing_key = routing_key)
+        print(1111111)
+        with conn.Consumer([command_queue], callbacks = [self.receiveCallback]) as consumer:
+            print(222222)
+            print('before')
+            try:
+                conn.drain_events(timeout=1)
+                #self._drainedMessage.ack()  
+            except:
+                print("No messages")
+                #no messages in queue
+                pass
+            print("Consuming: %s" % consumer.consume())
+            print('after')
         print("Drained: %s" % self._drainedBody)
         return(self._drainedBody)
         

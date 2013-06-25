@@ -17,6 +17,8 @@ from lib.handler import AbstractHandler
 import lib.handlers.naviset.packets as packets
 from lib.ip import get_ip
 
+from lib.broker import broker
+
 # ---------------------------------------------------------------------------
 
 class NavisetHandler(AbstractHandler):
@@ -79,7 +81,11 @@ class NavisetHandler(AbstractHandler):
         #self.sendCommand(packets.CommandGetPhones())
         
         #b'\x01868204003057949'
-        self.sendCommand(packets.CommandGetImei())
+        
+        
+        #self.sendCommand(packets.CommandGetImei())
+        
+        
         #self.sendCommand(packets.CommandGetRegisteredIButtons())
         #self.sendCommand(packets.CommandSwitchSecurityMode({'securityMode': 0}))
         #self.sendCommand(packets.CommandGetTrackParams())
@@ -237,9 +243,8 @@ class NavisetHandler(AbstractHandler):
         }]
     
     def processAmqpCommands(self):
-        from lib.broker import broker
         try:
-            receivedPackets = broker.receivePackets()
+            receivedPackets = broker.receivePackets("868204003057949")
             print("Type of received packets are: %s" % type(receivedPackets))
             print("Received packets are: %s" % receivedPackets)
             if receivedPackets:
@@ -259,10 +264,11 @@ class NavisetHandler(AbstractHandler):
         
         commandName = data["command"]
         commandUid = data["uid"]
+        commandGuid = data["guid"]
         commandTransport = data["transport"]
         commandParams = data["params"]
         
-        print(commandName, commandUid, commandTransport, commandParams)
+        print(commandName, commandUid, commandGuid, commandTransport, commandParams)
         
         amqp_name_mapper = {
             "get_status": "CommandGetStatus",
@@ -294,23 +300,26 @@ class NavisetHandler(AbstractHandler):
         }
         
         try:
-            CommandClass = packetsModule.__dict__[amqp_name_mapper[commandName]]
+            if commandName in amqp_name_mapper:
+                CommandClass = packetsModule.__dict__[amqp_name_mapper[commandName]]
+            else:
+                broker.sendAmqpError(data, "wrong_command_name")
+                print("No command with name %s" % commandName)
+                return
             
             
             
             print("Command class is %s: " % CommandClass)
             
-            command = CommandClass(commandParams)
+            command = CommandClass(commandParams)            
+
+            print("Sending command???????????????????????//")
+            print("Command is: %s" % command)
+            self.sendCommand(command)
         except Exception as E:
             print("Error is %s" % E)
         
-        try:
-            print("Sending command???????????????????????//")
-            self.sendCommand(command)
-        except Exception as E:
-            print(E)
         
-        print("Command is: %s" % command)
 
 # ===========================================================================
 # TESTS

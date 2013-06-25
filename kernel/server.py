@@ -44,6 +44,7 @@ class ThreadingServer(ThreadingMixIn, TCPServer):
     """
     allow_reuse_address = True
 
+"""
 def amqp_get_commands():
     from lib.handlers.list import handlersList
     from kombu import Connection, Exchange, Queue
@@ -87,7 +88,7 @@ def amqp_get_commands():
                     # no messages in queue
                     pass
             print('after')
-
+"""
 # ===========================================================================
 class Server():
     """

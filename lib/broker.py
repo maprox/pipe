@@ -73,7 +73,7 @@ class MessageBroker:
         routingKey = 'production.mon.device.packet.create.*'
         return routingKey
 
-    def sendPackets(self, packets, routing_key = 'production.mon.device.packet.create'):
+    def sendPackets(self, packets, routing_key = 'production.mon.device.packet.create.*'):
         """
          Sends packets to the message broker
          @param packets: list of dict

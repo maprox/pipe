@@ -458,6 +458,7 @@ class PacketAnswer(NavisetPacket):
         CLASS = None
         if data:
             command = unpack('<B', data[2:3])[0]
+            print("COMMAND IS: %s" % command)
             CLASS = getAnswerClassByNumber(command)
         return CLASS
 
@@ -1928,6 +1929,11 @@ class PacketAnswerCommandSwitchToNewSim(PacketAnswer): _number = 23
 class PacketAnswerCommandSwitchToConfigurationServer(PacketAnswer): _number = 24
 class PacketAnswerCommandAllowDisallowSimAutoswitching(PacketAnswer): _number = 25
 
+class PacketAnswerCommonAnswerUnknownIdentifier(PacketAnswer): _number = 250
+class PacketAnswerCommonAnswerDataIntegrityError(PacketAnswer): _number = 251
+class PacketAnswerCommonAnswerCommandReceivedProcessed(PacketAnswer): _number = 252
+class PacketAnswerCommonAnswerCommandProcessingError(PacketAnswer): _number = 253
+
     
 
 class PacketAnswerCommandGetImei(PacketAnswer):
@@ -2580,7 +2586,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.serviceMessage200, 512)
     
     def test_commandError(self):
-        
         data = b'\x02\x80\xfc\r\x80\xb1'
         packets = self.factory.getPacketsFromBuffer(data)
         self.assertEqual(1, packets)

@@ -20,12 +20,15 @@ from lib.factory import AbstractPacketFactory
 
 def dictCheckItem(data, name, value):
     """
-     Checks if "name" is in "data" dict. If not, creates it with "value"
+     Checks if "name" is in "data" dict. If yes, returns data[name], if no, returns default "value"
      @param data: input dict
      @param name: key of dict to check
      @param value: value of dict item at key "name"
     """
-    if name not in data: data[name] = value
+    if name not in data:
+        return value
+    else:
+        return data[name]
 
 
 class NavisetBase(BasePacket):
@@ -1173,6 +1176,7 @@ class CommandConfigureInputs(Command):
         @param params:
         @return:
         """
+        dictCheck
         self.inputActActiveLevel = params['inputActActiveLevel']
         self.inputActInputNumber = params['inputActInputNumber']
         self.lowerBorder = params['lowerBorder']

@@ -1176,7 +1176,7 @@ class CommandConfigureInputs(Command):
         @param params:
         @return:
         """
-        dictCheck
+
         self.inputActActiveLevel = params['inputActActiveLevel']
         self.inputActInputNumber = params['inputActInputNumber']
         self.lowerBorder = params['lowerBorder']
@@ -1275,11 +1275,13 @@ class CommandConfigureOutputs(Command):
         @param params:
         @return:
         """
-        self.outputMode = params['outputMode']
-        self.outputExitNumber = params['outputExitNumber']
-        self.impulseLength = params['impulseLength']
-        self.pauseLength = params['pauseLength']
-        self.repeatNumber = params['repeatNumber']
+        
+        self.outputMode = dictCheckItem(params, 'outputMode', OUTPUT_TURN_OFF)
+        self.outputExitNumber = dictCheckItem(params, 'outputExitNumber', 0)
+        self.impulseLength = dictCheckItem(params, 'impulseLength', 0)
+        self.pauseLength = dictCheckItem(params, 'pauseLength', 0)
+        self.repeatNumber = dictCheckItem(params, 'repeatNumber', 0)
+        
     
     @property
     def outputMode(self):

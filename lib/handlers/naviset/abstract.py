@@ -304,7 +304,7 @@ class NavisetHandler(AbstractHandler):
             if commandName in amqp_name_mapper:
                 CommandClass = packetsModule.__dict__[amqp_name_mapper[commandName]]
             else:
-                broker.sendAmqpError(data, "wrong_command_name")
+                broker.sendAmqpError(data, "Command is not supported")
                 print("No command with name %s" % commandName)
                 return
             

@@ -1365,7 +1365,7 @@ class CommandDeactivateDigitalOutput(CommandConfigureOutputs):
         """
         
         self.outputMode = OUTPUT_TURN_OFF
-        self.outputNumber = dictCheckItem(params, 'outputNumber', 0)
+        self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
         self.impulseLength = 0
         self.pauseLength = 0
         self.repeatNumber = 0
@@ -1383,7 +1383,7 @@ class CommandActivateDigitalOutput(CommandConfigureOutputs):
         """
         
         self.outputMode = OUTPUT_TURN_ON
-        self.outputNumber = dictCheckItem(params, 'outputNumber', 0)
+        self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
         self.impulseLength = 0
         self.pauseLength = 0
         self.repeatNumber = 0

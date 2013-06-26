@@ -1265,7 +1265,7 @@ class CommandConfigureOutputs(Command):
     
     # private params
     __outputMode = OUTPUT_TURN_OFF
-    __outputExitNumber = 0
+    __outputNumber = 0
     __impulseLength = 0
     __pauseLength = 0
     __repeatNumber = 0
@@ -1278,7 +1278,7 @@ class CommandConfigureOutputs(Command):
         """
         
         self.outputMode = dictCheckItem(params, 'outputMode', OUTPUT_TURN_OFF)
-        self.outputExitNumber = dictCheckItem(params, 'outputExitNumber', 0)
+        self.outputNumber = dictCheckItem(params, 'outputNumber', 0)
         self.impulseLength = dictCheckItem(params, 'impulseLength', 0)
         self.pauseLength = dictCheckItem(params, 'pauseLength', 0)
         self.repeatNumber = dictCheckItem(params, 'repeatNumber', 0)
@@ -1296,14 +1296,14 @@ class CommandConfigureOutputs(Command):
             self._rebuild = True
     
     @property
-    def outputExitNumber(self):
+    def outputNumber(self):
         if self._rebuild: self._build()
-        return self.__outputExitNumber
+        return self.__outputNumber
     
-    @outputExitNumber.setter
-    def outputExitNumber(self, value):
+    @outputNumber.setter
+    def outputNumber(self, value):
         if 0 <= value <= 0xF:
-            self.__outputExitNumber = value
+            self.__outputNumber = value
             self._rebuild = True
     
     @property
@@ -1345,7 +1345,7 @@ class CommandConfigureOutputs(Command):
         @return: body binstring
         """
         data = b''
-        outputPacked = 16 * self.__outputMode + self.__outputExitNumber 
+        outputPacked = 16 * self.__outputMode + self.__outputNumber 
         data += pack('<B', outputPacked)
         data += pack('<B', self.__impulseLength)
         data += pack('<B', self.__pauseLength)
@@ -1365,7 +1365,7 @@ class CommandDeactivateDigitalOutput(CommandConfigureOutputs):
         """
         
         self.outputMode = OUTPUT_TURN_OFF
-        self.outputExitNumber = dictCheckItem(params, 'outputExitNumber', 0)
+        self.outputNumber = dictCheckItem(params, 'outputNumber', 0)
         self.impulseLength = 0
         self.pauseLength = 0
         self.repeatNumber = 0
@@ -1383,7 +1383,7 @@ class CommandActivateDigitalOutput(CommandConfigureOutputs):
         """
         
         self.outputMode = OUTPUT_TURN_ON
-        self.outputExitNumber = dictCheckItem(params, 'outputExitNumber', 0)
+        self.outputNumber = dictCheckItem(params, 'outputNumber', 0)
         self.impulseLength = 0
         self.pauseLength = 0
         self.repeatNumber = 0
@@ -2830,7 +2830,7 @@ class TestCase(unittest.TestCase):
     def test_command_ConfigureOutputs(self):
         cmd = CommandConfigureOutputs({
             "outputMode": OUTPUT_TURN_ON,
-            "outputExitNumber": 3,
+            "outputNumber": 3,
             "impulseLength": 145,
             "pauseLength": 112,
             "repeatNumber": 23
@@ -2839,7 +2839,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.number, 13)
         
         self.assertEqual(cmd.outputMode, OUTPUT_TURN_ON)
-        self.assertEqual(cmd.outputExitNumber, 3)
+        self.assertEqual(cmd.outputNumber, 3)
         self.assertEqual(cmd.impulseLength, 145)
         self.assertEqual(cmd.pauseLength, 112)
         self.assertEqual(cmd.repeatNumber, 23)
@@ -2848,13 +2848,13 @@ class TestCase(unittest.TestCase):
         
         #change some data
         cmd.outputMode = OUTPUT_IMPULSE
-        cmd.outputExitNumber = 7
+        cmd.outputNumber = 7
         cmd.impulseLength = 113
         cmd.pauseLength = 96
         cmd.repeatNumber = 31
         
         self.assertEqual(cmd.outputMode, OUTPUT_IMPULSE)
-        self.assertEqual(cmd.outputExitNumber, 7)
+        self.assertEqual(cmd.outputNumber, 7)
         self.assertEqual(cmd.impulseLength, 113)
         self.assertEqual(cmd.pauseLength, 96)
         self.assertEqual(cmd.repeatNumber, 31)

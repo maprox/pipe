@@ -8,6 +8,7 @@
 from kernel.config import conf
 from kernel.logger import log
 from kombu import Connection, Exchange, Queue
+import anyjson
 
 class MessageBroker:
     """
@@ -196,7 +197,13 @@ class MessageBroker:
         #~print("Message is: %s" % message)
         #~print("Type of body is: %s" % type(body))
         #~print("Body is: %s" % body)
-        self._drainedBody = body
+        if type(body) == dict:
+            self._drainedBody = body
+        elif type(body) == str:
+            self._drainedBody = anyjson.deserialize(body)
+        else:
+            #bad body
+            return
         self._drainedMessage = message
         
         #~print("Body guid is: %s" % body["guid"])

@@ -1878,7 +1878,11 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     def imei(self):
         if self._rebuild: self._build()
         return self.__imei
-    
+
+    def get_dict(self):
+        params_dict = {"imei": self.__imei}
+        return params_dict
+
     def _parseBody(self):
         """
          Parses body of the packet
@@ -1903,7 +1907,11 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     def numbers(self):
         if self._rebuild: self._build()
         return self.__numbers
-    
+
+    def get_dict(self):
+        params_dict = {"numbers": self.__numbers}
+        return params_dict
+        
     def _parseBody(self):        
         super(PacketAnswerCommandGetRegisteredIButtons, self)._parseBody()
         buffer = self.body
@@ -1936,6 +1944,10 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
     def call_sms_smss(self):
         if self._rebuild: self._build()
         return self.__call_sms_smss
+    
+    def get_dict(self):
+        params_dict = {"phones": self.phones, "call_params": self.__call_sms_calls, "sms_params": self.__call_sms_smss}
+        return params_dict
     
     def _parseBody(self):
         super(PacketAnswerCommandGetPhones, self)._parseBody()
@@ -2103,6 +2115,10 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
         if self._rebuild: self._build()
         return self.__serviceMessage200
     
+    def get_dict(self):
+        params_dict = {"service_message_200": self.__serviceMessage200}
+        return params_dict
+    
     def _parseBody(self):
         super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()
         buffer = self.body
@@ -2140,6 +2156,10 @@ class PacketAnswerCommandGetImage(PacketAnswer):
     def chunkData(self):
         if self._rebuild: self._build()
         return self.__chunkData
+
+    def get_dict(self):
+        params_dict = {"code": self.__code, "image_size": self.__image_size, "chunk_number": self.__chunkNumber, "chunk_data":self.__chunkData}
+        return params_dict
 
     def _parseBody(self):
         """

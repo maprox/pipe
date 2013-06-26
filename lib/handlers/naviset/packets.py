@@ -1929,12 +1929,49 @@ class PacketAnswerCommandSwitchToNewSim(PacketAnswer): _number = 23
 class PacketAnswerCommandSwitchToConfigurationServer(PacketAnswer): _number = 24
 class PacketAnswerCommandAllowDisallowSimAutoswitching(PacketAnswer): _number = 25
 
-class PacketAnswerCommonAnswerUnknownIdentifier(PacketAnswer): _number = 250
-class PacketAnswerCommonAnswerDataIntegrityError(PacketAnswer): _number = 251
-class PacketAnswerCommonAnswerCommandReceivedProcessed(PacketAnswer): _number = 252
-class PacketAnswerCommonAnswerCommandProcessingError(PacketAnswer): _number = 253
 
+
+
+class PacketAnswerCommonAnswerUnknownIdentifier(PacketAnswer):
+    """
+    Common answer, sent when command identifier is unknown
+    """ 
+    _number = 250
     
+    def get_parameters_string(self):
+        s = "Common answer 250: Command identifier is unknown"
+        return s
+    
+    
+class PacketAnswerCommonAnswerDataIntegrityError(PacketAnswer):
+    """
+    Common answer, sent when data integrity error happened
+    """ 
+    _number = 251
+    
+    def get_parameters_string(self):
+        s = "Common answer 251: Data integrity error (or wrong parameters number?)"
+        return s
+    
+class PacketAnswerCommonAnswerCommandReceivedProcessed(PacketAnswer):
+    """
+    Common answer, sent when command successfully received and processed
+    """ 
+    _number = 252
+    
+    def get_parameters_string(self):
+        s = "Common answer 252: Command was successfully received and processed"
+        return s
+
+class PacketAnswerCommonAnswerCommandProcessingError(PacketAnswer):
+    """
+    Common answer, sent when error during command processing happened
+    """ 
+    _number = 253
+    
+    def get_parameters_string(self):
+        s = "Common answer 253: Error during command processing"
+        return s
 
 class PacketAnswerCommandGetImei(PacketAnswer):
     """

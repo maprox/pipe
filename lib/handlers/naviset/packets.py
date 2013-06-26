@@ -1255,6 +1255,7 @@ OUTPUT_TURN_OFF = 0
 OUTPUT_TURN_ON = 1
 OUTPUT_IMPULSE = 2
 
+
 class CommandConfigureOutputs(Command):
     """
     Configures device outputs.
@@ -1350,7 +1351,43 @@ class CommandConfigureOutputs(Command):
         data += pack('<B', self.__pauseLength)
         data += pack('<B', self.__repeatNumber)
         return data    
+
+class CommandDeactivateDigitalOutput(CommandConfigureOutputs):
+    """
+    Activates digital output by number, other parameters are not required
+    """
     
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        
+        self.outputMode = OUTPUT_TURN_OFF
+        self.outputExitNumber = dictCheckItem(params, 'outputExitNumber', 0)
+        self.impulseLength = 0
+        self.pauseLength = 0
+        self.repeatNumber = 0
+
+class CommandActivateDigitalOutput(CommandConfigureOutputs):
+    """
+    Activates digital output by number, other parameters are not required
+    """
+    
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        
+        self.outputMode = OUTPUT_TURN_ON
+        self.outputExitNumber = dictCheckItem(params, 'outputExitNumber', 0)
+        self.impulseLength = 0
+        self.pauseLength = 0
+        self.repeatNumber = 0
+
 
 SECURITY_MODE_IS_OFF = 0
 SECURITY_MODE_IS_ON = 1

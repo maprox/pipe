@@ -430,6 +430,10 @@ class PacketAnswer(NavisetPacket):
         if self._rebuild: self._build()
         return self._command
 
+    def get_dict(self):
+        params_dict = {}
+        return params_dict
+
     @classmethod
     def getInstance(cls, data = None):
         CLASS = None

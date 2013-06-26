@@ -1278,10 +1278,10 @@ class CommandConfigureOutputs(Command):
         """
         
         self.outputMode = dictCheckItem(params, 'outputMode', OUTPUT_TURN_OFF)
-        self.outputNumber = dictCheckItem(params, 'outputNumber', 0)
-        self.impulseLength = dictCheckItem(params, 'impulseLength', 0)
-        self.pauseLength = dictCheckItem(params, 'pauseLength', 0)
-        self.repeatNumber = dictCheckItem(params, 'repeatNumber', 0)
+        self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
+        self.impulseLength = int(dictCheckItem(params, 'impulseLength', 0))
+        self.pauseLength = int(dictCheckItem(params, 'pauseLength', 0))
+        self.repeatNumber = int(dictCheckItem(params, 'repeatNumber', 0))
         
     
     @property

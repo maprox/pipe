@@ -41,7 +41,8 @@ class MessageBroker:
                 'mon.device', 'topic', durable = True)
         }
         
-        #    self._receive_exchange = Exchange('production.mon.device.command.create')
+        #self._receive_exchange = Exchange(
+        #    'production.mon.device.command.create')
 
     def initQueues(self):
         """
@@ -73,7 +74,8 @@ class MessageBroker:
         routingKey = 'production.mon.device.packet.create.*'
         return routingKey
 
-    def sendPackets(self, packets, routing_key = 'production.mon.device.packet.create.*'):
+    def sendPackets(self, packets, 
+            routing_key = 'production.mon.device.packet.create.*'):
         """
          Sends packets to the message broker
          @param packets: list of dict
@@ -115,7 +117,7 @@ class MessageBroker:
         log.debug('BROKER: Disconnected')
     
     def sendAmqpAnswer(self, data):
-        #~print("^^^^^^^^^^^^^^^^^^^^^^^^^^^NOW WE ARE SENDING AMQP ANSWER^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        #~print("^^^^^^^^^^^^NOW WE ARE SENDING AMQP ANSWER^^^^^^^^")
         
         if self._drainedMessage == None:
             #~print("Error: no message to answer!")
@@ -142,7 +144,8 @@ class MessageBroker:
         #~print("Sending answer:")
         #~print(answer_update)
         
-        self.sendPackets([answer_update], routing_key = "production.mon.device.command.update")
+        self.sendPackets([answer_update], 
+            routing_key = "production.mon.device.command.update")
         
         #~print("Sent answer!") 
         
@@ -176,7 +179,8 @@ class MessageBroker:
         #error_command.ack()
         
         #~print(2222)
-        self.sendPackets([error_update], routing_key = "production.mon.device.command.update")
+        self.sendPackets([error_update], 
+            routing_key = "production.mon.device.command.update")
         #~print(3333)
         
         self._drainedMessage.ack()
@@ -231,9 +235,11 @@ class MessageBroker:
         conn = self.connection
         
         routing_key = 'production.mon.device.command.' + str(imei)
-        command_queue = Queue(routing_key, exchange = device_exchange, routing_key = routing_key)
+        command_queue = Queue(routing_key, exchange = device_exchange, 
+            routing_key = routing_key)
         #~print(1111111)
-        with conn.Consumer([command_queue], callbacks = [self.receiveCallback]) as consumer:
+        with conn.Consumer([command_queue], 
+                callbacks = [self.receiveCallback]) as consumer:
             #~print(222222)
             #~print('before')
             try:

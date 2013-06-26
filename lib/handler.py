@@ -70,7 +70,7 @@ class AbstractHandler(object):
         """
         log.debug('%s::dispatch()', self.__class__)
         buffer = self.recv()
-        #~print("!!!!!!!!!!!!!!!!!!!!!Recved buffer!!!!!!!!!!!!!!!!!!!!!!!!!!!: %s" % buffer)
+        #~print("!!!!!!!!!Recved buffer!!!!!!!!!!: %s" % buffer)
         while len(buffer) > 0:
             #~print("$$$$$$$$$$$$$$$$$$Caliing processData$$$$$$$$$$$$$$$$$$")
             self.processData(buffer)
@@ -91,15 +91,17 @@ class AbstractHandler(object):
          @param data: Data from socket
         """
         
-        #~print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!CALLING PROCESS AMQP COMMAND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        #~print("!!!!!!!!!!!CALLING PROCESS AMQP COMMAND!!!!!!!!!!!!!!!!!!!!")
         self.processAmqpCommands()
         
         if self._packetsFactory:
             try:
-                protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
+                protocolPackets = (
+                    self._packetsFactory.getPacketsFromBuffer(data)
+                )
                 for protocolPacket in protocolPackets:
                     self.processProtocolPacket(protocolPacket)
-                    #~print("####################################### PROTOCOL PACKET IS: #################################")
+                    #~print("############ PROTOCOL PACKET IS: ###############")
                     #~print(protocolPacket)
             except Exception as E:
                 #~print("error!")
@@ -124,7 +126,8 @@ class AbstractHandler(object):
                 config = self.translateConfig(current_db.getSettings())
                 send['config'] = json.dumps(config, separators=(',',':'))
                 send['id_action'] = current_db.getSettingsTaskId()
-                log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
+                log.debug('Sending config: ' + 
+                    conf.pipeSetUrl + urlencode(send))
                 connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
                 answer = connection.read()
                 log.debug('Config answered: ' + answer.decode())
@@ -275,7 +278,7 @@ class AbstractHandler(object):
          @return: Instance of lib.falcon.answer.FalconAnswer
         """
         result = self.getStore().send(packets)
-        #~print("%%%%%%%%%%%%%%%%%%%%%%getStore got the store!!!%%%%%%%%%%%%%%%%%")
+        #~print("%%%%%%%%%%%getStore got the store!!!%%%%%%%%%%%%")
         #~print(self.getStore())
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)

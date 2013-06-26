@@ -64,7 +64,8 @@ def amqp_get_commands():
                 print(E)
         message.ack()
     
-    device_exchange = Exchange('production.mon.device.command.create', 'topic', durable = True)
+    device_exchange = Exchange('production.mon.device.command.create', 
+        'topic', durable = True)
     
     # connections
     username = 'guest'
@@ -74,8 +75,10 @@ def amqp_get_commands():
     
     with Connection(url) as conn:
         routing_key = 'production.mon.device.command.create'
-        command_queue = Queue(routing_key, exchange = device_exchange, routing_key = routing_key)
-        with conn.Consumer([command_queue], callbacks = [process_task]) as consumer:
+        command_queue = Queue(routing_key, exchange = device_exchange, 
+            routing_key = routing_key)
+        with conn.Consumer([command_queue], 
+            callbacks = [process_task]) as consumer:
             print('before')
             while True:
                 try:

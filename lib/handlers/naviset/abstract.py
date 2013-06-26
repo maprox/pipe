@@ -92,9 +92,9 @@ class NavisetHandler(AbstractHandler):
         #self.sendCommand(packets.CommandGetTrackParams())
     
     def storeCommandPacket(self, commandPacket):
-        print("Called command packet storing procedure")
-        print(commandPacket)
-        print(str(commandPacket.__dict__))
+        #~print("Called command packet storing procedure")
+        #~print(commandPacket)
+        #~print(str(commandPacket.__dict__))
         
         stored_information = [{"guid": "GUID", "status": 2, "data": str(commandPacket.__dict__)}]
         
@@ -198,7 +198,7 @@ class NavisetHandler(AbstractHandler):
         return list
     
     #def processAmqpCommand(self):
-    #    print("Naviset amqp processing")
+    #    #~print("Naviset amqp processing")
     
     def sendAcknowledgement(self, packet):
         """
@@ -246,21 +246,23 @@ class NavisetHandler(AbstractHandler):
     def processAmqpCommands(self):
         try:
             receivedPackets = broker.receivePackets("868204003057949")
-            print("Type of received packets are: %s" % type(receivedPackets))
-            print("Received packets are: %s" % receivedPackets)
+            #~print("Type of received packets are: %s" % type(receivedPackets))
+            #~print("Received packets are: %s" % receivedPackets)
             if receivedPackets:
                 self.processAmqpCommand(receivedPackets)
         except Exception as E:
-            print(E)
+            pass
+            #~print(E)
         
     def processAmqpCommand(self, data):
-        print("Got data: %s" % data)
-        print("Our class is: %s" % self)
+        #~print("Got data: %s" % data)
+        #~print("Our class is: %s" % self)
         for i in data:
-            print(i, data[i])
+            pass
+            #~print(i, data[i])
         
         
-        print("Processing command to packet")
+        #~print("Processing command to packet")
         import lib.handlers.naviset.packets as packetsModule
         
         commandName = data["command"]
@@ -269,7 +271,7 @@ class NavisetHandler(AbstractHandler):
         commandTransport = data["transport"]
         commandParams = data["params"]
         
-        print(commandName, commandUid, commandGuid, commandTransport, commandParams)
+        #~print(commandName, commandUid, commandGuid, commandTransport, commandParams)
         
         amqp_name_mapper = {
             "get_status": "CommandGetStatus",
@@ -309,21 +311,22 @@ class NavisetHandler(AbstractHandler):
                 CommandClass = packetsModule.__dict__[amqp_name_mapper[commandName]]
             else:
                 broker.sendAmqpError(data, "Command is not supported")
-                print("No command with name %s" % commandName)
+                #~print("No command with name %s" % commandName)
                 return
             
             
             
-            print("Command class is %s: " % CommandClass)
+            #~print("Command class is %s: " % CommandClass)
             
             command = CommandClass(commandParams)            
 
-            print("Sending command???????????????????????//")
-            print("Command is: %s" % command)
+            #~print("Sending command???????????????????????//")
+            #~print("Command is: %s" % command)
             broker.current_tracker_command = data
             self.sendCommand(command)
         except Exception as E:
-            print("Error is %s" % E)
+            pass
+            #~print("Error is %s" % E)
         
         
 

@@ -115,21 +115,21 @@ class MessageBroker:
         log.debug('BROKER: Disconnected')
     
     def sendAmqpAnswer(self, data):
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^NOW WE ARE SENDING AMQP ANSWER^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        #~print("^^^^^^^^^^^^^^^^^^^^^^^^^^^NOW WE ARE SENDING AMQP ANSWER^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         
         if self._drainedMessage == None:
-            print("Error: no message to answer!")
+            #~print("Error: no message to answer!")
             return 
         
-        print(self._drainedMessage)
-        print("Drained body is:")
-        print(self._drainedBody)
-        print("Current command is:")
-        print(self.current_tracker_command)
-        print(data)
+        #~print(self._drainedMessage)
+        #~print("Drained body is:")
+        #~print(self._drainedBody)
+        #~print("Current command is:")
+        #~print(self.current_tracker_command)
+        #~print(data)
         #print(data.imei)
         #print(dir(data))
-        print(data.__dict__)
+        #~print(data.__dict__)
         
         
         
@@ -139,12 +139,12 @@ class MessageBroker:
         data_string = data.get_parameters_string()
         answer_update = {"guid": guid, "status":"2", "data":data_string}
         
-        print("Sending answer:")
-        print(answer_update)
+        #~print("Sending answer:")
+        #~print(answer_update)
         
         self.sendPackets([answer_update], routing_key = "production.mon.device.command.update")
         
-        print("Sent answer!") 
+        #~print("Sent answer!") 
         
         self._drainedMessage.ack()
         
@@ -159,25 +159,25 @@ class MessageBroker:
     def sendAmqpError(self, data, error):
         
         if self._drainedMessage == None:
-            print("Error: no message to answer!")
+            #~print("Error: no message to answer!")
             return
         
-        print("Data of setAmqpError is %s" % data)
+        #~print("Data of setAmqpError is %s" % data)
         guid = data["guid"]
-        print(guid)
+        #~print(guid)
         error_update = {"guid": guid, "status":"3", "data":error}
-        print(error_update)
-        print(self.mon_device_command)
+        #~print(error_update)
+        #~print(self.mon_device_command)
         error_command = self.mon_device_command.pop(guid)
-        print(self.mon_device_command)
-        print(error_command)
+        #~print(self.mon_device_command)
+        #~print(error_command)
         
-        print(1111)
+        #~print(1111)
         #error_command.ack()
         
-        print(2222)
+        #~print(2222)
         self.sendPackets([error_update], routing_key = "production.mon.device.command.update")
-        print(3333)
+        #~print(3333)
         
         self._drainedMessage.ack()
         self.connection.release()
@@ -187,19 +187,19 @@ class MessageBroker:
     
     
     def receiveCallback(self, body, message):
-        print(message.headers)
-        print("Type of message is: %s" % type(message))
-        print("Message is: %s" % message)
-        print("Type of body is: %s" % type(body))
-        print("Body is: %s" % body)
+        #~print(message.headers)
+        #~print("Type of message is: %s" % type(message))
+        #~print("Message is: %s" % message)
+        #~print("Type of body is: %s" % type(body))
+        #~print("Body is: %s" % body)
         self._drainedBody = body
         self._drainedMessage = message
         
-        print("Body guid is: %s" % body["guid"])
+        #~print("Body guid is: %s" % body["guid"])
         
         self.mon_device_command[body["guid"]] = message
         
-        print(self.mon_device_command)
+        #~print(self.mon_device_command)
         
         #acknowledging message when delivered
         #message.ack()
@@ -232,20 +232,20 @@ class MessageBroker:
         
         routing_key = 'production.mon.device.command.' + str(imei)
         command_queue = Queue(routing_key, exchange = device_exchange, routing_key = routing_key)
-        print(1111111)
+        #~print(1111111)
         with conn.Consumer([command_queue], callbacks = [self.receiveCallback]) as consumer:
-            print(222222)
-            print('before')
+            #~print(222222)
+            #~print('before')
             try:
                 conn.drain_events(timeout=1)
                 #self._drainedMessage.ack()  
             except:
-                print("No messages")
+                #~print("No messages")
                 #no messages in queue
                 pass
-            print("Consuming: %s" % consumer.consume())
-            print('after')
-        print("Drained: %s" % self._drainedBody)
+            #~print("Consuming: %s" % consumer.consume())
+            #~print('after')
+        #~print("Drained: %s" % self._drainedBody)
         return(self._drainedBody)
         
 broker = MessageBroker()

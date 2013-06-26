@@ -460,7 +460,7 @@ class PacketAnswer(NavisetPacket):
         CLASS = None
         if data:
             command = unpack('<B', data[2:3])[0]
-            print("COMMAND IS: %s" % command)
+            #~print("COMMAND IS: %s" % command)
             CLASS = getAnswerClassByNumber(command)
         return CLASS
 
@@ -2364,7 +2364,7 @@ class PacketFactory(AbstractPacketFactory):
         length = unpack("<H", data[:2])[0]
         number = length >> 14
         
-        print("CLASS NUMBER IS: ", number)
+        #~print("CLASS NUMBER IS: ", number)
         
         CLASS = self.getClass(number)
         if not CLASS:

@@ -434,6 +434,10 @@ class PacketAnswer(NavisetPacket):
         params_dict = {}
         return params_dict
 
+    def get_parameters_string(self):
+        s = ''
+        return s
+    
     @classmethod
     def getInstance(cls, data = None):
         CLASS = None
@@ -1869,6 +1873,7 @@ class PacketAnswerCommandSwitchToNewSim(PacketAnswer): _number = 23
 class PacketAnswerCommandSwitchToConfigurationServer(PacketAnswer): _number = 24
 class PacketAnswerCommandAllowDisallowSimAutoswitching(PacketAnswer): _number = 25
 
+    
 
 class PacketAnswerCommandGetImei(PacketAnswer):
     """
@@ -1886,6 +1891,11 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     def get_dict(self):
         params_dict = {"imei": self.__imei}
         return params_dict
+    
+    def get_parameters_string(self):
+        s = ''
+        s = s.join("imei"+"="+str(self.__imei))
+        return s
 
     def _parseBody(self):
         """
@@ -1906,6 +1916,15 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     _command = 5
     
     __numbers = [0]*5
+    
+    def get_parameters_string(self):
+        s = ''
+        s = s.join("number1"+"="+str(self.__numbers[0])+" ")
+        s = s.join("number2"+"="+str(self.__numbers[1])+" ")
+        s = s.join("number3"+"="+str(self.__numbers[2])+" ")
+        s = s.join("number4"+"="+str(self.__numbers[3])+" ")
+        s = s.join("number"+"="+str(self.__numbers[4])+" ")
+        return s
     
     @property
     def numbers(self):
@@ -2144,6 +2163,10 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     def get_dict(self):
         params_dict = {"service_message_200": self.__serviceMessage200}
         return params_dict
+    
+    def get_parameters_string(self):
+        s = ''
+        s = s.join("service_message_200"+"="+str(self.__serviceMessage200))
     
     def _parseBody(self):
         super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()

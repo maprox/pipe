@@ -438,12 +438,12 @@ class PacketAnswer(NavisetPacket):
     """
 
     # private properties
-    _command = 0
+    _number = 0
 
     @property
     def command(self):
         if self._rebuild: self._build()
-        return self._command
+        return self._number
 
     def get_dict(self):
         params_dict = {}
@@ -1934,7 +1934,7 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     """
      Answer on CommandGetImei
     """
-    _command = 1
+    _number = 1
     
     __imei = "000000000000000"
     
@@ -1960,7 +1960,7 @@ class PacketAnswerCommandGetImei(PacketAnswer):
         """
         super(PacketAnswerCommandGetImei, self)._parseBody()
         buffer = self.body       
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         self.__imei = buffer.decode("ascii")[1:]
 
 
@@ -1968,7 +1968,7 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     """
      Answer on CommandGetRegisteredIButtons
     """
-    _command = 5
+    _number = 5
     
     __numbers = [0]*5
     
@@ -1993,7 +1993,7 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     def _parseBody(self):        
         super(PacketAnswerCommandGetRegisteredIButtons, self)._parseBody()
         buffer = self.body
-        self._command = unpack('<B', buffer[:1])[0]        
+        self._number = unpack('<B', buffer[:1])[0]        
         numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00')[0] for i in range(0,5)]  #divide buffer into 5 chunks, add 2 zero bytes for unpacking and unpack as Q
         self.__numbers = numbers
         
@@ -2002,7 +2002,7 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
     """
      Answer on CommandGetPhones
     """
-    _command = 7
+    _number = 7
     
     __phones = [0]*5
     __call_sms_calls = [0] * 5
@@ -2030,7 +2030,7 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
     def _parseBody(self):
         super(PacketAnswerCommandGetPhones, self)._parseBody()
         buffer = self.body
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         
         for i in range(0, 5):
             self.__phones[i] = (buffer.decode("ascii")[i*11:(i+1)*11 - 1])
@@ -2042,7 +2042,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     """
      Answer on CommandGetTrackParams
     """
-    _command = 10
+    _number = 10
     
     __filterCoordinates = 0
     __filterStraightPath = 0
@@ -2179,7 +2179,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     def _parseBody(self):
         super(PacketAnswerCommandGetTrackParams, self)._parseBody()
         buffer = self.body
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         _filter = unpack("<B", buffer[1:2])[0]
 
         self.__  = (_filter >> 7) & 1
@@ -2206,7 +2206,7 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     """
     Answer on CommandSwitchSecurityMode
     """
-    _command = 200
+    _number = 200
     
     __serviceMessage200 = 0
     
@@ -2226,7 +2226,7 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     def _parseBody(self):
         super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()
         buffer = self.body
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         
         self.__serviceMessage200 = unpack('<H', buffer[1:3])[0]   
 
@@ -2234,7 +2234,7 @@ class PacketAnswerCommandGetImage(PacketAnswer):
     """
      Answer on CommandGetImage
     """
-    _command = 20
+    _number = 20
 
     __code = 0
     __imageSize = 0
@@ -2273,7 +2273,7 @@ class PacketAnswerCommandGetImage(PacketAnswer):
         """
         super(PacketAnswerCommandGetImage, self)._parseBody()
         buffer = self._body
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         self.__code = unpack('<B', buffer[1:2])[0]
         if self.__code == IMAGE_ANSWER_CODE_SIZE:
             b, w = unpack('<HB', buffer[2:5])
@@ -2318,14 +2318,16 @@ class PacketFactory(AbstractPacketFactory):
         # read header and length
         length = unpack("<H", data[:2])[0]
         number = length >> 14
-
+        
+        print("CLASS NUMBER IS: ", number)
+        
         CLASS = self.getClass(number)
         if not CLASS:
             raise Exception('Packet %s is not found' % number)
         if issubclass(CLASS, PacketAnswer):
             CLASS = PacketAnswer.getInstance(data)
         if not CLASS:
-            raise Exception('Class for %s is not found' % data)
+            raise Exception('Class for %s is not found with number %s' % (data, number))
         return CLASS(data)
 
 
@@ -2343,7 +2345,7 @@ def getAnswerClassByNumber(number):
     for name, cls in inspect.getmembers(sys.modules[__name__]):
         if inspect.isclass(cls) and \
             issubclass(cls, PacketAnswer) and\
-                cls._command == number:
+                cls._number == number:
                     return cls
     return None
 
@@ -2534,14 +2536,14 @@ class TestCase(unittest.TestCase):
         data = b'\x10\x80\x01868204003057949W!'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        self.assertEqual(packet._command, 1)
+        self.assertEqual(packet._number, 1)
         self.assertEqual(packet.imei, '868204003057949')
     
     def test_commandPacketAnswerCommandGetRegisteredIButtons(self):
         data = b'\x1f\x80\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00i\xc6'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        self.assertEqual(packet._command, 5)
+        self.assertEqual(packet._number, 5)
         self.assertEqual(len(packet.numbers), 5)
         self.assertEqual(packet.numbers[3], 0)
     
@@ -2550,7 +2552,7 @@ class TestCase(unittest.TestCase):
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         
-        self.assertEqual(packet._command, 10)
+        self.assertEqual(packet._number, 10)
         self.assertEqual(packet.filterCoordinates, 0)
         self.assertEqual(packet.filterStraightPath, 0)
         self.assertEqual(packet.filterRestructuring, 0)
@@ -2574,15 +2576,21 @@ class TestCase(unittest.TestCase):
         data = b'\x03\x80\xc8\x00\x02I\xff'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        self.assertEqual(packet._command, 200)
+        self.assertEqual(packet._number, 200)
         self.assertEqual(packet.serviceMessage200, 512)
+    
+    def test_commandError(self):
+        
+        data = b'\x02\x80\xfc\r\x80\xb1'
+        packets = self.factory.getPacketsFromBuffer(data)
+        self.assertEqual(1, packets)
         
     
     def test_commandPacketAnswerCommandGetPhones(self):
         data = b'8\x80\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05E'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        self.assertEqual(packet._command, 7)
+        self.assertEqual(packet._number, 7)
         self.assertEqual(packet.phones[3], '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
         self.assertEqual(packet.call_sms_calls[4], 0)
         self.assertEqual(packet.call_sms_smss[2], 0)

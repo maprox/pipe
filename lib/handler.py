@@ -96,8 +96,8 @@ class AbstractHandler(object):
 
         self.processAmqpCommands()
 
-        #try is now silently excepting all the errors
-        #to avoid connection errors during testing
+        # try is now silently excepting all the errors
+        # to avoid connection errors during testing
         try:
             current_db = db.get(self.uid)
             self.processRequest(current_db.getCommands())

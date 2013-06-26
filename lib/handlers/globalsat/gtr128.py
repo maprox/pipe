@@ -107,11 +107,16 @@ class TestCase(unittest.TestCase):
 
     def test_inputDataCorrupted(self):
         h = self.handler
-        data = 'GSr,012896007472407,0000,8,8080,8080,3,130313,084744,' + \
-               'E03739.6939,N5547.2671,134,10.92,264,9,1.0,13660mV,0,0,*77!'
+        data = 'GSd,012896006644246,0000,5,8080,8080,3,190613,081637,' + \
+               'E04841.5477,N5307.2988,46,0.06,248,8,1.3,12420mV,0,0,*78!'
         rc = h.re_compiled['report']
         m = rc.search(data, 0)
         self.assertIsNotNone(m)
-        packet = h.translate(m.groupdict())
-        self.assertEqual(packet['uid'], "012896007472407")
+        data_device = m.groupdict()
+        packet = h.translate(data_device)
+        self.assertEqual(packet['uid'], "012896006644246")
+        cs1 = str.upper(data_device['checksum'])
+        cs2 = str.upper(h.getChecksum(data_device['line']))
+        self.assertEqual(cs1, cs2)
+
 

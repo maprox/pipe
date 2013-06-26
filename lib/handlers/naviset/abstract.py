@@ -297,7 +297,11 @@ class NavisetHandler(AbstractHandler):
             "write_configuration": "CommandWriteConfiguration",
             "switch_to_new_sim": "CommandSwitchToNewSim",
             "switch_to_new_configuration_server": "CommandSwitchToConfigurationServer",
-            "toggle_sim_autoswitching": "CommandAllowDisallowSimAutoswitching"
+            "toggle_sim_autoswitching": "CommandAllowDisallowSimAutoswitching",
+            
+            "activate_digital_output": "CommandActivateDigitalOutput",
+            "deactivate_digital_output": "CommandDeactivateDigitalOutput"
+
         }
         
         try:

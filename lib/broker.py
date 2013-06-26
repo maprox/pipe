@@ -127,7 +127,7 @@ class MessageBroker:
         print("Current command is:")
         print(self.current_tracker_command)
         print(data)
-        print(data.imei)
+        #print(data.imei)
         #print(dir(data))
         print(data.__dict__)
         

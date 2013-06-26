@@ -25,7 +25,9 @@ def dictCheckItem(data, name, value):
      @param name: key of dict to check
      @param value: value of dict item at key "name"
     """
-    if name not in data:
+    if not data:
+        return value
+    elif name not in data:
         return value
     else:
         return data[name]
@@ -1351,7 +1353,7 @@ class CommandConfigureOutputs(Command):
         data += pack('<B', self.__impulseLength)
         data += pack('<B', self.__pauseLength)
         data += pack('<B', self.__repeatNumber)
-        return data    
+        return data
 
 class CommandDeactivateDigitalOutput(CommandConfigureOutputs):
     """

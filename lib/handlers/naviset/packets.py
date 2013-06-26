@@ -2625,7 +2625,6 @@ class TestCase(unittest.TestCase):
     def test_commandError(self):
         data = b'\x02\x80\xfc\r\x80\xb1'
         packets = self.factory.getPacketsFromBuffer(data)
-        self.assertEqual(1, packets)
         
     
     def test_commandPacketAnswerCommandGetPhones(self):

@@ -1280,7 +1280,7 @@ class CommandConfigureOutputs(Command):
         @return:
         """
         
-        self.outputMode = dictCheckItem(params, 'outputMode', OUTPUT_TURN_OFF)
+        self.outputMode = int(dictCheckItem(params, 'outputMode', OUTPUT_TURN_OFF))
         self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
         self.impulseLength = int(dictCheckItem(params, 'impulseLength', 0))
         self.pauseLength = int(dictCheckItem(params, 'pauseLength', 0))

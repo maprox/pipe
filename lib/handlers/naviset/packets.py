@@ -1989,6 +1989,28 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     __idle = 0
     __courseDeviation = 0
     
+    def get_dict(self):
+        params_dict = {"filter_coordinates": self.__filterCoordinates, 
+                       "filter_straight_path": self.__filterStraightPath,
+                       "filter_restructuring": self.__filterRestructuring,
+                       "filter_write_on_event": self.__filterWriteOnEvent,
+                       "accelerometer_sensitivity": self.__accelerometerSensitivity,
+                       "time_to_standby": self.__timeToStandby,
+                       "time_recording_standby": self.__timeRecordingStandby,
+                       "time_recording_moving": self.__timeRecordingMoving,
+                       "time_recording_distance": self.__timeRecordingDistance,
+                       "drawing_on_angles": self.__drawingOnAngles,
+                       "min_speed": self.__minSpeed,
+                       "hdop": self.__HDOP,
+                       "minspeed": self.__minspeed,
+                       "maxspeed": self.__maxspeed,
+                       "acceleration": self.__acceleration,
+                       "jump": self.__jump,
+                       "idle": self.__idle,
+                       "course_deviation": self.__courseDeviation
+        }
+        return params_dict
+    
     @property
     def filterCoordinates(self):
         if self._rebuild: self._build()

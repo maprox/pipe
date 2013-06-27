@@ -792,7 +792,7 @@ class CommandAddRemovePhoneNumber(Command):
     
     @phoneNumber.setter
     def phoneNumber(self, value):
-        self.__phoneNumber = str(value)
+        self.__phoneNumber = str(value).encode("ascii")
         self._rebuild = True
     
     @property
@@ -831,6 +831,8 @@ class CommandAddRemovePhoneNumber(Command):
         data += pack('<s', phoneNumberBytes)
         callSmsPacked = 16 * self.callSmsCall + self.callSmsSms
         data += pack('<B', callSmsPacked)
+        print("Built body:")
+        print(data)
         return data       
     
     
@@ -2404,7 +2406,7 @@ class PacketAnswerCommandGetImage(PacketAnswer):
         return self.__chunkData
 
     def get_dict(self):
-        params_dict = {"code": self.__code, "image_size": self.__image_size, 
+        params_dict = {"code": self.__code, "image_size": self.__imageSize, 
             "chunk_number": self.__chunkNumber, "chunk_data":self.__chunkData}
         return params_dict
 

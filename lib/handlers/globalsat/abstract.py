@@ -197,6 +197,8 @@ class GlobalsatHandler(AbstractHandler):
         """
         packet = {}
         sensor = {}
+        print("TRANSLATING!")
+        print("data is: %s" % data)
         for char in data:
             value = data[char]
             if value == '': value = '0'

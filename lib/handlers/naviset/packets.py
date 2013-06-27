@@ -2026,7 +2026,7 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     
     def get_parameters_string(self):
         s = ''
-        s = s.join("imei"+"="+str(self.__imei))
+        s = s + ("imei"+"="+str(self.__imei))
         return s
 
     def _parseBody(self):
@@ -2051,11 +2051,11 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     
     def get_parameters_string(self):
         s = ''
-        s = s.join("number1"+"="+str(self.__numbers[0])+" ")
-        s = s.join("number2"+"="+str(self.__numbers[1])+" ")
-        s = s.join("number3"+"="+str(self.__numbers[2])+" ")
-        s = s.join("number4"+"="+str(self.__numbers[3])+" ")
-        s = s.join("number"+"="+str(self.__numbers[4])+" ")
+        s = s + ("number1"+"="+str(self.__numbers[0])+" ")
+        s = s + ("number2"+"="+str(self.__numbers[1])+" ")
+        s = s + ("number3"+"="+str(self.__numbers[2])+" ")
+        s = s + ("number4"+"="+str(self.__numbers[3])+" ")
+        s = s + ("number5"+"="+str(self.__numbers[4])+" ")
         return s
     
     @property

@@ -760,8 +760,8 @@ class CommandAddRemovePhoneNumber(Command):
         )
         self.processCellNumber = params['processCellNumber'] or 0
         self.phoneNumber = params['phoneNumber'] or "0000000000"
-        self.callSmsCall = params['callSmsCall'] or CALL_SMS_CALL_RECEIVE 
-        self.callSmsSms = params['callSmsSms'] or CALL_SMS_CALL_IGNORE
+        self.callSmsCall = params['callSmsCall'] or CALL_SMS_CALL_RECEIVE
+        self.callSmsSms = params['callSmsSms'] or CALL_SMS_SMS_IGNORE
     
     @property
     def processKeyNumberAction(self):

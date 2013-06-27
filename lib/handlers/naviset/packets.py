@@ -718,7 +718,8 @@ class CommandAddRemoveKeyNumber(Command):
         @return: body binstring
         """
         data = b''
-        processPacked = 16 * self.processKeyNumberAction + self.processCellNumber
+        processPacked = 16 * self.processKeyNumberAction + \
+            self.processCellNumber
         data += pack('<B', processPacked)
         data += pack('<Q', self.__keyNumber)[:-2]
         return data
@@ -750,11 +751,12 @@ class CommandAddRemovePhoneNumber(Command):
         @param params:
         @return:
         """
-        self.processKeyNumberAction = params['processKeyNumberAction'] or PROCESS_KEY_NUMBER_ACTION_ADD
+        self.processKeyNumberAction = params['processKeyNumberAction'] \
+            or PROCESS_KEY_NUMBER_ACTION_ADD
         self.processCellNumber = params['processCellNumber'] or 0
         self.phoneNumber = params['phoneNumber'] or "0000000000"
         self.callSmsCall = params['callSmsCall'] or CALL_SMS_CALL_RECEIVE 
-        self.callSmsSms = params['callSmsSms'] or CALL_SMS_CALL_IGNORE
+        self.callSmsSms = params['callSmsSms'] or CALL_SMS_SMS_IGNORE
     
     @property
     def processKeyNumberAction(self):

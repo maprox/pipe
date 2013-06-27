@@ -2015,6 +2015,11 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     
     __imei = "000000000000000"
     
+    def get_parameters_string(self):
+        s = ''
+        s = s + ("imei"+"="+str(self.__imei))
+        return s
+    
     @property
     def imei(self):
         if self._rebuild: self._build()
@@ -2023,11 +2028,6 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     def get_dict(self):
         params_dict = {"imei": self.__imei}
         return params_dict
-    
-    def get_parameters_string(self):
-        s = ''
-        s = s + ("imei"+"="+str(self.__imei))
-        return s
 
     def _parseBody(self):
         """
@@ -2051,11 +2051,8 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     
     def get_parameters_string(self):
         s = ''
-        s = s + ("number1"+"="+str(self.__numbers[0])+" ")
-        s = s + ("number2"+"="+str(self.__numbers[1])+" ")
-        s = s + ("number3"+"="+str(self.__numbers[2])+" ")
-        s = s + ("number4"+"="+str(self.__numbers[3])+" ")
-        s = s + ("number5"+"="+str(self.__numbers[4])+" ")
+        for i in range(0, 5):
+            s = s + ("number%d=%d; " % (i+1, self.__numbers[i]))
         return s
     
     @property
@@ -2087,6 +2084,19 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
     __phones = [0]*5
     __call_sms_calls = [0] * 5
     __call_sms_smss = [0] * 5
+    
+    def get_parameters_string(self):
+        s = ''
+        for i in range(0, 5):
+            s = s + ("phone%d=%s: incoming call %d incoming sms %d; " % 
+                     (i+1, 
+                      self.__phones[i], 
+                      self.__call_sms_calls[i], 
+                      self.__call_sms_smss[i]
+                      )
+            )
+        return s
+    
     
     @property
     def phones(self):
@@ -2144,6 +2154,50 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     __jump = 0
     __idle = 0
     __courseDeviation = 0
+    
+    
+    def get_parameters_string(self):
+        s = ''
+        s = s + ("fiter coordinates: %d; "\
+                 "filter straight path: %d; "\
+                 "filter restructuring: %d; "\
+                 "filter (write on event): %d; "\
+                 "accelerometer sensitivity: %d;"\
+                 "time to standby: %d; "\
+                 "standby recording time: %d; "\
+                 "moving recording time: %d; "\
+                 "distance recording time: %d; "\
+                 "drawing on angles: %d; "\
+                 "minSpeed: %d; "\
+                 "HDOP: %d; "\
+                 "minspeed: %d; "\
+                 "maxspeed: %d; "\
+                 "acceleration: %d; "\
+                 "jump: %d; "\
+                 "idle: %d; "\
+                 "course deviation: %d; " % 
+                 (self.__filterCoordinates,
+                  self.__filterStraightPath,
+                  self.__filterRestructuring,
+                  self.__filterWriteOnEvent,
+                  self.__accelerometerSensitivity,
+                  self.__timeToStandby,
+                  self.__timeRecordingStandby,
+                  self.__timeRecordingMoving,
+                  self.__timeRecordingDistance,
+                  self.__drawingOnAngles,
+                  self.__minSpeed,
+                  self.__HDOP,
+                  self.__minspeed,
+                  self.__maxspeed,
+                  self.__acceleration,
+                  self.__jump,
+                  self.__idle,
+                  self.__courseDeviation,
+                  )
+        )
+
+        return s
     
     def get_dict(self):
         params_dict = {"filter_coordinates": self.__filterCoordinates, 
@@ -2292,6 +2346,11 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     _number = 200
     
     __serviceMessage200 = 0
+    
+    def get_parameters_string(self):
+        s = ''
+        s += ("service message 200: %d" % self.__serviceMessage200)
+        return s
     
     @property
     def serviceMessage200(self):

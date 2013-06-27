@@ -92,11 +92,12 @@ class NavisetHandler(AbstractHandler):
         #self.sendCommand(packets.CommandGetTrackParams())
     
     def storeCommandPacket(self, commandPacket):
-        print("Called command packet storing procedure")
-        print(commandPacket)
-        print(str(commandPacket.__dict__))
+        #~print("Called command packet storing procedure")
+        #~print(commandPacket)
+        #~print(str(commandPacket.__dict__))
         
-        stored_information = [{"guid": "GUID", "status": 2, "data": str(commandPacket.__dict__)}]
+        stored_information = [{"guid": "GUID", "status": 2, 
+                               "data": str(commandPacket.__dict__)}]
         
         self.store(stored_information)
         
@@ -198,7 +199,7 @@ class NavisetHandler(AbstractHandler):
         return list
     
     #def processAmqpCommand(self):
-    #    print("Naviset amqp processing")
+    #    #~print("Naviset amqp processing")
     
     def sendAcknowledgement(self, packet):
         """
@@ -246,21 +247,23 @@ class NavisetHandler(AbstractHandler):
     def processAmqpCommands(self):
         try:
             receivedPackets = broker.receivePackets("868204003057949")
-            print("Type of received packets are: %s" % type(receivedPackets))
-            print("Received packets are: %s" % receivedPackets)
+            #~print("Type of received packets are: %s" % type(receivedPackets))
+            #~print("Received packets are: %s" % receivedPackets)
             if receivedPackets:
                 self.processAmqpCommand(receivedPackets)
         except Exception as E:
-            print(E)
+            pass
+            #~print(E)
         
     def processAmqpCommand(self, data):
-        print("Got data: %s" % data)
-        print("Our class is: %s" % self)
+        #~print("Got data: %s" % data)
+        #~print("Our class is: %s" % self)
         for i in data:
-            print(i, data[i])
+            pass
+            #~print(i, data[i])
         
         
-        print("Processing command to packet")
+        #~print("Processing command to packet")
         import lib.handlers.naviset.packets as packetsModule
         
         commandName = data["command"]
@@ -269,7 +272,8 @@ class NavisetHandler(AbstractHandler):
         commandTransport = data["transport"]
         commandParams = data["params"]
         
-        print(commandName, commandUid, commandGuid, commandTransport, commandParams)
+        #~print(commandName, commandUid, 
+        #    commandGuid, commandTransport, commandParams)
         
         amqp_name_mapper = {
             "get_status": "CommandGetStatus",
@@ -283,20 +287,24 @@ class NavisetHandler(AbstractHandler):
             "add_remove_phone_number": "CommandAddRemovePhoneNumber",
             "set_protocol_type_structure": "CommandProtocolTypeStructure",
             "get_tracker_parameters": "CommandGetTrackParams",
-            "set_filtration_drawing_parameters": "CommandFiltrationDrawingParameters",
+            "set_filtration_drawing_parameters": 
+            "CommandFiltrationDrawingParameters",
             "configure_inputs": "CommandConfigureInputs",
             "configure_outputs": "CommandConfigureOutputs",
             "switch_security_mode": "CommandSwitchSecurityMode",
-            "set_temporary_security_parameters": "CommandTemporarySecurityParameters",
+            "set_temporary_security_parameters": 
+            "CommandTemporarySecurityParameters",
             "remove_track_from_buffer": "CommandRemoveTrackFromBuffer",
-            "set_voice_connection_parameters": "CommandVoiceConnectionParameters",
+            "set_voice_connection_parameters": 
+            "CommandVoiceConnectionParameters",
             "restart_tracker": "CommandRestart",
             "upgrade_software": "CommandSoftwareUpgrade",
             "get_image": "CommandGetImage",
             "get_configuration": "CommandGetConfiguration",
             "write_configuration": "CommandWriteConfiguration",
             "switch_to_new_sim": "CommandSwitchToNewSim",
-            "switch_to_new_configuration_server": "CommandSwitchToConfigurationServer",
+            "switch_to_new_configuration_server": 
+            "CommandSwitchToConfigurationServer",
             "toggle_sim_autoswitching": "CommandAllowDisallowSimAutoswitching",
             
             "activate_digital_output": "CommandActivateDigitalOutput",
@@ -306,24 +314,26 @@ class NavisetHandler(AbstractHandler):
         
         try:
             if commandName in amqp_name_mapper:
-                CommandClass = packetsModule.__dict__[amqp_name_mapper[commandName]]
+                className = amqp_name_mapper[commandName]
+                CommandClass = packetsModule.__dict__[className]
             else:
                 broker.sendAmqpError(data, "Command is not supported")
-                print("No command with name %s" % commandName)
+                #~print("No command with name %s" % commandName)
                 return
             
             
             
-            print("Command class is %s: " % CommandClass)
+            #~print("Command class is %s: " % CommandClass)
             
             command = CommandClass(commandParams)            
 
-            print("Sending command???????????????????????//")
-            print("Command is: %s" % command)
+            #~print("Sending command???????????????????????//")
+            #~print("Command is: %s" % command)
             broker.current_tracker_command = data
             self.sendCommand(command)
         except Exception as E:
-            print("Error is %s" % E)
+            pass
+            #~print("Error is %s" % E)
         
         
 
@@ -442,7 +452,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packetItem['longitude'], 50.1834)
         self.assertEqual(packetItem['satellitescount'], 16)
         
-        self.assertEqual(str(datetime.strptime(packetItem['time'],('%Y-%m-%dT%H:%M:%S.%f'))), '2013-04-04 03:22:34')
+        self.assertEqual(str(datetime.strptime(packetItem['time'],
+            ('%Y-%m-%dT%H:%M:%S.%f'))), '2013-04-04 03:22:34')
         
         packetItem2 = packets[6]
         

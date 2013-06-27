@@ -162,7 +162,8 @@ class SolidBinaryPacket(object):
         return result
     
     def to_string(self):
-        print("Packet string!")
+        #print("Packet string!")
+        return("Packet string!")
 
 # ---------------------------------------------------------------------------
 

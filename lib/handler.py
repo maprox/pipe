@@ -58,8 +58,9 @@ class AbstractHandler(object):
         return self.__thread
     
     def amqp_dispatch(self):
-        while True:
-            print("Dispatching AMQP")
+        pass
+        #while True:
+            #~print("Dispatching AMQP")
     
     
     def dispatch(self):
@@ -69,9 +70,9 @@ class AbstractHandler(object):
         """
         log.debug('%s::dispatch()', self.__class__)
         buffer = self.recv()
-        print("!!!!!!!!!!!!!!!!!!!!!Recved buffer!!!!!!!!!!!!!!!!!!!!!!!!!!!: %s" % buffer)
+        #~print("!!!!!!!!!Recved buffer!!!!!!!!!!: %s" % buffer)
         while len(buffer) > 0:
-            print("$$$$$$$$$$$$$$$$$$Caliing processData$$$$$$$$$$$$$$$$$$")
+            #~print("$$$$$$$$$$$$$$$$$$Caliing processData$$$$$$$$$$$$$$$$$$")
             self.processData(buffer)
             buffer = self.recv()
         log.debug('%s::dispatch() - EXIT (empty buffer?)', self.__class__)
@@ -90,19 +91,21 @@ class AbstractHandler(object):
          @param data: Data from socket
         """
         
-        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!CALLING PROCESS AMQP COMMAND!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        #~print("!!!!!!!!!!!CALLING PROCESS AMQP COMMAND!!!!!!!!!!!!!!!!!!!!")
         self.processAmqpCommands()
         
         if self._packetsFactory:
             try:
-                protocolPackets = self._packetsFactory.getPacketsFromBuffer(data)
+                protocolPackets = (
+                    self._packetsFactory.getPacketsFromBuffer(data)
+                )
                 for protocolPacket in protocolPackets:
                     self.processProtocolPacket(protocolPacket)
-                    print("####################################### PROTOCOL PACKET IS: #################################")
-                    print(protocolPacket)
+                    #~print("############ PROTOCOL PACKET IS: ###############")
+                    #~print(protocolPacket)
             except Exception as E:
-                print("error!")
-                print(E)
+                #~print("error!")
+                #~print(E)
                 log.error("processData error: %s", E)
                 
         
@@ -123,7 +126,8 @@ class AbstractHandler(object):
                 config = self.translateConfig(current_db.getSettings())
                 send['config'] = json.dumps(config, separators=(',',':'))
                 send['id_action'] = current_db.getSettingsTaskId()
-                log.debug('Sending config: ' + conf.pipeSetUrl + urlencode(send))
+                log.debug('Sending config: ' + 
+                    conf.pipeSetUrl + urlencode(send))
                 connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
                 answer = connection.read()
                 log.debug('Config answered: ' + answer.decode())
@@ -133,35 +137,37 @@ class AbstractHandler(object):
         return self
     
     def processAmqpCommands(self):
-        raise Exception("processAmqpCommands not implemented!")
+        pass
+        #raise Exception("processAmqpCommands not implemented!")
     
     def processAmqpCommand(self, data):
-        raise Exception("processAmqpCommand not implemented!")
+        pass
+        #raise Exception("processAmqpCommand not implemented!")
     
     
     """
     @classmethod
     def processAmqpCommands(cls, message):        
-        print("Processing AMQP")
-        print("Message is: %s" % message)
-        print("Cls is: %s" % cls)
-        print("Method is: %s" % cls.parsePacketFromAmqp)
+        #~print("Processing AMQP")
+        #~print("Message is: %s" % message)
+        #~print("Cls is: %s" % cls)
+        #~print("Method is: %s" % cls.parsePacketFromAmqp)
         try:
             cls.parsePacketFromAmqp(message)
         except Exception as E:
-            print(E)
+            #~print(E)
         pass
     
     @classmethod
     def parsePacketFromAmqp(cls, data):
-        print("Parsing packet!")
+        #~print("Parsing packet!")
         import anyjson
-        print("Unparsed packet type is: %s" % type(data))
-        print("Unparsed packet is: %s" % data)
+        #~print("Unparsed packet type is: %s" % type(data))
+        #~print("Unparsed packet is: %s" % data)
         packet = anyjson.deserialize(data)
-        print("Parsed packet is %s" % packet)
+        #~print("Parsed packet is %s" % packet)
         for i in packet:
-            print(i, packet[i])
+            #~print(i, packet[i])
     """
 
     def processRequest(self, data):
@@ -236,7 +242,7 @@ class AbstractHandler(object):
         sock.settimeout(conf.socketTimeout)
         total_data = []
         while True:
-            print("Recving!!!")
+            #~print("Recving!!!")
             try:
                 data = sock.recv(conf.socketPacketLength)
             except Exception as E:
@@ -272,8 +278,8 @@ class AbstractHandler(object):
          @return: Instance of lib.falcon.answer.FalconAnswer
         """
         result = self.getStore().send(packets)
-        print("%%%%%%%%%%%%%%%%%%%%%%getStore got the store!!!%%%%%%%%%%%%%%%%%")
-        print(self.getStore())
+        #~print("%%%%%%%%%%%getStore got the store!!!%%%%%%%%%%%%")
+        #~print(self.getStore())
         if (result.isSuccess()):
             log.debug('%s::store() ... OK', self.__class__)
         else:

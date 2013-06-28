@@ -246,6 +246,10 @@ class NavisetHandler(AbstractHandler):
          Processing AMQP command
          @param command: command
         """
+        if not command:
+            log.error("Empty command!")
+            return
+
         log.debug("Processing AMQP command: %s " % command)
         import lib.handlers.naviset.packets as packetsModule
 

@@ -190,6 +190,10 @@ class MessageBroker:
             except:
                 pass
 
-        return(self._drainedBody)
+        command = self.getCommand(imei)
+        commandBody = None
+        if command and ('body' in command):
+            commandBody = command['body']
+        return commandBody
 
 broker = MessageBroker()

@@ -131,17 +131,15 @@ class MessageBroker:
         #print(data.imei)
         #print(dir(data))
         #~print(data.__dict__)
-        
-        
-        
+        log.debug("Processing AMQP command answer")
+
         
         guid = self._drainedBody['guid']
         data_dict = data.get_dict()
         data_string = data.get_parameters_string()
         answer_update = {"guid": guid, "status":"2", "data":data_string}
         
-        #~print("Sending answer:")
-        #~print(answer_update)
+        log.debug("Sending answer: %s" % answer_update)
         
         self.sendPackets([answer_update], 
             routing_key = "production.mon.device.command.update")

@@ -792,7 +792,7 @@ class CommandAddRemovePhoneNumber(Command):
     
     @phoneNumber.setter
     def phoneNumber(self, value):
-        self.__phoneNumber = str(value)
+        self.__phoneNumber = str(value).encode("ascii")
         self._rebuild = True
     
     @property
@@ -831,6 +831,8 @@ class CommandAddRemovePhoneNumber(Command):
         data += pack('<s', phoneNumberBytes)
         callSmsPacked = 16 * self.callSmsCall + self.callSmsSms
         data += pack('<B', callSmsPacked)
+        print("Built body:")
+        print(data)
         return data       
     
     
@@ -2015,6 +2017,11 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     
     __imei = "000000000000000"
     
+    def get_parameters_string(self):
+        s = ''
+        s = s + ("imei"+"="+str(self.__imei))
+        return s
+    
     @property
     def imei(self):
         if self._rebuild: self._build()
@@ -2023,11 +2030,6 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     def get_dict(self):
         params_dict = {"imei": self.__imei}
         return params_dict
-    
-    def get_parameters_string(self):
-        s = ''
-        s = s.join("imei"+"="+str(self.__imei))
-        return s
 
     def _parseBody(self):
         """
@@ -2051,11 +2053,8 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     
     def get_parameters_string(self):
         s = ''
-        s = s.join("number1"+"="+str(self.__numbers[0])+" ")
-        s = s.join("number2"+"="+str(self.__numbers[1])+" ")
-        s = s.join("number3"+"="+str(self.__numbers[2])+" ")
-        s = s.join("number4"+"="+str(self.__numbers[3])+" ")
-        s = s.join("number"+"="+str(self.__numbers[4])+" ")
+        for i in range(0, 5):
+            s = s + ("number%d=%d; " % (i+1, self.__numbers[i]))
         return s
     
     @property
@@ -2087,6 +2086,19 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
     __phones = [0]*5
     __call_sms_calls = [0] * 5
     __call_sms_smss = [0] * 5
+    
+    def get_parameters_string(self):
+        s = ''
+        for i in range(0, 5):
+            s = s + ("phone%d=%s: incoming call %d incoming sms %d; " % 
+                     (i+1, 
+                      self.__phones[i], 
+                      self.__call_sms_calls[i], 
+                      self.__call_sms_smss[i]
+                      )
+            )
+        return s
+    
     
     @property
     def phones(self):
@@ -2144,6 +2156,50 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     __jump = 0
     __idle = 0
     __courseDeviation = 0
+    
+    
+    def get_parameters_string(self):
+        s = ''
+        s = s + ("fiter coordinates: %d; "\
+                 "filter straight path: %d; "\
+                 "filter restructuring: %d; "\
+                 "filter (write on event): %d; "\
+                 "accelerometer sensitivity: %d;"\
+                 "time to standby: %d; "\
+                 "standby recording time: %d; "\
+                 "moving recording time: %d; "\
+                 "distance recording time: %d; "\
+                 "drawing on angles: %d; "\
+                 "minSpeed: %d; "\
+                 "HDOP: %d; "\
+                 "minspeed: %d; "\
+                 "maxspeed: %d; "\
+                 "acceleration: %d; "\
+                 "jump: %d; "\
+                 "idle: %d; "\
+                 "course deviation: %d; " % 
+                 (self.__filterCoordinates,
+                  self.__filterStraightPath,
+                  self.__filterRestructuring,
+                  self.__filterWriteOnEvent,
+                  self.__accelerometerSensitivity,
+                  self.__timeToStandby,
+                  self.__timeRecordingStandby,
+                  self.__timeRecordingMoving,
+                  self.__timeRecordingDistance,
+                  self.__drawingOnAngles,
+                  self.__minSpeed,
+                  self.__HDOP,
+                  self.__minspeed,
+                  self.__maxspeed,
+                  self.__acceleration,
+                  self.__jump,
+                  self.__idle,
+                  self.__courseDeviation,
+                  )
+        )
+
+        return s
     
     def get_dict(self):
         params_dict = {"filter_coordinates": self.__filterCoordinates, 
@@ -2293,6 +2349,11 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     
     __serviceMessage200 = 0
     
+    def get_parameters_string(self):
+        s = ''
+        s += ("service message 200: %d" % self.__serviceMessage200)
+        return s
+    
     @property
     def serviceMessage200(self):
         if self._rebuild: self._build()
@@ -2345,7 +2406,7 @@ class PacketAnswerCommandGetImage(PacketAnswer):
         return self.__chunkData
 
     def get_dict(self):
-        params_dict = {"code": self.__code, "image_size": self.__image_size, 
+        params_dict = {"code": self.__code, "image_size": self.__imageSize, 
             "chunk_number": self.__chunkNumber, "chunk_data":self.__chunkData}
         return params_dict
 

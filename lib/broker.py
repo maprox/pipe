@@ -14,6 +14,9 @@ class MessageBroker:
     """
      RabbitMQ message broker
     """
+
+    _drainedMessage = None
+
     def __init__(self):
         """
          Constructor. Creates local storage to be used by protocol handlers
@@ -83,40 +86,35 @@ class MessageBroker:
          @return:
         """
         exchange = self._exchanges['mon.device']
-        
-        
-        #with Connection(conf.amqpConnection) as conn:
-        conn = self.connection
-        
-        
-        
-        log.debug('BROKER: Connected to %s' % conf.amqpConnection)
-        with conn.Producer(serializer = 'json') as producer:
-            for packet in packets:
-                uid = None if 'uid' not in packet else packet['uid']
-                #routing_key = self.getRoutingKey(uid)
-                
-                
-                
-                packet_queue = Queue(
-                    routing_key,
-                    exchange = exchange,
-                    routing_key = routing_key
-                )
-                
-                producer.publish(
-                    packet,
-                    exchange = exchange,
-                    routing_key = routing_key,
-                    declare = [packet_queue]
-                )
-                if uid:
-                    log.debug('Packet for "%s" is sent via message broker'
-                        % uid)
-                else:
-                    log.debug('Packet is sent via message broker')
-        log.debug('BROKER: Disconnected')
-    
+
+        with Connection(conf.amqpConnection) as conn:
+            log.debug('BROKER: Connected to %s' % conf.amqpConnection)
+            with conn.Producer(serializer = 'json') as producer:
+                for packet in packets:
+                    uid = None if 'uid' not in packet else packet['uid']
+                    #routing_key = self.getRoutingKey(uid)
+                    
+                    
+                    
+                    packet_queue = Queue(
+                        routing_key,
+                        exchange = exchange,
+                        routing_key = routing_key
+                    )
+                    
+                    producer.publish(
+                        packet,
+                        exchange = exchange,
+                        routing_key = routing_key,
+                        declare = [packet_queue]
+                    )
+                    if uid:
+                        log.debug('Packet for "%s" is sent via message broker'
+                            % uid)
+                    else:
+                        log.debug('Packet is sent via message broker')
+            log.debug('BROKER: Disconnected')
+
     def sendAmqpAnswer(self, data):
         #~print("^^^^^^^^^^^^NOW WE ARE SENDING AMQP ANSWER^^^^^^^^")
         
@@ -133,17 +131,15 @@ class MessageBroker:
         #print(data.imei)
         #print(dir(data))
         #~print(data.__dict__)
-        
-        
-        
+        log.debug("Processing AMQP command answer")
+
         
         guid = self._drainedBody['guid']
         data_dict = data.get_dict()
         data_string = data.get_parameters_string()
         answer_update = {"guid": guid, "status":"2", "data":data_string}
         
-        #~print("Sending answer:")
-        #~print(answer_update)
+        log.debug("Sending answer: %s" % answer_update)
         
         self.sendPackets([answer_update], 
             routing_key = "production.mon.device.command.update")

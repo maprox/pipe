@@ -307,24 +307,6 @@ class TeltonikaHandler(AbstractHandler):
         packet.addParam(packets.CFG_VEHICLE_MOVING_SEND_PERIOD, 20) # seconds
         return packet
 
-    def processCommandReadSettings(self, task, data):
-        """
-         Sending command to read all of device configuration
-         @param task: id task
-         @param data: data string
-        """
-        log.error('Teltonika::processCommandReadSettings NOT IMPLEMENTED')
-        self.processCloseTask(task, None)
-
-    def processCommandSetOption(self, task, data):
-        """
-         Set device configuration
-         @param task: id task
-         @param data: data dict()
-        """
-        log.error('Teltonika::processCommandSetOption NOT IMPLEMENTED')
-        self.processCloseTask(task, None)
-
 # ===========================================================================
 # TESTS
 # ===========================================================================

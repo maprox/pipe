@@ -192,6 +192,7 @@ class AbstractHandler(object):
             "Accept": "text/plain"
         })
         conn.getresponse()
+        return self
 
     def recv(self):
         """
@@ -392,7 +393,6 @@ class AbstractHandler(object):
             return section.get(key, defaultValue)
         return defaultValue
 
-
     def processCommandExecute(self, task, data):
         """
          Execute command for the device
@@ -400,6 +400,7 @@ class AbstractHandler(object):
          @param data: data dict()
         """
         log.info('processCommandExecute not implemented!')
+        return self.processCloseTask(task, None)
 
     def processCommandReadSettings(self, task, data):
         """
@@ -407,7 +408,8 @@ class AbstractHandler(object):
          @param task: id task
          @param data: data string
         """
-        log.info('processCommandReadSettings not implemented!')
+        log.error('processCommandReadSettings NOT IMPLEMENTED')
+        return self.processCloseTask(task, None)
 
     def processCommandSetOption(self, task, data):
         """
@@ -415,4 +417,5 @@ class AbstractHandler(object):
          @param task: id task
          @param data: data dict()
         """
-        log.info('processCommandSetOption not implemented!')
+        log.error('processCommandSetOption NOT IMPLEMENTED')
+        return self.processCloseTask(task, None)

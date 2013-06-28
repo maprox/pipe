@@ -509,8 +509,8 @@ class GlobalsatHandler(AbstractHandler):
         if not current_db.isReadingSettings() \
           and not current_db.isSettingsReady():
             current_db.startReadingSettings(task)
-            #log.debug('Task number: ' + str(task))
             self.sendCommand('N1(OO=02),L1(ALL)')
+        self.processCloseTask(task, None)
 
     def processCommandExecute(self, task, data):
         """
@@ -540,6 +540,7 @@ class GlobalsatHandler(AbstractHandler):
             log.debug('Command sent: ' + command)
             self.send(command.encode())
             self.processCommandReadSettings(task, None)
+            self.processCloseTask(task, None)
 
     def addCommandSetOptions(self, data):
         """

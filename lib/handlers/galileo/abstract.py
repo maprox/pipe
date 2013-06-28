@@ -244,25 +244,9 @@ class GalileoHandler(AbstractHandler):
          @param task: id task
          @param data: data dict()
         """
-        log.info('Observer is sending a command:')
-        log.info(data)
+        log.info('Observer is sending a command: %s' % data)
         self.sendCommand(data['command'])
-
-    def processCommandReadSettings(self, task, data):
-        """
-         Sending command to read all of device configuration
-         @param task: id task
-         @param data: data string
-        """
-        pass
-
-    def processCommandSetOption(self, task, data):
-        """
-         Set device configuration
-         @param task: id task
-         @param data: data dict()
-        """
-        pass
+        self.processCloseTask(task, None)
 
     def getInitiationData(self, config):
         """

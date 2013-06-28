@@ -244,8 +244,7 @@ class NavisetHandler(AbstractHandler):
     def processAmqpCommands(self):
         try:
             receivedPackets = broker.receivePackets("868204003057949")
-            #~print("Type of received packets are: %s" % type(receivedPackets))
-            #~print("Received packets are: %s" % receivedPackets)
+            log.debug("Received commands are: %s" % receivedPackets)
             if receivedPackets:
                 self.processAmqpCommand(receivedPackets)
         except Exception as E:
@@ -315,24 +314,17 @@ class NavisetHandler(AbstractHandler):
                 CommandClass = packetsModule.__dict__[className]
             else:
                 broker.sendAmqpError(data, "Command is not supported")
-                #~print("No command with name %s" % commandName)
+                log.error("No command with name %s" % commandName)
                 return
-            
-            
-            
-            #~print("Command class is %s: " % CommandClass)
-            
+
+            log.debug("Command class is %s: " % CommandClass)
             command = CommandClass(commandParams)            
 
-            #~print("Sending command???????????????????????//")
-            #~print("Command is: %s" % command)
+            log.debug("Command is: %s" % command)
             broker.current_tracker_command = data
             self.sendCommand(command)
         except Exception as E:
-            pass
-            #~print("Error is %s" % E)
-        
-        
+            log.error("Send command error is %s" % E)
 
 # ===========================================================================
 # TESTS

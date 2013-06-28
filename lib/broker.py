@@ -135,8 +135,13 @@ class MessageBroker:
 
         
         guid = self._drainedBody['guid']
-        data_dict = data.get_dict()
-        data_string = data.get_parameters_string()
+        #data_dict = data.get_dict()
+        
+        
+        ###data_string = data.get_parameters_string()
+        
+        data_string = data
+        
         answer_update = {"guid": guid, "status":"2", "data":data_string}
         
         log.debug("Sending answer: %s" % answer_update)

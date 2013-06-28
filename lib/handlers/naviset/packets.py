@@ -16,6 +16,24 @@ from lib.factory import AbstractPacketFactory
 
 # ---------------------------------------------------------------------------
 
+
+
+def dictCheckItem(data, name, value):
+    """
+     Checks if "name" is in "data" dict. If yes, returns data[name],
+     if no, returns default "value"
+     @param data: input dict
+     @param name: key of dict to check
+     @param value: value of dict item at key "name"
+    """
+    if not data:
+        return value
+    elif name not in data:
+        return value
+    else:
+        return data[name]
+
+
 class NavisetBase(BasePacket):
     """
      Base class for naviset packet.
@@ -423,18 +441,27 @@ class PacketAnswer(NavisetPacket):
     """
 
     # private properties
-    _command = 0
+    _number = 0
 
     @property
     def command(self):
         if self._rebuild: self._build()
-        return self._command
+        return self._number
 
+    def get_dict(self):
+        params_dict = {}
+        return params_dict
+
+    def get_parameters_string(self):
+        s = ''
+        return s
+    
     @classmethod
     def getInstance(cls, data = None):
         CLASS = None
         if data:
             command = unpack('<B', data[2:3])[0]
+            #~print("COMMAND IS: %s" % command)
             CLASS = getAnswerClassByNumber(command)
         return CLASS
 
@@ -694,7 +721,9 @@ class CommandAddRemoveKeyNumber(Command):
         @return: body binstring
         """
         data = b''
-        processPacked = 16 * self.processKeyNumberAction + self.processCellNumber
+        processPacked = (
+            16 * self.processKeyNumberAction + self.processCellNumber
+        )
         data += pack('<B', processPacked)
         data += pack('<Q', self.__keyNumber)[:-2]
         return data
@@ -726,11 +755,13 @@ class CommandAddRemovePhoneNumber(Command):
         @param params:
         @return:
         """
-        self.processKeyNumberAction = params['processKeyNumberAction'] or PROCESS_KEY_NUMBER_ACTION_ADD
+        self.processKeyNumberAction = (
+            params['processKeyNumberAction'] or PROCESS_KEY_NUMBER_ACTION_ADD
+        )
         self.processCellNumber = params['processCellNumber'] or 0
         self.phoneNumber = params['phoneNumber'] or "0000000000"
-        self.callSmsCall = params['callSmsCall'] or CALL_SMS_CALL_RECEIVE 
-        self.callSmsSms = params['callSmsSms'] or CALL_SMS_CALL_IGNORE
+        self.callSmsCall = params['callSmsCall'] or CALL_SMS_CALL_RECEIVE
+        self.callSmsSms = params['callSmsSms'] or CALL_SMS_SMS_IGNORE
     
     @property
     def processKeyNumberAction(self):
@@ -792,7 +823,9 @@ class CommandAddRemovePhoneNumber(Command):
         @return: body binstring
         """
         data = b''
-        processPacked = 16 * self.processKeyNumberAction + self.processCellNumber
+        processPacked = (
+            16 * self.processKeyNumberAction + self.processCellNumber
+        )
         data += pack('<B', processPacked)
         phoneNumberBytes = bytes(self.phoneNumber, "ascii")
         data += pack('<s', phoneNumberBytes)
@@ -1107,7 +1140,10 @@ class CommandFiltrationDrawingParameters(Command):
         @return: body binstring
         """
         data = b''
-        filterPacked = 128 * self.__filterCoordinates + 64 * self.__filterStraightPath + 32 * self.__filterRestructuring + 16 * self.__filterWriteOnEvent
+        filterPacked = (
+            128 * self.__filterCoordinates + 64 * self.__filterStraightPath 
+            + 32 * self.__filterRestructuring + 16 * self.__filterWriteOnEvent
+        )
         data += pack('<B', filterPacked)
         data += pack('<H', self.__accelerometerSensitivity)
         data += pack('<H', self.__timeToStandby)
@@ -1153,6 +1189,7 @@ class CommandConfigureInputs(Command):
         @param params:
         @return:
         """
+
         self.inputActActiveLevel = params['inputActActiveLevel']
         self.inputActInputNumber = params['inputActInputNumber']
         self.lowerBorder = params['lowerBorder']
@@ -1220,7 +1257,9 @@ class CommandConfigureInputs(Command):
         @return: body binstring
         """
         data = b''
-        inputActPacked = 16 * self.__inputActActiveLevel + self.__inputActInputNumber 
+        inputActPacked = (
+            16 * self.__inputActActiveLevel + self.__inputActInputNumber
+        ) 
         data += pack('<B', inputActPacked)
         data += pack('<H', self.__lowerBorder)
         data += pack('<H', self.__upperBorder)
@@ -1231,6 +1270,7 @@ OUTPUT_TURN_OFF = 0
 OUTPUT_TURN_ON = 1
 OUTPUT_IMPULSE = 2
 
+
 class CommandConfigureOutputs(Command):
     """
     Configures device outputs.
@@ -1240,7 +1280,7 @@ class CommandConfigureOutputs(Command):
     
     # private params
     __outputMode = OUTPUT_TURN_OFF
-    __outputExitNumber = 0
+    __outputNumber = 0
     __impulseLength = 0
     __pauseLength = 0
     __repeatNumber = 0
@@ -1251,11 +1291,15 @@ class CommandConfigureOutputs(Command):
         @param params:
         @return:
         """
-        self.outputMode = params['outputMode']
-        self.outputExitNumber = params['outputExitNumber']
-        self.impulseLength = params['impulseLength']
-        self.pauseLength = params['pauseLength']
-        self.repeatNumber = params['repeatNumber']
+        
+        self.outputMode = int(dictCheckItem(params, 
+            'outputMode', OUTPUT_TURN_OFF)
+        )
+        self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
+        self.impulseLength = int(dictCheckItem(params, 'impulseLength', 0))
+        self.pauseLength = int(dictCheckItem(params, 'pauseLength', 0))
+        self.repeatNumber = int(dictCheckItem(params, 'repeatNumber', 0))
+        
     
     @property
     def outputMode(self):
@@ -1269,14 +1313,14 @@ class CommandConfigureOutputs(Command):
             self._rebuild = True
     
     @property
-    def outputExitNumber(self):
+    def outputNumber(self):
         if self._rebuild: self._build()
-        return self.__outputExitNumber
+        return self.__outputNumber
     
-    @outputExitNumber.setter
-    def outputExitNumber(self, value):
+    @outputNumber.setter
+    def outputNumber(self, value):
         if 0 <= value <= 0xF:
-            self.__outputExitNumber = value
+            self.__outputNumber = value
             self._rebuild = True
     
     @property
@@ -1318,13 +1362,49 @@ class CommandConfigureOutputs(Command):
         @return: body binstring
         """
         data = b''
-        outputPacked = 16 * self.__outputMode + self.__outputExitNumber 
+        outputPacked = 16 * self.__outputMode + self.__outputNumber 
         data += pack('<B', outputPacked)
         data += pack('<B', self.__impulseLength)
         data += pack('<B', self.__pauseLength)
         data += pack('<B', self.__repeatNumber)
-        return data    
+        return data
+
+class CommandDeactivateDigitalOutput(CommandConfigureOutputs):
+    """
+    Activates digital output by number, other parameters are not required
+    """
     
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        
+        self.outputMode = OUTPUT_TURN_OFF
+        self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
+        self.impulseLength = 0
+        self.pauseLength = 0
+        self.repeatNumber = 0
+
+class CommandActivateDigitalOutput(CommandConfigureOutputs):
+    """
+    Activates digital output by number, other parameters are not required
+    """
+    
+    def setParams(self, params):
+        """
+        Initialize command with params
+        @param params:
+        @return:
+        """
+        
+        self.outputMode = OUTPUT_TURN_ON
+        self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
+        self.impulseLength = 0
+        self.pauseLength = 0
+        self.repeatNumber = 0
+
 
 SECURITY_MODE_IS_OFF = 0
 SECURITY_MODE_IS_ON = 1
@@ -1818,7 +1898,8 @@ class CommandAllowDisallowSimAutoswitching(Command):
          @param params:
          @return:
         """
-        self.simAutoswitchingIsAllowed = params['simAutoswitchingIsAllowed'] or 0
+        self.simAutoswitchingIsAllowed = (
+            params['simAutoswitchingIsAllowed'] or 0)
 
     @property
     def simAutoswitchingIsAllowed(self):
@@ -1847,30 +1928,90 @@ IMAGE_ANSWER_CODE_DATA = 1
 IMAGE_ANSWER_CODE_CAMERA_NOT_FOUND = 2
 IMAGE_ANSWER_CODE_CAMERA_IS_BUSY = 3
 
-class PacketAnswerCommandChangeDeviceNumber(PacketAnswer): _number = 2
-class PacketAnswerCommandChangeDevicePassword(PacketAnswer): _number = 3
-class PacketAnswerCommandSetGprsParams(PacketAnswer): _number = 4
-class PacketAnswerCommandAddRemoveKeyNumber(PacketAnswer): _number = 6
-class PacketAnswerCommandAddRemovePhoneNumber(PacketAnswer): _number = 8
-class PacketAnswerCommandProtocolTypeStructure(PacketAnswer): _number = 9
-class PacketAnswerCommandFiltrationDrawingParameters(PacketAnswer): _number = 11
-class PacketAnswerCommandConfigureInputs(PacketAnswer): _number = 12
-class PacketAnswerCommandConfigureOutputs(PacketAnswer): _number = 13
-class PacketAnswerCommandTemporarySecurityParameters(PacketAnswer): _number = 15
-class PacketAnswerCommandRemoveTrackFromBuffer(PacketAnswer): _number = 16
-class PacketAnswerCommandVoiceConnectionParameters(PacketAnswer): _number = 17
-class PacketAnswerCommandRestart(PacketAnswer): _number = 18
-class PacketAnswerCommandSoftwareUpgrade(PacketAnswer): _number = 19
-class PacketAnswerCommandSwitchToNewSim(PacketAnswer): _number = 23
-class PacketAnswerCommandSwitchToConfigurationServer(PacketAnswer): _number = 24
-class PacketAnswerCommandAllowDisallowSimAutoswitching(PacketAnswer): _number = 25
+class PacketAnswerCommandChangeDeviceNumber(PacketAnswer): 
+    _number = 2
+class PacketAnswerCommandChangeDevicePassword(PacketAnswer): 
+    _number = 3
+class PacketAnswerCommandSetGprsParams(PacketAnswer): 
+    _number = 4
+class PacketAnswerCommandAddRemoveKeyNumber(PacketAnswer): 
+    _number = 6
+class PacketAnswerCommandAddRemovePhoneNumber(PacketAnswer): 
+    _number = 8
+class PacketAnswerCommandProtocolTypeStructure(PacketAnswer): 
+    _number = 9
+class PacketAnswerCommandFiltrationDrawingParameters(PacketAnswer): 
+    _number = 11
+class PacketAnswerCommandConfigureInputs(PacketAnswer): 
+    _number = 12
+class PacketAnswerCommandConfigureOutputs(PacketAnswer): 
+    _number = 13
+class PacketAnswerCommandTemporarySecurityParameters(PacketAnswer): 
+    _number = 15
+class PacketAnswerCommandRemoveTrackFromBuffer(PacketAnswer): 
+    _number = 16
+class PacketAnswerCommandVoiceConnectionParameters(PacketAnswer): 
+    _number = 17
+class PacketAnswerCommandRestart(PacketAnswer): 
+    _number = 18
+class PacketAnswerCommandSoftwareUpgrade(PacketAnswer): 
+    _number = 19
+class PacketAnswerCommandSwitchToNewSim(PacketAnswer): 
+    _number = 23
+class PacketAnswerCommandSwitchToConfigurationServer(PacketAnswer): 
+    _number = 24
+class PacketAnswerCommandAllowDisallowSimAutoswitching(PacketAnswer): 
+    _number = 25
 
+
+
+
+class PacketAnswerCommonAnswerUnknownIdentifier(PacketAnswer):
+    """
+    Common answer, sent when command identifier is unknown
+    """ 
+    _number = 250
+    
+    def get_parameters_string(self):
+        s = "Common answer 250: Command identifier is unknown"
+        return s
+    
+    
+class PacketAnswerCommonAnswerDataIntegrityError(PacketAnswer):
+    """
+    Common answer, sent when data integrity error happened
+    """ 
+    _number = 251
+    
+    def get_parameters_string(self):
+        s = "Common answer 251: Data integrity error/wrong parameters number"
+        return s
+    
+class PacketAnswerCommonAnswerCommandReceivedProcessed(PacketAnswer):
+    """
+    Common answer, sent when command successfully received and processed
+    """ 
+    _number = 252
+    
+    def get_parameters_string(self):
+        s = "Common answer 252: Command was successfully received and processed"
+        return s
+
+class PacketAnswerCommonAnswerCommandProcessingError(PacketAnswer):
+    """
+    Common answer, sent when error during command processing happened
+    """ 
+    _number = 253
+    
+    def get_parameters_string(self):
+        s = "Common answer 253: Error during command processing"
+        return s
 
 class PacketAnswerCommandGetImei(PacketAnswer):
     """
      Answer on CommandGetImei
     """
-    _command = 1
+    _number = 1
     
     __imei = "000000000000000"
     
@@ -1878,7 +2019,16 @@ class PacketAnswerCommandGetImei(PacketAnswer):
     def imei(self):
         if self._rebuild: self._build()
         return self.__imei
+
+    def get_dict(self):
+        params_dict = {"imei": self.__imei}
+        return params_dict
     
+    def get_parameters_string(self):
+        s = ''
+        s = s.join("imei"+"="+str(self.__imei))
+        return s
+
     def _parseBody(self):
         """
          Parses body of the packet
@@ -1887,7 +2037,7 @@ class PacketAnswerCommandGetImei(PacketAnswer):
         """
         super(PacketAnswerCommandGetImei, self)._parseBody()
         buffer = self.body       
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         self.__imei = buffer.decode("ascii")[1:]
 
 
@@ -1895,20 +2045,36 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     """
      Answer on CommandGetRegisteredIButtons
     """
-    _command = 5
+    _number = 5
     
     __numbers = [0]*5
+    
+    def get_parameters_string(self):
+        s = ''
+        s = s.join("number1"+"="+str(self.__numbers[0])+" ")
+        s = s.join("number2"+"="+str(self.__numbers[1])+" ")
+        s = s.join("number3"+"="+str(self.__numbers[2])+" ")
+        s = s.join("number4"+"="+str(self.__numbers[3])+" ")
+        s = s.join("number"+"="+str(self.__numbers[4])+" ")
+        return s
     
     @property
     def numbers(self):
         if self._rebuild: self._build()
         return self.__numbers
-    
+
+    def get_dict(self):
+        params_dict = {"numbers": self.__numbers}
+        return params_dict
+        
     def _parseBody(self):        
         super(PacketAnswerCommandGetRegisteredIButtons, self)._parseBody()
         buffer = self.body
-        self._command = unpack('<B', buffer[:1])[0]        
-        numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00')[0] for i in range(0,5)]  #divide buffer into 5 chunks, add 2 zero bytes for unpacking and unpack as Q
+        self._number = unpack('<B', buffer[:1])[0]
+        #divide buffer into 5 chunks, 
+        #add 2 zero bytes for unpacking and unpack as Q        
+        numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00')[0] 
+                   for i in range(0,5)]  
         self.__numbers = numbers
         
 
@@ -1916,7 +2082,7 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
     """
      Answer on CommandGetPhones
     """
-    _command = 7
+    _number = 7
     
     __phones = [0]*5
     __call_sms_calls = [0] * 5
@@ -1937,10 +2103,16 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
         if self._rebuild: self._build()
         return self.__call_sms_smss
     
+    def get_dict(self):
+        params_dict = {"phones": self.phones, 
+            "call_params": self.__call_sms_calls, 
+            "sms_params": self.__call_sms_smss}
+        return params_dict
+    
     def _parseBody(self):
         super(PacketAnswerCommandGetPhones, self)._parseBody()
         buffer = self.body
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         
         for i in range(0, 5):
             self.__phones[i] = (buffer.decode("ascii")[i*11:(i+1)*11 - 1])
@@ -1952,7 +2124,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     """
      Answer on CommandGetTrackParams
     """
-    _command = 10
+    _number = 10
     
     __filterCoordinates = 0
     __filterStraightPath = 0
@@ -1972,6 +2144,29 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     __jump = 0
     __idle = 0
     __courseDeviation = 0
+    
+    def get_dict(self):
+        params_dict = {"filter_coordinates": self.__filterCoordinates, 
+                       "filter_straight_path": self.__filterStraightPath,
+                       "filter_restructuring": self.__filterRestructuring,
+                       "filter_write_on_event": self.__filterWriteOnEvent,
+                       "accelerometer_sensitivity": 
+                            self.__accelerometerSensitivity,
+                       "time_to_standby": self.__timeToStandby,
+                       "time_recording_standby": self.__timeRecordingStandby,
+                       "time_recording_moving": self.__timeRecordingMoving,
+                       "time_recording_distance": self.__timeRecordingDistance,
+                       "drawing_on_angles": self.__drawingOnAngles,
+                       "min_speed": self.__minSpeed,
+                       "hdop": self.__HDOP,
+                       "minspeed": self.__minspeed,
+                       "maxspeed": self.__maxspeed,
+                       "acceleration": self.__acceleration,
+                       "jump": self.__jump,
+                       "idle": self.__idle,
+                       "course_deviation": self.__courseDeviation
+        }
+        return params_dict
     
     @property
     def filterCoordinates(self):
@@ -2067,7 +2262,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     def _parseBody(self):
         super(PacketAnswerCommandGetTrackParams, self)._parseBody()
         buffer = self.body
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         _filter = unpack("<B", buffer[1:2])[0]
 
         self.__  = (_filter >> 7) & 1
@@ -2094,7 +2289,7 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     """
     Answer on CommandSwitchSecurityMode
     """
-    _command = 200
+    _number = 200
     
     __serviceMessage200 = 0
     
@@ -2103,10 +2298,18 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
         if self._rebuild: self._build()
         return self.__serviceMessage200
     
+    def get_dict(self):
+        params_dict = {"service_message_200": self.__serviceMessage200}
+        return params_dict
+    
+    def get_parameters_string(self):
+        s = ''
+        s = s.join("service_message_200"+"="+str(self.__serviceMessage200))
+    
     def _parseBody(self):
         super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()
         buffer = self.body
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         
         self.__serviceMessage200 = unpack('<H', buffer[1:3])[0]   
 
@@ -2114,7 +2317,7 @@ class PacketAnswerCommandGetImage(PacketAnswer):
     """
      Answer on CommandGetImage
     """
-    _command = 20
+    _number = 20
 
     __code = 0
     __imageSize = 0
@@ -2141,6 +2344,11 @@ class PacketAnswerCommandGetImage(PacketAnswer):
         if self._rebuild: self._build()
         return self.__chunkData
 
+    def get_dict(self):
+        params_dict = {"code": self.__code, "image_size": self.__image_size, 
+            "chunk_number": self.__chunkNumber, "chunk_data":self.__chunkData}
+        return params_dict
+
     def _parseBody(self):
         """
          Parses body of the packet
@@ -2149,7 +2357,7 @@ class PacketAnswerCommandGetImage(PacketAnswer):
         """
         super(PacketAnswerCommandGetImage, self)._parseBody()
         buffer = self._body
-        self._command = unpack('<B', buffer[:1])[0]
+        self._number = unpack('<B', buffer[:1])[0]
         self.__code = unpack('<B', buffer[1:2])[0]
         if self.__code == IMAGE_ANSWER_CODE_SIZE:
             b, w = unpack('<HB', buffer[2:5])
@@ -2194,14 +2402,17 @@ class PacketFactory(AbstractPacketFactory):
         # read header and length
         length = unpack("<H", data[:2])[0]
         number = length >> 14
-
+        
+        #~print("CLASS NUMBER IS: ", number)
+        
         CLASS = self.getClass(number)
         if not CLASS:
             raise Exception('Packet %s is not found' % number)
         if issubclass(CLASS, PacketAnswer):
             CLASS = PacketAnswer.getInstance(data)
         if not CLASS:
-            raise Exception('Class for %s is not found' % data)
+            raise Exception('Class for %s is not found with number %s' 
+                            % (data, number))
         return CLASS(data)
 
 
@@ -2219,7 +2430,7 @@ def getAnswerClassByNumber(number):
     for name, cls in inspect.getmembers(sys.modules[__name__]):
         if inspect.isclass(cls) and \
             issubclass(cls, PacketAnswer) and\
-                cls._command == number:
+                cls._number == number:
                     return cls
     return None
 
@@ -2257,7 +2468,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.deviceNumber, 34)
         self.assertEqual(packet.deviceImei, '012896001609129')
         self.assertEqual(packet.protocolVersion, 5)
-        self.assertEqual(packet.rawData, b'\x12\x00\x22\x00012896001609129\x05$6')
+        self.assertEqual(packet.rawData, 
+            b'\x12\x00\x22\x00012896001609129\x05$6')
         self.assertEqual(packet.checksum, 13860)
 
     def test_packetTail(self):
@@ -2410,23 +2622,26 @@ class TestCase(unittest.TestCase):
         data = b'\x10\x80\x01868204003057949W!'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        self.assertEqual(packet._command, 1)
+        self.assertEqual(packet._number, 1)
         self.assertEqual(packet.imei, '868204003057949')
     
     def test_commandPacketAnswerCommandGetRegisteredIButtons(self):
-        data = b'\x1f\x80\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00i\xc6'
+        data = b'\x1f\x80\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00i\xc6'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        self.assertEqual(packet._command, 5)
+        self.assertEqual(packet._number, 5)
         self.assertEqual(len(packet.numbers), 5)
         self.assertEqual(packet.numbers[3], 0)
     
     def test_commandPacketAnswerCommandGetTrackParams(self):
-        data = b'\x14\x80\n\x00 \x03<\x00\x14\x00\x1e\x00\x1e\x05\x03(\x03\x96\x1e2\x1e\x05O\xcc'
+        data = b'\x14\x80\n\x00 \x03<\x00\x14\x00\x1e'\
+            b'\x00\x1e\x05\x03(\x03\x96\x1e2\x1e\x05O\xcc'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         
-        self.assertEqual(packet._command, 10)
+        self.assertEqual(packet._number, 10)
         self.assertEqual(packet.filterCoordinates, 0)
         self.assertEqual(packet.filterStraightPath, 0)
         self.assertEqual(packet.filterRestructuring, 0)
@@ -2450,16 +2665,24 @@ class TestCase(unittest.TestCase):
         data = b'\x03\x80\xc8\x00\x02I\xff'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        self.assertEqual(packet._command, 200)
+        self.assertEqual(packet._number, 200)
         self.assertEqual(packet.serviceMessage200, 512)
+    
+    def test_commandError(self):
+        data = b'\x02\x80\xfc\r\x80\xb1'
+        packets = self.factory.getPacketsFromBuffer(data)
         
     
     def test_commandPacketAnswerCommandGetPhones(self):
-        data = b'8\x80\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05E'
+        data = b'8\x80\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x05E'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        self.assertEqual(packet._command, 7)
-        self.assertEqual(packet.phones[3], '\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00')
+        self.assertEqual(packet._number, 7)
+        self.assertEqual(packet.phones[3], '\x00\x00\x00\x00\x00'\
+            '\x00\x00\x00\x00\x00')
         self.assertEqual(packet.call_sms_calls[4], 0)
         self.assertEqual(packet.call_sms_smss[2], 0)
 
@@ -2513,7 +2736,8 @@ class TestCase(unittest.TestCase):
         
         self.assertEqual(cmd.number, 6)
         
-        self.assertEqual(cmd.processKeyNumberAction, PROCESS_KEY_NUMBER_ACTION_ADD)
+        self.assertEqual(cmd.processKeyNumberAction, 
+            PROCESS_KEY_NUMBER_ACTION_ADD)
         self.assertEqual(cmd.processCellNumber, 14)
         self.assertEqual(cmd.keyNumber, 218875)
         self.assertEqual(cmd.checksum, 47393)
@@ -2523,11 +2747,13 @@ class TestCase(unittest.TestCase):
         cmd.processCellNumber = 7
         cmd.keyNumber = 11246
         
-        self.assertEqual(cmd.processKeyNumberAction, PROCESS_KEY_NUMBER_ACTION_REMOVE)
+        self.assertEqual(cmd.processKeyNumberAction, 
+            PROCESS_KEY_NUMBER_ACTION_REMOVE)
         self.assertEqual(cmd.processCellNumber, 7)
         self.assertEqual(cmd.keyNumber, 11246)
         self.assertEqual(cmd.checksum, 62407)
-        self.assertEqual(cmd.rawData, b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')
+        self.assertEqual(cmd.rawData, 
+            b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')
     
     def test_commandAddRemovePhoneNumber(self):
         cmd = CommandAddRemovePhoneNumber({
@@ -2539,7 +2765,8 @@ class TestCase(unittest.TestCase):
         })
         self.assertEqual(cmd.number, 8)
         
-        self.assertEqual(cmd.processKeyNumberAction, PROCESS_KEY_NUMBER_ACTION_ADD)
+        self.assertEqual(cmd.processKeyNumberAction, 
+            PROCESS_KEY_NUMBER_ACTION_ADD)
         self.assertEqual(cmd.processCellNumber, 5)
         self.assertEqual(cmd.phoneNumber, "2375129873")
         self.assertEqual(cmd.callSmsCall, CALL_SMS_CALL_SWITCH_TO_VOICE_MENU)
@@ -2554,7 +2781,8 @@ class TestCase(unittest.TestCase):
         cmd.callSmsCall = CALL_SMS_CALL_CHANGE_SECURITY
         cmd.callSmsSms = CALL_SMS_SMS_IGNORE
         
-        self.assertEqual(cmd.processKeyNumberAction, PROCESS_KEY_NUMBER_ACTION_REMOVE)
+        self.assertEqual(cmd.processKeyNumberAction, 
+            PROCESS_KEY_NUMBER_ACTION_REMOVE)
         self.assertEqual(cmd.processCellNumber, 7)
         self.assertEqual(cmd.phoneNumber, "0030070010")
         self.assertEqual(cmd.callSmsCall, CALL_SMS_CALL_CHANGE_SECURITY)
@@ -2572,7 +2800,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.protocolType, 23)
         self.assertEqual(cmd.protocolStructure, 782357)
         self.assertEqual(cmd.checksum, 50182)
-        self.assertEqual(cmd.rawData,  b'\x02\t\x17\x15\xf0\x0b\x00\x00\x00\x00\x00\x06\xc4')
+        self.assertEqual(cmd.rawData,  
+            b'\x02\t\x17\x15\xf0\x0b\x00\x00\x00\x00\x00\x06\xc4')
         
         #change some data
         cmd.protocolType = 51
@@ -2581,7 +2810,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.protocolType, 51)
         self.assertEqual(cmd.protocolStructure, 213527)
         self.assertEqual(cmd.checksum, 24511)
-        self.assertEqual(cmd.rawData, b'\x02\t3\x17B\x03\x00\x00\x00\x00\x00\xbf_')
+        self.assertEqual(cmd.rawData, 
+            b'\x02\t3\x17B\x03\x00\x00\x00\x00\x00\xbf_')
     
     def test_commandFiltrationDrawingParameters(self):
         cmd = CommandFiltrationDrawingParameters({
@@ -2625,7 +2855,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.idle, 11)
         self.assertEqual(cmd.courseDeviation, 18)
         self.assertEqual(cmd.checksum, 8476)
-        self.assertEqual(cmd.rawData, b"\x02\x0b\xb0\x19\x07'\x16\xef3\x10jl\x11\xc9\x0fYk\x1a\x0b3\x12\x1c!")
+        self.assertEqual(cmd.rawData, b"\x02\x0b\xb0\x19\x07'\x16\xef3"\
+            b"\x10jl\x11\xc9\x0fYk\x1a\x0b3\x12\x1c!")
         
         #change some data
         
@@ -2667,7 +2898,8 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.jump, 14)
         self.assertEqual(cmd.courseDeviation, 57)
         self.assertEqual(cmd.checksum, 50544)
-        self.assertEqual(cmd.rawData, b'\x02\x0b`\xd4\tb\x00!&7Ja\x0b\x17\x1fk\xcc\x03G\x0e9p\xc5')
+        self.assertEqual(cmd.rawData, b'\x02\x0b`\xd4\tb\x00!&7Ja\x0b'\
+            b'\x17\x1fk\xcc\x03G\x0e9p\xc5')
 
     def test_commandConfigureInputs(self):
         cmd = CommandConfigureInputs({
@@ -2680,7 +2912,8 @@ class TestCase(unittest.TestCase):
         
         self.assertEqual(cmd.number, 12)
         
-        self.assertEqual(cmd.inputActActiveLevel, ACTIVE_LEVEL_LOW_WITH_HYSTERESIS)
+        self.assertEqual(cmd.inputActActiveLevel, 
+            ACTIVE_LEVEL_LOW_WITH_HYSTERESIS)
         self.assertEqual(cmd.inputActInputNumber, 9)
         self.assertEqual(cmd.lowerBorder, 17281)
         self.assertEqual(cmd.upperBorder, 21817)
@@ -2706,7 +2939,7 @@ class TestCase(unittest.TestCase):
     def test_command_ConfigureOutputs(self):
         cmd = CommandConfigureOutputs({
             "outputMode": OUTPUT_TURN_ON,
-            "outputExitNumber": 3,
+            "outputNumber": 3,
             "impulseLength": 145,
             "pauseLength": 112,
             "repeatNumber": 23
@@ -2715,7 +2948,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.number, 13)
         
         self.assertEqual(cmd.outputMode, OUTPUT_TURN_ON)
-        self.assertEqual(cmd.outputExitNumber, 3)
+        self.assertEqual(cmd.outputNumber, 3)
         self.assertEqual(cmd.impulseLength, 145)
         self.assertEqual(cmd.pauseLength, 112)
         self.assertEqual(cmd.repeatNumber, 23)
@@ -2724,13 +2957,13 @@ class TestCase(unittest.TestCase):
         
         #change some data
         cmd.outputMode = OUTPUT_IMPULSE
-        cmd.outputExitNumber = 7
+        cmd.outputNumber = 7
         cmd.impulseLength = 113
         cmd.pauseLength = 96
         cmd.repeatNumber = 31
         
         self.assertEqual(cmd.outputMode, OUTPUT_IMPULSE)
-        self.assertEqual(cmd.outputExitNumber, 7)
+        self.assertEqual(cmd.outputNumber, 7)
         self.assertEqual(cmd.impulseLength, 113)
         self.assertEqual(cmd.pauseLength, 96)
         self.assertEqual(cmd.repeatNumber, 31)
@@ -2908,12 +3141,14 @@ class TestCase(unittest.TestCase):
             'simAutoswitchingIsAllowed': SIM_AUTOSWITCHING_IS_ALLOWED
         })
         self.assertEqual(cmd.number, 25)
-        self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_ALLOWED))
+        self.assertEqual(cmd.simAutoswitchingIsAllowed, 
+            str(SIM_AUTOSWITCHING_IS_ALLOWED))
         self.assertEqual(cmd.checksum, 20506)
         self.assertEqual(cmd.rawData, b'\x02\x19\x01\x1aP')
 
         cmd.simAutoswitchingIsAllowed = SIM_AUTOSWITCHING_IS_DISALLOWED
-        self.assertEqual(cmd.simAutoswitchingIsAllowed, str(SIM_AUTOSWITCHING_IS_DISALLOWED))
+        self.assertEqual(cmd.simAutoswitchingIsAllowed, 
+            str(SIM_AUTOSWITCHING_IS_DISALLOWED))
         self.assertEqual(cmd.checksum, 37083)
         self.assertEqual(cmd.rawData, b'\x02\x19\x00\xdb\x90')
 
@@ -2927,7 +3162,8 @@ obj = commands.CommandProtocolTypeStructure()
 
 
 
-commands_list = ["CommandSetGprsParameters", 4, 654, [["ip", "ip"], ["port", "H"]]]
+commands_list = ["CommandSetGprsParameters", 4, 654, 
+    [["ip", "ip"], ["port", "H"]]]
 
 
 #ip, B, 4B

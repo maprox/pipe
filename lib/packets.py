@@ -160,6 +160,10 @@ class SolidBinaryPacket(object):
         result = unpack(fmt, buffer[self._offset:shift])[0]
         self._offset += fmtSize
         return result
+    
+    def to_string(self):
+        #print("Packet string!")
+        return("Packet string!")
 
 # ---------------------------------------------------------------------------
 

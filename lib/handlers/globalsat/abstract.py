@@ -403,15 +403,21 @@ class GlobalsatHandler(AbstractHandler):
 
         return super(GlobalsatHandler, self).processData(initialData)
 
-    def stopSosSignal(self):
+    def sendCommand(self, commandText):
         """
          Send command to stop sos signal
         """
-        command = 'GSC,' + self.uid + ',Na'
+        command = 'GSC,' + self.uid + ',' + commandText
         command = self.addChecksum(command)
         log.debug('Command sent: ' + command)
         self.send(command.encode())
         return self
+
+    def stopSosSignal(self):
+        """
+         Send command to stop sos signal
+        """
+        return self.sendCommand('Na')
 
     def processSettings(self, data):
         """
@@ -500,12 +506,9 @@ class GlobalsatHandler(AbstractHandler):
         current_db = db.get(self.uid)
         if not current_db.isReadingSettings() \
           and not current_db.isSettingsReady():
-            command = 'GSC,' + self.uid + ',N1(OO=02),L1(ALL)'
-            command = self.addChecksum(command)
-            log.debug('Command sent: ' + command)
             current_db.startReadingSettings(task)
             #log.debug('Task number: ' + str(task))
-            self.send(command.encode())
+            self.sendCommand('N1(OO=02),L1(ALL)')
 
     def processCommandExecute(self, task, data):
         """
@@ -515,9 +518,7 @@ class GlobalsatHandler(AbstractHandler):
         """
         log.info('Observer is sending a command:')
         log.info(data)
-        command = 'GSC,' + self.uid + ',' + data['command']
-        command = self.addChecksum(command)
-        self.send(command.encode())
+        self.sendCommand(data['command'])
         self.processCloseTask(task)
 
     def processCommandSetOption(self, task, data):

@@ -26,6 +26,7 @@ with Connection(url) as conn:
         print('before')
         try:
             conn.drain_events(timeout=1)
+            print('jhgjkhjkh')
         except:
             # no messages in queue
             pass

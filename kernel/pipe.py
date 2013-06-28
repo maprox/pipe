@@ -28,6 +28,9 @@ class Manager(Store):
         """
          Sending data to the controller receiving packets from the devices
         """
+        
+        #~print("Calling Manager send!!!")
+        
         result = lib.falcon.FalconAnswer()
         try:
             packets = list()
@@ -46,7 +49,15 @@ class Manager(Store):
               'packets': packets
             })}
             # Let's send packets to AMQP broker
+            
+            
+            #~print("~~~~~~~~~~~~~~~~~~~~~~~~~SENDING PACKETS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+            
+            
             self.sendPacketsViaBroker(packets)
+            
+            #~print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SENT PACVKETSA VIA BROCKERUCVEU")
+            
             # Connecting with the server and getting data
             #params = urllib.parse.urlencode(url_data).encode('utf-8')
             #request = urllib.request.Request(conf.pipeSetUrl)
@@ -71,6 +82,7 @@ class Manager(Store):
         try:
             broker.sendPackets(packets)
         except Exception as E:
+            #~print(E)
             log.error(E)
 
 class TestManager(Manager):

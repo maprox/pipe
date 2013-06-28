@@ -117,8 +117,8 @@ class MessageBroker:
         conn = self.getConnection(imei)
         conn.release()
 
-        delete self._connections[imei]
-        delete self._commands[imei]
+        del self._connections[imei]
+        del self._commands[imei]
 
     def sendAmqpError(self, imei, data, error):
         """
@@ -144,8 +144,8 @@ class MessageBroker:
         conn = self.getConnection(imei)
         conn.release()
 
-        delete self._connections[imei]
-        delete self._commands[imei]
+        del self._connections[imei]
+        del self._commands[imei]
 
     def receiveCallback(self, body, message):
         """

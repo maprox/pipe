@@ -455,7 +455,7 @@ class PacketAnswer(NavisetPacket):
     def get_parameters_string(self):
         s = ''
         return s
-    
+
     @classmethod
     def getInstance(cls, data = None):
         CLASS = None
@@ -575,10 +575,10 @@ class CommandChangeDevicePassword(Command):
     Change device password
     """
     _number = 3
-    
+
     # private params
     __devicePassword = 0
-    
+
     def setParams(self, params):
         """
         Initialize command with params
@@ -586,19 +586,19 @@ class CommandChangeDevicePassword(Command):
         @return:
         """
         self.devicePassword = params['devicePassword'] or 0
-    
+
     @property
     def devicePassword(self):
         pass
         if self._rebuild: self._build()
         return self.__devicePassword
-    
+
     @devicePassword.setter
     def devicePassword(self, value):
         if 0 <= value <= 0xFFFF:
             self.__devicePassword = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -666,12 +666,12 @@ class CommandAddRemoveKeyNumber(Command):
     Adds or removes device key for selected cell.
     """
     _number = 6
-    
+
     # private params
     __processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_ADD
     __processCellNumber = 0
     __keyNumber = 0
-    
+
     def setParams(self, params):
         """
         Initialize command with params
@@ -681,40 +681,40 @@ class CommandAddRemoveKeyNumber(Command):
         self.processKeyNumberAction = params['processKeyNumberAction']
         self.processCellNumber = params['processCellNumber']
         self.keyNumber = params['keyNumber']
-    
+
     @property
     def processKeyNumberAction(self):
         if self._rebuild: self._build()
         return self.__processKeyNumberAction
-    
+
     @processKeyNumberAction.setter
     def processKeyNumberAction(self, value):
         if 0 <= value <= 1:
             self.__processKeyNumberAction = value
             self._rebuild = True
-    
+
     @property
     def processCellNumber(self):
         if self._rebuild: self._build()
         return self.__processCellNumber
-    
+
     @processCellNumber.setter
     def processCellNumber(self, value):
         if 0 <= value <= 15:
             self.__processCellNumber = value
             self._rebuild = True
-    
+
     @property
     def keyNumber(self):
         if self._rebuild: self._build()
         return self.__keyNumber
-    
+
     @keyNumber.setter
     def keyNumber(self, value):
         if 0 <= value <= 256**6 - 1:
             self.__keyNumber = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -741,14 +741,14 @@ class CommandAddRemovePhoneNumber(Command):
     Add or remove phone number and change its parameters
     """
     _number = 8
-    
+
     #private params
     __processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_ADD
     __processCellNumber = 0
     __phoneNumber = "0000000000"
     __callSmsCall = CALL_SMS_CALL_RECEIVE 
     __callSmsSms = CALL_SMS_SMS_IGNORE
-    
+
     def setParams(self, params):
         """
         Initialize command with params
@@ -762,61 +762,61 @@ class CommandAddRemovePhoneNumber(Command):
         self.phoneNumber = params['phoneNumber'] or "0000000000"
         self.callSmsCall = params['callSmsCall'] or CALL_SMS_CALL_RECEIVE
         self.callSmsSms = params['callSmsSms'] or CALL_SMS_SMS_IGNORE
-    
+
     @property
     def processKeyNumberAction(self):
         if self._rebuild: self._build()
         return self.__processKeyNumberAction
-    
+
     @processKeyNumberAction.setter
     def processKeyNumberAction(self, value):
         if 0 <= value <= 0x1:
             self.__processKeyNumberAction = value
             self._rebuild = True
-    
+
     @property
     def processCellNumber(self):
         if self._rebuild: self._build()
         return self.__processCellNumber
-    
+
     @processCellNumber.setter
     def processCellNumber(self, value):
         if 0 <= value <= 15:
             self.__processCellNumber = value
             self._rebuild = True
-    
+
     @property
     def phoneNumber(self):
         if self._rebuild: self._build()
         return self.__phoneNumber
-    
+
     @phoneNumber.setter
     def phoneNumber(self, value):
         self.__phoneNumber = str(value).encode("ascii")
         self._rebuild = True
-    
+
     @property
     def callSmsCall(self):
         if self._rebuild: self._build()
         return self.__callSmsCall
-    
+
     @callSmsCall.setter
     def callSmsCall(self, value):
         if 0 <= value <= 15:
             self.__callSmsCall = value
             self._rebuild = True
-    
+
     @property
     def callSmsSms(self):
         if self._rebuild: self._build()
         return self.__callSmsSms
-    
+
     @callSmsSms.setter
     def callSmsSms(self, value):
         if 0 <= value <= 15:
             self.__callSmsSms = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -833,9 +833,9 @@ class CommandAddRemovePhoneNumber(Command):
         data += pack('<B', callSmsPacked)
         print("Built body:")
         print(data)
-        return data       
-    
-    
+        return data   
+
+
 
 
 class CommandProtocolTypeStructure(Command):
@@ -843,11 +843,11 @@ class CommandProtocolTypeStructure(Command):
     Sets protocol type and structure 
     """
     _number = 9
-    
+
     #private params
     __protocolType = 0
     __protocolStructure = 0
-    
+
     def setParams(self, params):
         """
         Initialize command with params
@@ -856,29 +856,29 @@ class CommandProtocolTypeStructure(Command):
         """
         self.protocolType = params['protocolType'] or 0
         self.protocolStructure = params['protocolStructure'] or 0
-    
+
     @property
     def protocolType(self):
         if self._rebuild: self._build()
         return self.__protocolType
-    
+
     @protocolType.setter
     def protocolType(self, value):
         if 0 <= value <= 0xFF:
             self.__protocolType = value
             self._rebuild = True
-    
+
     @property
     def protocolStructure(self):
         if self._rebuild: self._build()
         return self.__protocolStructure
-    
+
     @protocolStructure.setter
     def protocolStructure(self, value):
         if 0 <= value <= 0xFFFFFFFF:
             self.__protocolStructure = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -887,8 +887,8 @@ class CommandProtocolTypeStructure(Command):
         data = b''
         data += pack('<B', self.__protocolType)
         data += pack('<Q', self.__protocolStructure)
-        return data    
-    
+        return data
+
 
 class CommandFiltrationDrawingParameters(Command):
     """
@@ -914,7 +914,7 @@ class CommandFiltrationDrawingParameters(Command):
     __jump = 0
     __idle = 0
     __courseDeviation = 0
-    
+
     def setParams(self, params):
         """
         Initialize command with params
@@ -939,12 +939,12 @@ class CommandFiltrationDrawingParameters(Command):
         self.jump = params['jump'] or 0
         self.idle = params['idle'] or 0
         self.courseDeviation = params['courseDeviation'] or 0
-    
+
     @property
     def filterCoordinates(self):
         if self._rebuild: self._build()
         return self.__filterCoordinates
-    
+
     @filterCoordinates.setter
     def filterCoordinates(self, value):
         if 0 <= value <= 1:
@@ -955,18 +955,18 @@ class CommandFiltrationDrawingParameters(Command):
     def filterStraightPath(self):
         if self._rebuild: self._build()
         return self.__filterStraightPath
-    
+
     @filterStraightPath.setter
     def filterStraightPath(self, value):
         if 0 <= value <= 1:
             self.__filterStraightPath = value
             self._rebuild = True
-            
+
     @property
     def filterRestructuring(self):
         if self._rebuild: self._build()
         return self.__filterRestructuring
-    
+
     @filterRestructuring.setter
     def filterRestructuring(self, value):
         if 0 <= value <= 1:
@@ -977,18 +977,18 @@ class CommandFiltrationDrawingParameters(Command):
     def filterWriteOnEvent(self):
         if self._rebuild: self._build()
         return self.__filterWriteOnEvent
-    
+
     @filterWriteOnEvent.setter
     def filterWriteOnEvent(self, value):
         if 0 <= value <= 1:
             self.__filterWriteOnEvent = value
             self._rebuild = True
-    
+
     @property
     def accelerometerSensitivity(self):
         if self._rebuild: self._build()
         return self.__accelerometerSensitivity
-    
+
     @accelerometerSensitivity.setter
     def accelerometerSensitivity(self, value):
         if 0 <= value <= 0xFFFF:
@@ -999,7 +999,7 @@ class CommandFiltrationDrawingParameters(Command):
     def timeToStandby(self):
         if self._rebuild: self._build()
         return self.__timeToStandby
-    
+
     @timeToStandby.setter
     def timeToStandby(self, value):
         if 0 <= value <= 0xFFFF:
@@ -1010,29 +1010,29 @@ class CommandFiltrationDrawingParameters(Command):
     def timeRecordingStandby(self):
         if self._rebuild: self._build()
         return self.__timeRecordingStandby
-    
+
     @timeRecordingStandby.setter
     def timeRecordingStandby(self, value):
         if 0 <= value <= 0xFFFF:
             self.__timeRecordingStandby = value
-            self._rebuild = True    
+            self._rebuild = True
 
     @property
     def timeRecordingMoving(self):
         if self._rebuild: self._build()
         return self.__timeRecordingMoving
-    
+
     @timeRecordingMoving.setter
     def timeRecordingMoving(self, value):
         if 0 <= value <= 0xFFFF:
             self.__timeRecordingMoving = value
-            self._rebuild = True    
+            self._rebuild = True
 
     @property
     def timeRecordingDistance(self):
         if self._rebuild: self._build()
         return self.__timeRecordingDistance
-    
+
     @timeRecordingDistance.setter
     def timeRecordingDistance(self, value):
         if 0 <= value <= 0xFF:
@@ -1043,18 +1043,18 @@ class CommandFiltrationDrawingParameters(Command):
     def drawingOnAngles(self):
         if self._rebuild: self._build()
         return self.__drawingOnAngles
-    
+
     @drawingOnAngles.setter
     def drawingOnAngles(self, value):
         if 0 <= value <= 0xFF:
             self.__drawingOnAngles = value
-            self._rebuild = True    
+            self._rebuild = True
 
     @property
     def minSpeed(self):
         if self._rebuild: self._build()
         return self.__minSpeed
-    
+
     @minSpeed.setter
     def minSpeed(self, value):
         if 0 <= value <= 0xFF:
@@ -1065,7 +1065,7 @@ class CommandFiltrationDrawingParameters(Command):
     def HDOP(self):
         if self._rebuild: self._build()
         return self.__HDOP
-    
+
     @HDOP.setter
     def HDOP(self, value):
         if 0 <= value <= 0xFF:
@@ -1076,7 +1076,7 @@ class CommandFiltrationDrawingParameters(Command):
     def minspeed(self):
         if self._rebuild: self._build()
         return self.__minspeed
-    
+
     @minspeed.setter
     def minspeed(self, value):
         if 0 <= value <= 0xFF:
@@ -1087,7 +1087,7 @@ class CommandFiltrationDrawingParameters(Command):
     def maxspeed(self):
         if self._rebuild: self._build()
         return self.__maxspeed
-    
+
     @maxspeed.setter
     def maxspeed(self, value):
         if 0 <= value <= 0xFF:
@@ -1097,7 +1097,7 @@ class CommandFiltrationDrawingParameters(Command):
     def acceleration(self):
         if self._rebuild: self._build()
         return self.__acceleration
-    
+
     @acceleration.setter
     def acceleration(self, value):
         if 0 <= value <= 0xFF:
@@ -1107,7 +1107,7 @@ class CommandFiltrationDrawingParameters(Command):
     def idle(self):
         if self._rebuild: self._build()
         return self.__idle
-    
+
     @idle.setter
     def idle(self, value):
         if 0 <= value <= 0xFF:
@@ -1118,7 +1118,7 @@ class CommandFiltrationDrawingParameters(Command):
     def jump(self):
         if self._rebuild: self._build()
         return self.__jump
-    
+
     @jump.setter
     def jump(self, value):
         if 0 <= value <= 0xFF:
@@ -1129,13 +1129,13 @@ class CommandFiltrationDrawingParameters(Command):
     def courseDeviation(self):
         if self._rebuild: self._build()
         return self.__courseDeviation
-    
+
     @courseDeviation.setter
     def courseDeviation(self, value):
         if 0 <= value <= 0xFF:
             self.__courseDeviation = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -1161,7 +1161,7 @@ class CommandFiltrationDrawingParameters(Command):
         data += pack('<B', self.__idle)
         data += pack('<B', self.__jump)
         data += pack('<B', self.__courseDeviation)
-        return data    
+        return data
 
 
 ACTIVE_LEVEL_LOW_OR_HIGH = 0
@@ -1175,16 +1175,16 @@ class CommandConfigureInputs(Command):
     """
     Configures device inputs.
     """
-    
+
     _number = 12
-    
+
     # private params
     __inputActActiveLevel = ACTIVE_LEVEL_LOW_OR_HIGH
     __inputActInputNumber = 0
     __lowerBorder = 0
     __upperBorder = 0
     __filterLength = 0
-    
+
     def setParams(self, params):
         """
         Initialize command with params
@@ -1197,62 +1197,62 @@ class CommandConfigureInputs(Command):
         self.lowerBorder = params['lowerBorder']
         self.upperBorder = params['upperBorder']
         self.filterLength = params['filterLength']
-    
+
     @property
     def inputActActiveLevel(self):
         if self._rebuild: self._build()
         return self.__inputActActiveLevel
-    
+
     @inputActActiveLevel.setter
     def inputActActiveLevel(self, value):
         if 0 <= value <= 5:
             self.__inputActActiveLevel = value
             self._rebuild = True
-    
+
     @property
     def inputActInputNumber(self):
         if self._rebuild: self._build()
         return self.__inputActInputNumber
-    
+
     @inputActInputNumber.setter
     def inputActInputNumber(self, value):
         if 0 <= value <= 0xF:
             self.__inputActInputNumber = value
             self._rebuild = True
-    
+
     @property
     def lowerBorder(self):
         if self._rebuild: self._build()
         return self.__lowerBorder
-    
+
     @lowerBorder.setter
     def lowerBorder(self, value):
         if 0 <= value <= 0xFFFF:
             self.__lowerBorder = value
             self._rebuild = True
-    
+
     @property
     def upperBorder(self):
         if self._rebuild: self._build()
         return self.__upperBorder
-    
+
     @upperBorder.setter
     def upperBorder(self, value):
         if 0 <= value <= 0xFFFF:
             self.__upperBorder = value
             self._rebuild = True
-    
+
     @property
     def filterLength(self):
         if self._rebuild: self._build()
         return self.__filterLength
-    
+
     @filterLength.setter
     def filterLength(self, value):
         if 0 <= value <= 0xFF:
             self.__filterLength = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -1266,7 +1266,7 @@ class CommandConfigureInputs(Command):
         data += pack('<H', self.__lowerBorder)
         data += pack('<H', self.__upperBorder)
         data += pack('<B', self.__filterLength)
-        return data    
+        return data
 
 OUTPUT_TURN_OFF = 0
 OUTPUT_TURN_ON = 1
@@ -1277,23 +1277,23 @@ class CommandConfigureOutputs(Command):
     """
     Configures device outputs.
     """
-    
+
     _number = 13
-    
+
     # private params
     __outputMode = OUTPUT_TURN_OFF
     __outputNumber = 0
     __impulseLength = 0
     __pauseLength = 0
     __repeatNumber = 0
-    
+
     def setParams(self, params):
         """
         Initialize command with params
         @param params:
         @return:
         """
-        
+
         self.outputMode = int(dictCheckItem(params, 
             'outputMode', OUTPUT_TURN_OFF)
         )
@@ -1301,63 +1301,63 @@ class CommandConfigureOutputs(Command):
         self.impulseLength = int(dictCheckItem(params, 'impulseLength', 0))
         self.pauseLength = int(dictCheckItem(params, 'pauseLength', 0))
         self.repeatNumber = int(dictCheckItem(params, 'repeatNumber', 0))
-        
-    
+
+
     @property
     def outputMode(self):
         if self._rebuild: self._build()
         return self.__outputMode
-    
+
     @outputMode.setter
     def outputMode(self, value):
         if 0 <= value <= 2:
             self.__outputMode = value
             self._rebuild = True
-    
+
     @property
     def outputNumber(self):
         if self._rebuild: self._build()
         return self.__outputNumber
-    
+
     @outputNumber.setter
     def outputNumber(self, value):
         if 0 <= value <= 0xF:
             self.__outputNumber = value
             self._rebuild = True
-    
+
     @property
     def impulseLength(self):
         if self._rebuild: self._build()
         return self.__impulseLength
-    
+
     @impulseLength.setter
     def impulseLength(self, value):
         if 0 <= value <= 0xFF:
             self.__impulseLength = value
             self._rebuild = True
-    
+
     @property
     def pauseLength(self):
         if self._rebuild: self._build()
         return self.__pauseLength
-    
+
     @pauseLength.setter
     def pauseLength(self, value):
         if 0 <= value <= 0xFF:
             self.__pauseLength = value
             self._rebuild = True
-    
+
     @property
     def repeatNumber(self):
         if self._rebuild: self._build()
         return self.__repeatNumber
-    
+
     @repeatNumber.setter
     def repeatNumber(self, value):
         if 0 <= value <= 0xFF:
             self.__repeatNumber = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -1375,14 +1375,14 @@ class CommandDeactivateDigitalOutput(CommandConfigureOutputs):
     """
     Activates digital output by number, other parameters are not required
     """
-    
+
     def setParams(self, params):
         """
         Initialize command with params
         @param params:
         @return:
         """
-        
+
         self.outputMode = OUTPUT_TURN_OFF
         self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
         self.impulseLength = 0
@@ -1393,14 +1393,14 @@ class CommandActivateDigitalOutput(CommandConfigureOutputs):
     """
     Activates digital output by number, other parameters are not required
     """
-    
+
     def setParams(self, params):
         """
         Initialize command with params
         @param params:
         @return:
         """
-        
+
         self.outputMode = OUTPUT_TURN_ON
         self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
         self.impulseLength = 0
@@ -1453,12 +1453,12 @@ class CommandTemporarySecurityParameters(Command):
      Command for setting temporary security parameters
     """
     _number = 15
-    
+
     # private params
     __enterTime = 0
     __exitTime = 0
     __memoryTime = 0
-    
+
     def setParams(self, params):
         """
          Initialize command with params
@@ -1468,40 +1468,40 @@ class CommandTemporarySecurityParameters(Command):
         self.enterTime = params['enterTime'] or 0
         self.exitTime = params['exitTime'] or 0
         self.memoryTime = params['memoryTime'] or 0
-    
+
     @property
     def enterTime(self):
         if self._rebuild: self._build()
         return self.__enterTime
-    
+
     @enterTime.setter
     def enterTime(self, value):
         if 0 <= value <= 0xFF:
             self.__enterTime = value
             self._rebuild = True
-    
+
     @property
     def exitTime(self):
         if self._rebuild: self._build()
         return self.__exitTime
-    
+
     @exitTime.setter
     def exitTime(self, value):
         if 0 <= value <= 0xFF:
             self.__exitTime = value
             self._rebuild = True
-    
+
     @property
     def memoryTime(self):
         if self._rebuild: self._build()
         return self.__memoryTime
-    
+
     @memoryTime.setter
     def memoryTime(self, value):
         if 0 <= value <= 0xFF:
             self.__memoryTime = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -1518,13 +1518,13 @@ class CommandVoiceConnectionParameters(Command):
      Command for setting voice connection parameters 
     """
     _number = 17
-    
+
     # private params
     __microphoneGain = 0
     __speakerGain = 0
     __autodialDialNumber = 0
     __voiceMenuVolume = 0
-    
+
     def setParams(self, params):
         """
          Initialize command with params
@@ -1535,34 +1535,34 @@ class CommandVoiceConnectionParameters(Command):
         self.speakerGain = params['speakerGain'] or 0
         self.autodialDialNumber = params['autodialDialNumber'] or 0
         self.voiceMenuVolume = params['voiceMenuVolume'] or 0
-    
+
     @property
     def microphoneGain(self):
         if self._rebuild: self._build()
         return self.__microphoneGain
-    
+
     @microphoneGain.setter
     def microphoneGain(self, value):
         if 0 <= value <= 0xFF:
             self.__microphoneGain = value
             self._rebuild = True
-    
+
     @property
     def speakerGain(self):
         if self._rebuild: self._build()
         return self.__speakerGain
-    
+
     @speakerGain.setter
     def speakerGain(self, value):
         if 0 <= value <= 0xFF:
             self.__speakerGain = value
             self._rebuild = True
-    
+
     @property
     def autodialDialNumber(self):
         if self._rebuild: self._build()
         return self.__autodialDialNumber
-    
+
     @autodialDialNumber.setter
     def autodialDialNumber(self, value):
         if 0 <= value <= 0xFF:
@@ -1573,13 +1573,13 @@ class CommandVoiceConnectionParameters(Command):
     def voiceMenuVolume(self):
         if self._rebuild: self._build()
         return self.__voiceMenuVolume
-    
+
     @voiceMenuVolume.setter
     def voiceMenuVolume(self, value):
         if 0 <= value <= 0xFF:
             self.__voiceMenuVolume = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
         Builds body of the packet
@@ -1591,7 +1591,7 @@ class CommandVoiceConnectionParameters(Command):
         data += pack('<B', self.__autodialDialNumber)
         data += pack('<B', self.__voiceMenuVolume)
         return data
-        
+
 
 # ---------------------------------------------------------------------------
 
@@ -1614,7 +1614,7 @@ class CommandSoftwareUpgrade(Command):
         """
         self.ip = params['ip'] or ''
         self.port = params['port'] or 0
-    
+
     @property
     def ip(self):
         if self._rebuild: self._build()
@@ -1635,7 +1635,7 @@ class CommandSoftwareUpgrade(Command):
         if (0 <= value <= 0xFFFF):
             self.__port = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
          Builds body of the packet
@@ -1730,12 +1730,12 @@ class CommandWriteConfiguration(Command):
      Command for writing configuration
     """
     _number = 22
-    
+
     #private params
     __configurationNumber = 0
     __configurationSize = 0
     __configurationData = ""
-    
+
     def setParams(self, params):
         """
          Initialize command with params
@@ -1745,7 +1745,7 @@ class CommandWriteConfiguration(Command):
         self.configurationNumber = params['configurationNumber'] or 0
         self.configurationSize = params['configurationSize'] or 0
         self.configurationData = params['configurationData'] or 0
-    
+
     @property
     def configurationNumber(self):
         if self._rebuild: self._build()
@@ -1756,7 +1756,7 @@ class CommandWriteConfiguration(Command):
         if (0 <= value <= 0xFF):
             self.__configurationNumber = value
             self._rebuild = True
-    
+
     @property
     def configurationSize(self):
         if self._rebuild: self._build()
@@ -1767,7 +1767,7 @@ class CommandWriteConfiguration(Command):
         if (0 <= value <= 512):
             self.__configurationSize = value
             self._rebuild = True
-    
+
     @property
     def configurationSize(self):
         if self._rebuild: self._build()
@@ -1777,7 +1777,7 @@ class CommandWriteConfiguration(Command):
     def  configurationSize(self, value):
         self.__configurationSize = value
         self._rebuild = True
-    
+
     def _buildBody(self):
         """
          Builds body of the packet
@@ -1788,7 +1788,7 @@ class CommandWriteConfiguration(Command):
         data += pack('<B', int(self.__configurationSize))
         configurationDataBytes = bytes(self.__configurationData, "ascii")
         data += pack('<s', configurationDataBytes)
-        
+
         return data
 
 
@@ -1847,7 +1847,7 @@ class CommandSwitchToConfigurationServer(Command):
         """
         self.ip = params['ip'] or ''
         self.port = params['port'] or 0
-    
+
     @property
     def ip(self):
         if self._rebuild: self._build()
@@ -1868,7 +1868,7 @@ class CommandSwitchToConfigurationServer(Command):
         if (0 <= value <= 0xFFFF):
             self.__port = value
             self._rebuild = True
-    
+
     def _buildBody(self):
         """
          Builds body of the packet
@@ -1878,7 +1878,7 @@ class CommandSwitchToConfigurationServer(Command):
         data += socket.inet_aton(self.__ip)
         data += pack('<H', self.__port)
         return data
-    
+
 # ---------------------------------------------------------------------------
  
 
@@ -1973,40 +1973,36 @@ class PacketAnswerCommonAnswerUnknownIdentifier(PacketAnswer):
     Common answer, sent when command identifier is unknown
     """ 
     _number = 250
-    
+
     def get_parameters_string(self):
-        s = "Common answer 250: Command identifier is unknown"
-        return s
-    
-    
+        return "Command identifier is unknown"
+
 class PacketAnswerCommonAnswerDataIntegrityError(PacketAnswer):
     """
     Common answer, sent when data integrity error happened
     """ 
     _number = 251
-    
+
     def get_parameters_string(self):
-        s = "Common answer 251: Data integrity error/wrong parameters number"
-        return s
-    
+        return "Data integrity error/wrong parameters number"
+
 class PacketAnswerCommonAnswerCommandReceivedProcessed(PacketAnswer):
     """
     Common answer, sent when command successfully received and processed
     """ 
     _number = 252
-    
+
     def get_parameters_string(self):
-        s = "Common answer 252: Command was successfully received and processed"
-        return s
+        return "Command was successfully received and processed"
 
 class PacketAnswerCommonAnswerCommandProcessingError(PacketAnswer):
     """
     Common answer, sent when error during command processing happened
     """ 
     _number = 253
-    
+
     def get_parameters_string(self):
-        s = "Common answer 253: Error during command processing"
+        s = "Error during command processing"
         return s
 
 class PacketAnswerCommandGetImei(PacketAnswer):
@@ -2014,14 +2010,14 @@ class PacketAnswerCommandGetImei(PacketAnswer):
      Answer on CommandGetImei
     """
     _number = 1
-    
+
     __imei = "000000000000000"
-    
+
     def get_parameters_string(self):
         s = ''
-        s = s + ("imei"+"="+str(self.__imei))
+        s = s + ("imei" + "=" + str(self.__imei))
         return s
-    
+
     @property
     def imei(self):
         if self._rebuild: self._build()
@@ -2038,7 +2034,7 @@ class PacketAnswerCommandGetImei(PacketAnswer):
          @protected
         """
         super(PacketAnswerCommandGetImei, self)._parseBody()
-        buffer = self.body       
+        buffer = self.body
         self._number = unpack('<B', buffer[:1])[0]
         self.__imei = buffer.decode("ascii")[1:]
 
@@ -2048,15 +2044,15 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
      Answer on CommandGetRegisteredIButtons
     """
     _number = 5
-    
+
     __numbers = [0]*5
-    
+
     def get_parameters_string(self):
         s = ''
         for i in range(0, 5):
             s = s + ("number%d=%d; " % (i+1, self.__numbers[i]))
         return s
-    
+
     @property
     def numbers(self):
         if self._rebuild: self._build()
@@ -2065,28 +2061,28 @@ class PacketAnswerCommandGetRegisteredIButtons(PacketAnswer):
     def get_dict(self):
         params_dict = {"numbers": self.__numbers}
         return params_dict
-        
-    def _parseBody(self):        
+
+    def _parseBody(self):
         super(PacketAnswerCommandGetRegisteredIButtons, self)._parseBody()
         buffer = self.body
         self._number = unpack('<B', buffer[:1])[0]
         #divide buffer into 5 chunks, 
-        #add 2 zero bytes for unpacking and unpack as Q        
+        #add 2 zero bytes for unpacking and unpack as Q
         numbers = [unpack("<Q", buffer[6*i+1:6*(i+1)+1]+b'\x00\x00')[0] 
                    for i in range(0,5)]  
         self.__numbers = numbers
-        
+
 
 class PacketAnswerCommandGetPhones(PacketAnswer):
     """
      Answer on CommandGetPhones
     """
     _number = 7
-    
-    __phones = [0]*5
+
+    __phones = [0] * 5
     __call_sms_calls = [0] * 5
     __call_sms_smss = [0] * 5
-    
+
     def get_parameters_string(self):
         s = ''
         for i in range(0, 5):
@@ -2098,34 +2094,34 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
                       )
             )
         return s
-    
-    
+
+
     @property
     def phones(self):
         if self._rebuild: self._build()
         return self.__phones
-    
+
     @property
     def call_sms_calls(self):
         if self._rebuild: self._build()
         return self.__call_sms_calls
-    
+
     @property
     def call_sms_smss(self):
         if self._rebuild: self._build()
         return self.__call_sms_smss
-    
+
     def get_dict(self):
         params_dict = {"phones": self.phones, 
             "call_params": self.__call_sms_calls, 
             "sms_params": self.__call_sms_smss}
         return params_dict
-    
+
     def _parseBody(self):
         super(PacketAnswerCommandGetPhones, self)._parseBody()
         buffer = self.body
         self._number = unpack('<B', buffer[:1])[0]
-        
+
         for i in range(0, 5):
             self.__phones[i] = (buffer.decode("ascii")[i*11:(i+1)*11 - 1])
             call_sms = unpack("<B", buffer[(i+1)*11-1:(i+1)*11])[0]
@@ -2137,7 +2133,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
      Answer on CommandGetTrackParams
     """
     _number = 10
-    
+
     __filterCoordinates = 0
     __filterStraightPath = 0
     __filterRestructuring = 0
@@ -2156,8 +2152,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
     __jump = 0
     __idle = 0
     __courseDeviation = 0
-    
-    
+
     def get_parameters_string(self):
         s = ''
         s = s + ("fiter coordinates: %d; "\
@@ -2200,7 +2195,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
         )
 
         return s
-    
+
     def get_dict(self):
         params_dict = {"filter_coordinates": self.__filterCoordinates, 
                        "filter_straight_path": self.__filterStraightPath,
@@ -2223,98 +2218,98 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
                        "course_deviation": self.__courseDeviation
         }
         return params_dict
-    
+
     @property
     def filterCoordinates(self):
         if self._rebuild: self._build()
         return self.__filterCoordinates
-        
+
     @property
     def filterStraightPath(self):
         if self._rebuild: self._build()
         return self.__filterStraightPath
-        
+
     @property
     def filterRestructuring(self):
         if self._rebuild: self._build()
         return self.__filterRestructuring
-        
+
     @property
     def filterWriteOnEvent(self):
         if self._rebuild: self._build()
         return self.__filterWriteOnEvent
-    
+
     @property
     def accelerometerSensitivity(self):
         if self._rebuild: self._build()
         return self.__accelerometerSensitivity
-    
+
     @property
     def timeToStandby(self):
         if self._rebuild: self._build()
         return self.__timeToStandby
-    
+
     @property
     def timeRecordingStandby(self):
         if self._rebuild: self._build()
         return self.__timeRecordingStandby
-    
+
     @property
     def timeRecordingMoving(self):
         if self._rebuild: self._build()
         return self.__timeRecordingMoving
-    
+
     @property
     def timeRecordingDistance(self):
         if self._rebuild: self._build()
         return self.__timeRecordingDistance
-    
+
     @property
     def drawingOnAngles(self):
         if self._rebuild: self._build()
         return self.__drawingOnAngles
-    
+
     @property
     def minSpeed(self):
         if self._rebuild: self._build()
         return self.__minSpeed
-    
+
     @property
     def HDOP(self):
         if self._rebuild: self._build()
         return self.__HDOP
-    
+
     @property
     def minspeed(self):
         if self._rebuild: self._build()
         return self.__minspeed
-    
+
     @property
     def maxspeed(self):
         if self._rebuild: self._build()
         return self.__maxspeed
-    
+
     @property
     def acceleration(self):
         if self._rebuild: self._build()
         return self.__acceleration
-    
+
     @property
     def jump(self):
         if self._rebuild: self._build()
         return self.__jump
-    
+
     @property
     def idle(self):
         if self._rebuild: self._build()
         return self.__idle
-    
+
     @property
     def courseDeviation(self):
         if self._rebuild: self._build()
         return self.__courseDeviation
-    
-    
+
+
     def _parseBody(self):
         super(PacketAnswerCommandGetTrackParams, self)._parseBody()
         buffer = self.body
@@ -2325,7 +2320,7 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
         self.__filterStraightPath = (_filter >> 6) & 1
         self.__filterRestructuring = (_filter >> 5) & 1
         self.__filterWriteOnEvent = (_filter >> 4) & 1
-                
+
         self.__accelerometerSensitivity = unpack("<H", buffer[2:4])[0]
         self.__timeToStandby = unpack("<H", buffer[4:6])[0]
         self.__timeRecordingStandby = unpack("<H", buffer[6:8])[0]
@@ -2346,32 +2341,32 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
     Answer on CommandSwitchSecurityMode
     """
     _number = 200
-    
+
     __serviceMessage200 = 0
-    
+
     def get_parameters_string(self):
         s = ''
         s += ("service message 200: %d" % self.__serviceMessage200)
         return s
-    
+
     @property
     def serviceMessage200(self):
         if self._rebuild: self._build()
         return self.__serviceMessage200
-    
+
     def get_dict(self):
         params_dict = {"service_message_200": self.__serviceMessage200}
         return params_dict
-    
+
     def get_parameters_string(self):
         s = ''
         s = s.join("service_message_200"+"="+str(self.__serviceMessage200))
-    
+
     def _parseBody(self):
         super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()
         buffer = self.body
         self._number = unpack('<B', buffer[:1])[0]
-        
+
         self.__serviceMessage200 = unpack('<H', buffer[1:3])[0]   
 
 class PacketAnswerCommandGetImage(PacketAnswer):
@@ -2463,9 +2458,9 @@ class PacketFactory(AbstractPacketFactory):
         # read header and length
         length = unpack("<H", data[:2])[0]
         number = length >> 14
-        
+
         #~print("CLASS NUMBER IS: ", number)
-        
+
         CLASS = self.getClass(number)
         if not CLASS:
             raise Exception('Packet %s is not found' % number)
@@ -2678,14 +2673,14 @@ class TestCase(unittest.TestCase):
         packet = packets[0]
         self.assertEqual(packet.chunkNumber, 0)
         self.assertEqual(len(packet.chunkData), 506)
-    
+
     def test_commandPacketAnswerCommandGetImei(self):
         data = b'\x10\x80\x01868204003057949W!'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         self.assertEqual(packet._number, 1)
         self.assertEqual(packet.imei, '868204003057949')
-    
+
     def test_commandPacketAnswerCommandGetRegisteredIButtons(self):
         data = b'\x1f\x80\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
             b'\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
@@ -2695,13 +2690,13 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet._number, 5)
         self.assertEqual(len(packet.numbers), 5)
         self.assertEqual(packet.numbers[3], 0)
-    
+
     def test_commandPacketAnswerCommandGetTrackParams(self):
         data = b'\x14\x80\n\x00 \x03<\x00\x14\x00\x1e'\
             b'\x00\x1e\x05\x03(\x03\x96\x1e2\x1e\x05O\xcc'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
-        
+
         self.assertEqual(packet._number, 10)
         self.assertEqual(packet.filterCoordinates, 0)
         self.assertEqual(packet.filterStraightPath, 0)
@@ -2721,19 +2716,19 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.jump, 50)
         self.assertEqual(packet.idle, 30)
         self.assertEqual(packet.courseDeviation, 5)
-    
-    def test_commandPacketAnswerCommandSwitchSecurityMode(self):    
+
+    def test_commandPacketAnswerCommandSwitchSecurityMode(self):
         data = b'\x03\x80\xc8\x00\x02I\xff'
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         self.assertEqual(packet._number, 200)
         self.assertEqual(packet.serviceMessage200, 512)
-    
+
     def test_commandError(self):
         data = b'\x02\x80\xfc\r\x80\xb1'
         packets = self.factory.getPacketsFromBuffer(data)
-        
-    
+
+
     def test_commandPacketAnswerCommandGetPhones(self):
         data = b'8\x80\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
             b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'\
@@ -2755,26 +2750,26 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.deviceNumber, 1056)
         self.assertEqual(cmd.checksum, 24504)
         self.assertEqual(cmd.rawData, b'\x02\x02\x20\x04\xb8_')
-        
+
         # let's change deviceNumber
         cmd.deviceNumber = 8888
         self.assertEqual(cmd.rawData, b'\x02\x02\xb8"RE')
-    
+
     def test_commandChangeDevicePassword(self):
         cmd = CommandChangeDevicePassword({
             'devicePassword': 36718
         })
-            
+
         self.assertEqual(cmd.number, 3)
         self.assertEqual(cmd.devicePassword, 36718)
         self.assertEqual(cmd.checksum, 22684)
         self.assertEqual(cmd.rawData, b'\x02\x03n\x8f\x9cX')
-        
+
         #test password change
         cmd.devicePassword = 2403
         self.assertEqual(cmd.devicePassword, 2403)
         self.assertEqual(cmd.rawData, b'\x02\x03c\t\x19j')
-    
+
     def test_gprsCommandsPacket(self):
         cmd = CommandSetGprsParams({
             "ip": '127.0.0.1',
@@ -2787,16 +2782,16 @@ class TestCase(unittest.TestCase):
         cmd.port = 20201
         cmd.ip = '212.10.222.10'
         self.assertEqual(cmd.rawData, b'\x02\x04\xd4\n\xde\n\xe9N\xdb\x89')
-    
+
     def test_commandAddRemoveKeyNumber(self):
         cmd = CommandAddRemoveKeyNumber({
             "processKeyNumberAction": PROCESS_KEY_NUMBER_ACTION_ADD,
             "processCellNumber": 14,
             "keyNumber": 218875
         })
-        
+
         self.assertEqual(cmd.number, 6)
-        
+
         self.assertEqual(cmd.processKeyNumberAction, 
             PROCESS_KEY_NUMBER_ACTION_ADD)
         self.assertEqual(cmd.processCellNumber, 14)
@@ -2807,7 +2802,7 @@ class TestCase(unittest.TestCase):
         cmd.processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_REMOVE
         cmd.processCellNumber = 7
         cmd.keyNumber = 11246
-        
+
         self.assertEqual(cmd.processKeyNumberAction, 
             PROCESS_KEY_NUMBER_ACTION_REMOVE)
         self.assertEqual(cmd.processCellNumber, 7)
@@ -2815,7 +2810,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.checksum, 62407)
         self.assertEqual(cmd.rawData, 
             b'\x02\x06\x17\xee+\x00\x00\x00\x00\xc7\xf3')
-    
+
     def test_commandAddRemovePhoneNumber(self):
         cmd = CommandAddRemovePhoneNumber({
             "processKeyNumberAction": PROCESS_KEY_NUMBER_ACTION_ADD,
@@ -2825,7 +2820,7 @@ class TestCase(unittest.TestCase):
             "callSmsSms": CALL_SMS_SMS_RECEIVE
         })
         self.assertEqual(cmd.number, 8)
-        
+
         self.assertEqual(cmd.processKeyNumberAction, 
             PROCESS_KEY_NUMBER_ACTION_ADD)
         self.assertEqual(cmd.processCellNumber, 5)
@@ -2834,14 +2829,14 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.callSmsSms, CALL_SMS_SMS_RECEIVE)
         self.assertEqual(cmd.checksum, 52634)
         self.assertEqual(cmd.rawData,  b'\x02\x08\x052\x11\x9a\xcd')
-        
+
         #change some data
         cmd.processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_REMOVE
         cmd.processCellNumber = 7
         cmd.phoneNumber = "0030070010"
         cmd.callSmsCall = CALL_SMS_CALL_CHANGE_SECURITY
         cmd.callSmsSms = CALL_SMS_SMS_IGNORE
-        
+
         self.assertEqual(cmd.processKeyNumberAction, 
             PROCESS_KEY_NUMBER_ACTION_REMOVE)
         self.assertEqual(cmd.processCellNumber, 7)
@@ -2850,30 +2845,30 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.callSmsSms, CALL_SMS_SMS_IGNORE)
         self.assertEqual(cmd.checksum, 31994)
         self.assertEqual(cmd.rawData,  b'\x02\x08\x170 \xfa|')
-    
+
     def test_commandProtocolTypeStructure(self):
         cmd = CommandProtocolTypeStructure({
             "protocolType": 23,
             "protocolStructure": 782357
         })
         self.assertEqual(cmd.number, 9)
-        
+
         self.assertEqual(cmd.protocolType, 23)
         self.assertEqual(cmd.protocolStructure, 782357)
         self.assertEqual(cmd.checksum, 50182)
         self.assertEqual(cmd.rawData,  
             b'\x02\t\x17\x15\xf0\x0b\x00\x00\x00\x00\x00\x06\xc4')
-        
+
         #change some data
         cmd.protocolType = 51
         cmd.protocolStructure = 213527
-        
+
         self.assertEqual(cmd.protocolType, 51)
         self.assertEqual(cmd.protocolStructure, 213527)
         self.assertEqual(cmd.checksum, 24511)
         self.assertEqual(cmd.rawData, 
             b'\x02\t3\x17B\x03\x00\x00\x00\x00\x00\xbf_')
-    
+
     def test_commandFiltrationDrawingParameters(self):
         cmd = CommandFiltrationDrawingParameters({
             "filterCoordinates": 1,
@@ -2893,10 +2888,10 @@ class TestCase(unittest.TestCase):
             "acceleration": 26,
             "jump": 51,
             "idle": 11,
-            "courseDeviation": 18            
+            "courseDeviation": 18
         })
         self.assertEqual(cmd.number, 11)
-        
+
         self.assertEqual(cmd.filterCoordinates, 1)
         self.assertEqual(cmd.filterStraightPath, 0)
         self.assertEqual(cmd.filterRestructuring, 1)
@@ -2918,9 +2913,9 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.checksum, 8476)
         self.assertEqual(cmd.rawData, b"\x02\x0b\xb0\x19\x07'\x16\xef3"\
             b"\x10jl\x11\xc9\x0fYk\x1a\x0b3\x12\x1c!")
-        
+
         #change some data
-        
+
         cmd.filterCoordinates = 0
         cmd.filterStraightPath = 1
         cmd.filterRestructuring = 1
@@ -2939,7 +2934,7 @@ class TestCase(unittest.TestCase):
         cmd.idle = 71
         cmd.jump = 14
         cmd.courseDeviation = 57
-        
+
         self.assertEqual(cmd.filterCoordinates, 0)
         self.assertEqual(cmd.filterStraightPath, 1)
         self.assertEqual(cmd.filterRestructuring, 1)
@@ -2970,9 +2965,9 @@ class TestCase(unittest.TestCase):
             "upperBorder": 21817,
             "filterLength": 93
         })
-        
+
         self.assertEqual(cmd.number, 12)
-        
+
         self.assertEqual(cmd.inputActActiveLevel, 
             ACTIVE_LEVEL_LOW_WITH_HYSTERESIS)
         self.assertEqual(cmd.inputActInputNumber, 9)
@@ -2981,14 +2976,14 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.filterLength, 93)
         self.assertEqual(cmd.checksum, 46340)
         self.assertEqual(cmd.rawData, b'\x02\x0cI\x81C9U]\x04\xb5')
-        
+
         #change some data
         cmd.inputActActiveLevel = ACTIVE_LEVEL_FREE
         cmd.inputActInputNumber = 11
         cmd.lowerBorder = 9703
         cmd.upperBorder = 19517
         cmd.filterLength = 27
-        
+
         self.assertEqual(cmd.inputActActiveLevel, ACTIVE_LEVEL_FREE)
         self.assertEqual(cmd.inputActInputNumber, 11)
         self.assertEqual(cmd.lowerBorder, 9703)
@@ -2996,7 +2991,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.filterLength, 27)
         self.assertEqual(cmd.checksum, 54481)
         self.assertEqual(cmd.rawData, b'\x02\x0c+\xe7%=L\x1b\xd1\xd4')   
-    
+
     def test_command_ConfigureOutputs(self):
         cmd = CommandConfigureOutputs({
             "outputMode": OUTPUT_TURN_ON,
@@ -3004,10 +2999,10 @@ class TestCase(unittest.TestCase):
             "impulseLength": 145,
             "pauseLength": 112,
             "repeatNumber": 23
-        })    
-        
+        })
+
         self.assertEqual(cmd.number, 13)
-        
+
         self.assertEqual(cmd.outputMode, OUTPUT_TURN_ON)
         self.assertEqual(cmd.outputNumber, 3)
         self.assertEqual(cmd.impulseLength, 145)
@@ -3015,14 +3010,14 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.repeatNumber, 23)
         self.assertEqual(cmd.checksum, 40732)
         self.assertEqual(cmd.rawData, b'\x02\r\x13\x91p\x17\x1c\x9f')
-        
+
         #change some data
         cmd.outputMode = OUTPUT_IMPULSE
         cmd.outputNumber = 7
         cmd.impulseLength = 113
         cmd.pauseLength = 96
         cmd.repeatNumber = 31
-        
+
         self.assertEqual(cmd.outputMode, OUTPUT_IMPULSE)
         self.assertEqual(cmd.outputNumber, 7)
         self.assertEqual(cmd.impulseLength, 113)
@@ -3030,7 +3025,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.repeatNumber, 31)
         self.assertEqual(cmd.checksum, 24351)
         self.assertEqual(cmd.rawData, b"\x02\r'q`\x1f\x1f_")
-        
+
     def test_commandSwitchSecurityMode(self):
         cmd = CommandSwitchSecurityMode({
             'securityMode': SECURITY_MODE_IS_ON
@@ -3044,33 +3039,33 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.securityMode, str(SECURITY_MODE_IS_OFF))
         self.assertEqual(cmd.checksum, 24788)
         self.assertEqual(cmd.rawData, b'\x02\x0e\x00\xd4`')
-    
+
     def test_commandTemporarySecurityParameters(self):
         cmd = CommandTemporarySecurityParameters({
             "enterTime": 23,
             "exitTime": 52,
             "memoryTime": 13,
         })
-        
+
         self.assertEqual(cmd.number, 15)
-        
+
         self.assertEqual(cmd.enterTime, 23)
         self.assertEqual(cmd.exitTime, 52)
         self.assertEqual(cmd.memoryTime, 13)
         self.assertEqual(cmd.checksum, 54585)
         self.assertEqual(cmd.rawData, b'\x02\x0f\x174\r9\xd5')
-        
+
         #change some parameters
         cmd.enterTime = 31
         cmd.exitTime = 67
         cmd.memoryTime = 17
-        
+
         self.assertEqual(cmd.enterTime, 31)
         self.assertEqual(cmd.exitTime, 67)
         self.assertEqual(cmd.memoryTime, 17)
         self.assertEqual(cmd.checksum, 11934)
         self.assertEqual(cmd.rawData, b'\x02\x0f\x1fC\x11\x9e.')
-    
+
     def test_commandVoiceConnectionParameters(self):
         cmd = CommandVoiceConnectionParameters({
             "microphoneGain": 56,
@@ -3078,39 +3073,39 @@ class TestCase(unittest.TestCase):
             "autodialDialNumber": 6,
             "voiceMenuVolume": 28
         })
-        
+
         self.assertEqual(cmd.number, 17)
-        
+
         self.assertEqual(cmd.microphoneGain, 56)
         self.assertEqual(cmd.speakerGain, 77)
         self.assertEqual(cmd.autodialDialNumber, 6)
         self.assertEqual(cmd.voiceMenuVolume, 28)
         self.assertEqual(cmd.checksum, 58466)
         self.assertEqual(cmd.rawData, b'\x02\x118M\x06\x1cb\xe4')
-        
+
         #change some parameters
         cmd.microphoneGain = 44
         cmd.speakerGain = 98
         cmd.autodialDialNumber = 8
         cmd.voiceMenuVolume = 82
-        
+
         self.assertEqual(cmd.microphoneGain, 44)
         self.assertEqual(cmd.speakerGain, 98)
         self.assertEqual(cmd.autodialDialNumber, 8)
         self.assertEqual(cmd.voiceMenuVolume, 82)
         self.assertEqual(cmd.checksum, 35282)
         self.assertEqual(cmd.rawData, b'\x02\x11,b\x08R\xd2\x89')
-        
-        
-        
-    
+
+
+
+
     def test_commandSoftwareUpgrade(self):
         cmd = CommandSoftwareUpgrade({
             "ip": '127.0.0.1',
             "port": 20200
         })
         self.assertEqual(cmd.number, 19)
-        
+
         self.assertEqual(cmd.port, 20200)
         self.assertEqual(cmd.ip, '127.0.0.1')
         self.assertEqual(cmd.checksum, 10359)
@@ -3119,7 +3114,7 @@ class TestCase(unittest.TestCase):
         cmd.port = 20201
         cmd.ip = '212.10.222.10'
         self.assertEqual(cmd.rawData, b'\x02\x13\xd4\n\xde\n\xe9N\xbc\x88')
-    
+
     def test_getImageCommandsPacket(self):
         cmd = CommandGetImage({
             'type': IMAGE_RESOLUTION_640x480
@@ -3129,7 +3124,7 @@ class TestCase(unittest.TestCase):
 
         cmd.type = IMAGE_PACKET_CONFIRM_OK
         self.assertEqual(cmd.rawData, b'\x02\x14\x10\xde\xcc')
-    
+
     def test_commandGetConfiguration(self):
         cmd = CommandGetConfiguration({
             'configurationNumber': 5
@@ -3143,7 +3138,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.configurationNumber, 7)
         self.assertEqual(cmd.checksum, 21151)
         self.assertEqual(cmd.rawData, b'\x02\x15\x07\x9fR')
-    
+
     def test_commandWriteConfiguration(self):
         cmd = CommandWriteConfiguration({
             'configurationNumber': 11,
@@ -3156,19 +3151,19 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.configurationData, "abc1234")
         self.assertEqual(cmd.checksum, 31274)
         self.assertEqual(cmd.rawData, b'\x02\x16\x0b\x07\x00*z')
-        
+
         #change some data
         cmd.configurationNumber = 12
         cmd.configurationSize = 8
         cmd.configurationData = "12345abc"
-        
+
         self.assertEqual(cmd.configurationNumber, 12)
         self.assertEqual(cmd.configurationSize, 8)
         self.assertEqual(cmd.configurationData, "12345abc")
         self.assertEqual(cmd.checksum, 19358)
         self.assertEqual(cmd.rawData, b'\x02\x16\x0c\x08\x00\x9eK')
-        
-    
+
+
     def test_commandSwitchToNewSim(self):
         cmd = CommandSwitchToNewSim({
             'simNumber': 217
@@ -3182,7 +3177,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.simNumber, '119')
         self.assertEqual(cmd.checksum, 54943)
         self.assertEqual(cmd.rawData, b'\x02\x17w\x9f\xd6')
-    
+
     def test_commandSwitchToConfigurationServer(self):
         cmd = CommandSwitchToConfigurationServer({
             "ip": '127.0.0.1',
@@ -3196,7 +3191,7 @@ class TestCase(unittest.TestCase):
         cmd.port = 20201
         cmd.ip = '212.10.222.10'
         self.assertEqual(cmd.rawData, b'\x02\x18\xd4\n\xde\n\xe9N\x06H')
-    
+
     def test_commandAllowDisallowSimAutoswitching(self):
         cmd = CommandAllowDisallowSimAutoswitching({
             'simAutoswitchingIsAllowed': SIM_AUTOSWITCHING_IS_ALLOWED
@@ -3214,7 +3209,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.rawData, b'\x02\x19\x00\xdb\x90')
 
 
-"""    
+"""
 Command()
 
 commands["CommandProtocolTypeStructure"]
@@ -3255,4 +3250,4 @@ generate_classes(commands_list)
 
 
 
-    
+

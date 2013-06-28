@@ -90,10 +90,6 @@ class AbstractHandler(object):
          Must be overridden in child classes
          @param data: Data from socket
         """
-        
-        #~print("!!!!!!!!!!!CALLING PROCESS AMQP COMMAND!!!!!!!!!!!!!!!!!!!!")
-        self.processAmqpCommands()
-        
         if self._packetsFactory:
             try:
                 protocolPackets = (
@@ -108,6 +104,8 @@ class AbstractHandler(object):
                 #~print(E)
                 log.error("processData error: %s", E)
                 
+        #~print("!!!!!!!!!!!CALLING PROCESS AMQP COMMAND!!!!!!!!!!!!!!!!!!!!")
+        self.processAmqpCommands()
         
         if not self.needProcessCommands(): return self
         

@@ -14,6 +14,9 @@ class MessageBroker:
     """
      RabbitMQ message broker
     """
+
+    _drainedMessage = None
+
     def __init__(self):
         """
          Constructor. Creates local storage to be used by protocol handlers

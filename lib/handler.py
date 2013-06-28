@@ -17,6 +17,7 @@ from lib.storage import storage
 from urllib.request import urlopen
 import http.client
 from lib.ip import get_ip
+from lib.broker import broker
 
 class AbstractHandler(object):
     """

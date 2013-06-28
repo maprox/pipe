@@ -242,7 +242,10 @@ class NavisetHandler(AbstractHandler):
         }]
     
     def processAmqpCommands(self):
-        if not self.uid: return
+        if not self.uid:
+            log.debug("self.uid not found: %s" % self.uid)
+            return
+
         try:
             receivedPackets = broker.receivePackets(self.uid)
             log.debug("Received commands are: %s" % receivedPackets)

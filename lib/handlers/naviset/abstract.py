@@ -48,7 +48,7 @@ class NavisetHandler(AbstractHandler):
          @type protocolPacket: packets.Packet
          @param protocolPacket: Naviset protocol packet
         """
-        
+
         self.sendAcknowledgement(protocolPacket)
         self.receiveImage(protocolPacket)
 
@@ -56,13 +56,13 @@ class NavisetHandler(AbstractHandler):
             log.info('HeadPack is stored.')
             self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
-        
+
         if isinstance(protocolPacket, packets.PacketAnswer):
             log.info("Storing command answer packet")
-            broker.sendAmqpAnswer(protocolPacket)
+            broker.sendAmqpAnswer(self.uid, protocolPacket)
             #self.storeCommandPacket(protocolPacket)
             return
-        
+
         if not isinstance(protocolPacket, packets.PacketData):
             return
 
@@ -80,27 +80,27 @@ class NavisetHandler(AbstractHandler):
 
         #self.sendCommand(packets.CommandGetStatus())
         #self.sendCommand(packets.CommandGetPhones())
-        
+
         #b'\x01868204003057949'
-        
-        
+
+
         #self.sendCommand(packets.CommandGetImei())
-        
-        
+
+
         #self.sendCommand(packets.CommandGetRegisteredIButtons())
         #self.sendCommand(packets.CommandSwitchSecurityMode({'securityMode': 0}))
         #self.sendCommand(packets.CommandGetTrackParams())
-    
+
     def storeCommandPacket(self, commandPacket):
         #~print("Called command packet storing procedure")
         #~print(commandPacket)
         #~print(str(commandPacket.__dict__))
-        
+
         stored_information = [{"guid": "GUID", "status": 2, 
                                "data": str(commandPacket.__dict__)}]
-        
+
         self.store(stored_information)
-        
+
 
     def sendCommand(self, command):
         """
@@ -240,41 +240,15 @@ class NavisetHandler(AbstractHandler):
         }, {
             "message": command1
         }]
-    
-    def processAmqpCommands(self):
-        if not self.uid:
-            log.debug("self.uid not found: %s" % self.uid)
-            return
 
-        try:
-            receivedPackets = broker.receivePackets(self.uid)
-            log.debug("Received commands are: %s" % receivedPackets)
-            if receivedPackets:
-                self.processAmqpCommand(receivedPackets)
-        except Exception as E:
-            pass
-            #~print(E)
-        
-    def processAmqpCommand(self, data):
-        #~print("Got data: %s" % data)
-        #~print("Our class is: %s" % self)
-        for i in data:
-            pass
-            #~print(i, data[i])
-        
-        
-        #~print("Processing command to packet")
+    def processAmqpCommand(self, command):
+        """
+         Processing AMQP command
+         @param command: command
+        """
+        log.debug("Processing AMQP command: %s " % command)
         import lib.handlers.naviset.packets as packetsModule
-        
-        commandName = data["command"]
-        commandUid = data["uid"]
-        commandGuid = data["guid"]
-        commandTransport = data["transport"]
-        commandParams = data["params"]
-        
-        #~print(commandName, commandUid, 
-        #    commandGuid, commandTransport, commandParams)
-        
+
         amqp_name_mapper = {
             "get_status": "CommandGetStatus",
             "get_gsm_module_imei": "CommandGetImei",
@@ -305,28 +279,22 @@ class NavisetHandler(AbstractHandler):
             "switch_to_new_sim": "CommandSwitchToNewSim",
             "switch_to_new_configuration_server": 
             "CommandSwitchToConfigurationServer",
-            "toggle_sim_autoswitching": "CommandAllowDisallowSimAutoswitching",
-            
+            "toggle_sim_autoswitching":
+                "CommandAllowDisallowSimAutoswitching",
             "activate_digital_output": "CommandActivateDigitalOutput",
             "deactivate_digital_output": "CommandDeactivateDigitalOutput"
-
         }
-        
+
         try:
             if commandName in amqp_name_mapper:
-                className = amqp_name_mapper[commandName]
+                className = amqp_name_mapper[command["command"]]
                 CommandClass = packetsModule.__dict__[className]
+                log.debug("Command class is %s: " % CommandClass)
+                self.sendCommand(CommandClass(command["params"]))
             else:
-                broker.sendAmqpError(data, "Command is not supported")
-                log.error("No command with name %s" % commandName)
-                return
-
-            log.debug("Command class is %s: " % CommandClass)
-            command = CommandClass(commandParams)            
-
-            log.debug("Command is: %s" % command)
-            broker.current_tracker_command = data
-            self.sendCommand(command)
+                broker.sendAmqpError(self.uid, command,
+                    "Command is not supported")
+                log.error("No command with name %s" % command["command"])
         except Exception as E:
             log.error("Send command error is %s" % E)
 
@@ -364,7 +332,7 @@ class TestCase(unittest.TestCase):
         #    "id_action": 321312,
         #    "data": json.dumps(data)
         #})
-    
+
     def test_processData(self):
         h = self.handler
         data = (
@@ -432,24 +400,24 @@ class TestCase(unittest.TestCase):
             b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' +
             b'\x00\x00\x00=\xa9'
         )
-        
+
         h.processData(data)
         packets = h.getStore().get_stored_packets()
-        
-        
+
+
         self.assertEqual(len(packets), 12)
-        
+
         packetItem = packets[3]
         self.assertEqual(packetItem['speed'], 0.0)
         self.assertEqual(packetItem['latitude'], 53.243104)
         self.assertEqual(packetItem['longitude'], 50.1834)
         self.assertEqual(packetItem['satellitescount'], 16)
-        
+
         self.assertEqual(str(datetime.strptime(packetItem['time'],
             ('%Y-%m-%dT%H:%M:%S.%f'))), '2013-04-04 03:22:34')
-        
+
         packetItem2 = packets[6]
-        
+
         self.assertEqual(packetItem2['speed'], 0)
         self.assertEqual(packetItem2['satellitescount'], 16)
         self.assertEqual(packetItem2['sensors']['int_temperature'], 36)

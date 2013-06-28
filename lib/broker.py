@@ -83,40 +83,35 @@ class MessageBroker:
          @return:
         """
         exchange = self._exchanges['mon.device']
-        
-        
-        #with Connection(conf.amqpConnection) as conn:
-        conn = self.connection
-        
-        
-        
-        log.debug('BROKER: Connected to %s' % conf.amqpConnection)
-        with conn.Producer(serializer = 'json') as producer:
-            for packet in packets:
-                uid = None if 'uid' not in packet else packet['uid']
-                #routing_key = self.getRoutingKey(uid)
-                
-                
-                
-                packet_queue = Queue(
-                    routing_key,
-                    exchange = exchange,
-                    routing_key = routing_key
-                )
-                
-                producer.publish(
-                    packet,
-                    exchange = exchange,
-                    routing_key = routing_key,
-                    declare = [packet_queue]
-                )
-                if uid:
-                    log.debug('Packet for "%s" is sent via message broker'
-                        % uid)
-                else:
-                    log.debug('Packet is sent via message broker')
-        log.debug('BROKER: Disconnected')
-    
+
+        with Connection(conf.amqpConnection) as conn:
+            log.debug('BROKER: Connected to %s' % conf.amqpConnection)
+            with conn.Producer(serializer = 'json') as producer:
+                for packet in packets:
+                    uid = None if 'uid' not in packet else packet['uid']
+                    #routing_key = self.getRoutingKey(uid)
+                    
+                    
+                    
+                    packet_queue = Queue(
+                        routing_key,
+                        exchange = exchange,
+                        routing_key = routing_key
+                    )
+                    
+                    producer.publish(
+                        packet,
+                        exchange = exchange,
+                        routing_key = routing_key,
+                        declare = [packet_queue]
+                    )
+                    if uid:
+                        log.debug('Packet for "%s" is sent via message broker'
+                            % uid)
+                    else:
+                        log.debug('Packet is sent via message broker')
+            log.debug('BROKER: Disconnected')
+
     def sendAmqpAnswer(self, data):
         #~print("^^^^^^^^^^^^NOW WE ARE SENDING AMQP ANSWER^^^^^^^^")
         

@@ -117,6 +117,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet['uid'], "012896006644246")
         cs1 = str.upper(data_device['checksum'])
         cs2 = str.upper(h.getChecksum(data_device['line']))
-        self.assertEqual(cs1, cs2)
+        self.assertNotEqual(cs1, cs2)
 
 

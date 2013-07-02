@@ -37,6 +37,20 @@ class MessageBroker:
                 'mon.device', 'topic', durable = True)
         }
 
+    def getRoutingKey(self, imei):
+        """
+         Returns routing key name by device imei
+         @param imei: device ideintifier
+        """
+        workerNum = '0'
+        if imei and len(imei) > 0:
+            workerNum = imei[-1:].upper()
+        if workerNum not in '0123456789ABCDEF':
+            workerNum = '0'
+        routingKey = 'production.mon.device.' + \
+                    'packet.create.worker%s' % workerNum
+        return routingKey
+
     def getConnection(self, imei):
         """
           Returns an AMQP connection handler
@@ -54,8 +68,7 @@ class MessageBroker:
         if not imei in self._commands: return None
         return self._commands[imei]
 
-    def sendPackets(self, packets,
-            routing_key = 'production.mon.device.packet.create.*'):
+    def sendPackets(self, packets, routing_key = None):
         """
          Sends packets to the message broker
          @param packets: list of dict
@@ -68,16 +81,20 @@ class MessageBroker:
                 for packet in packets:
                     uid = None if 'uid' not in packet else packet['uid']
 
+                    rkey = routing_key
+                    if not routing_key:
+                        rkey = self.getRoutingKey(uid)
+
                     packet_queue = Queue(
-                        routing_key,
+                        rkey,
                         exchange = exchange,
-                        routing_key = routing_key
+                        routing_key = rkey
                     )
 
                     producer.publish(
                         packet,
                         exchange = exchange,
-                        routing_key = routing_key,
+                        routing_key = rkey,
                         declare = [packet_queue]
                     )
                     if uid:

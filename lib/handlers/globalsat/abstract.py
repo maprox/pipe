@@ -17,6 +17,8 @@ from urllib.request import urlopen
 from lib.handler import AbstractHandler
 from lib.geo import Geo
 
+from lib.broker import broker
+
 class GlobalsatHandler(AbstractHandler):
     """
      Base handler for Globalsat protocol
@@ -366,6 +368,8 @@ class GlobalsatHandler(AbstractHandler):
          @param data: Data from socket
         """
         initialData = data
+        
+        print("Processing GTR128 data!")
 
         # let's work with text data
         data = data.decode()
@@ -407,7 +411,7 @@ class GlobalsatHandler(AbstractHandler):
 
     def sendCommand(self, commandText):
         """
-         Send command to stop sos signal
+         Send command
         """
         command = 'GSC,' + self.uid + ',' + commandText
         command = self.addChecksum(command)
@@ -420,6 +424,20 @@ class GlobalsatHandler(AbstractHandler):
          Send command to stop sos signal
         """
         return self.sendCommand('Na')
+    
+    def sendCommandRestartTracker(self):
+        return self.sendCommand("LH")
+    
+    def sendCommandActivateDigitalOutput(self, outputNumber):
+        command = "DO%d=1" % outputNumber
+        return self.sendCommand(command)
+        pass
+    
+    def sendCommandDeactivateDigitalOutput(self, outputNumber):
+        command = "DO%d=0" % outputNumber
+        return self.sendCommand(command)
+        pass
+      
 
     def processSettings(self, data):
         """
@@ -479,6 +497,102 @@ class GlobalsatHandler(AbstractHandler):
         string += self.parseOptions(self.default_options, config)
         string = self.addChecksum(string)
         return string
+    
+    def processAmqpCommand2(self, data):
+        print("Processing data from AMQP for globalsat!")  
+        #print(data)
+        
+        import lib.handlers.naviset.packets as packetsModule
+        
+        commandName = data["command"]
+        commandUid = data["uid"]
+        commandGuid = data["guid"]
+        commandTransport = data["transport"]
+        commandParams = data["params"]
+        
+        print("Amqp globalsat command is: ", commandName)
+        print("Params: ", commandParams)
+        
+        if commandName == "activate_digital_output":
+            self.sendCommandActivateDigitalOutput(commandParams['outputNumber'])
+            
+        
+        if commandName == "deactivate_digital_output":
+            self.sendCommandDectivateDigitalOutput(commandParams['outputNumber'])
+        
+        if commandName == "restart_tracker":
+            self.sendCommandRestartTracker()
+        
+        print("Succesfully sent globalsat command: ", commandName)
+        broker.sendAmqpAnswer("Succesfully sent globalsat command: ", commandName)
+    
+    def processAmqpCommands(self):
+        print("Trying to process Amqp Commands for globalsat!!!!!!!!!!!!!!!")
+        print(self.uid)
+        if not self.uid:
+            log.debug("self.uid not found: %s" % self.uid)
+            return
+
+        try:
+            receivedPackets = broker.receivePackets(self.uid)
+            print("Received packets: ")
+            print(receivedPackets)
+            broker.sendAmqpAnswer("That's the answer for globalsat activate!")
+            print("After sending amqp answer received commands packets are:")
+            print(receivedPackets)
+            
+            log.debug("Received commands are: %s" % receivedPackets)
+            if receivedPackets:
+                self.processAmqpCommand2(receivedPackets)
+                    
+        except Exception as E:
+            print("Exception happened:")
+            print(E)
+            pass
+            #~print(E)
+    
+    
+            
+    def processAmqpCommand1(self, data):
+        #~print("Got data: %s" % data)
+        #~print("Our class is: %s" % self)
+        for i in data:
+            pass
+            #~print(i, data[i])
+        
+        
+        #~print("Processing command to packet")
+        import lib.handlers.naviset.packets as packetsModule
+        
+        commandName = data["command"]
+        commandUid = data["uid"]
+        commandGuid = data["guid"]
+        commandTransport = data["transport"]
+        commandParams = data["params"]
+        
+        #~print(commandName, commandUid, 
+        #    commandGuid, commandTransport, commandParams)
+        
+        try:
+            if commandName in amqp_name_mapper:
+                className = amqp_name_mapper[commandName]
+                CommandClass = packetsModule.__dict__[className]
+            else:
+                broker.sendAmqpError(data, "Command is not supported")
+                log.error("No command with name %s" % commandName)
+                return
+
+            log.debug("Command class is %s: " % CommandClass)
+            command = CommandClass(commandParams)            
+
+            log.debug("Command is: %s" % command)
+            broker.current_tracker_command = data
+            self.sendCommand(command)
+        except Exception as E:
+            log.error("Send command error is %s" % E)
+    
+    def processAmqpCommand(self):
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!no processAmqpCommand for globalsat!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     def parseOptions(self, options, config):
         """

@@ -1,0 +1,7 @@
+eclipse.preferences.version=1
+encoding//lib/broker.py=utf8
+encoding//lib/handler.py=utf8
+encoding//lib/handlers/globalsat/abstract.py=utf8
+encoding//lib/handlers/globalsat/gtr128.py=utf8
+encoding//lib/handlers/naviset/abstract.py=utf8
+encoding//lib/handlers/naviset/packets.py=utf8

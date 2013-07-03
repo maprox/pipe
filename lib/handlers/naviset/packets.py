@@ -461,7 +461,6 @@ class PacketAnswer(NavisetPacket):
         CLASS = None
         if data:
             command = unpack('<B', data[2:3])[0]
-            #~print("COMMAND IS: %s" % command)
             CLASS = getAnswerClassByNumber(command)
         return CLASS
 
@@ -746,7 +745,7 @@ class CommandAddRemovePhoneNumber(Command):
     __processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_ADD
     __processCellNumber = 0
     __phoneNumber = "0000000000"
-    __callSmsCall = CALL_SMS_CALL_RECEIVE 
+    __callSmsCall = CALL_SMS_CALL_RECEIVE
     __callSmsSms = CALL_SMS_SMS_IGNORE
 
     def setParams(self, params):
@@ -792,7 +791,7 @@ class CommandAddRemovePhoneNumber(Command):
 
     @phoneNumber.setter
     def phoneNumber(self, value):
-        self.__phoneNumber = str(value).encode("ascii")
+        self.__phoneNumber = value
         self._rebuild = True
 
     @property
@@ -827,16 +826,12 @@ class CommandAddRemovePhoneNumber(Command):
             16 * self.processKeyNumberAction + self.processCellNumber
         )
         data += pack('<B', processPacked)
-        phoneNumberBytes = bytes(self.phoneNumber, "ascii")
-        data += pack('<s', phoneNumberBytes)
+        phone = self.phoneNumber.encode()[:10]
+        while len(phone) < 10: phone = b'0' + phone
+        data += phone
         callSmsPacked = 16 * self.callSmsCall + self.callSmsSms
         data += pack('<B', callSmsPacked)
-        print("Built body:")
-        print(data)
-        return data   
-
-
-
+        return data
 
 class CommandProtocolTypeStructure(Command):
     """
@@ -2459,8 +2454,6 @@ class PacketFactory(AbstractPacketFactory):
         length = unpack("<H", data[:2])[0]
         number = length >> 14
 
-        #~print("CLASS NUMBER IS: ", number)
-
         CLASS = self.getClass(number)
         if not CLASS:
             raise Exception('Packet %s is not found' % number)
@@ -2821,14 +2814,14 @@ class TestCase(unittest.TestCase):
         })
         self.assertEqual(cmd.number, 8)
 
-        self.assertEqual(cmd.processKeyNumberAction, 
+        self.assertEqual(cmd.processKeyNumberAction,
             PROCESS_KEY_NUMBER_ACTION_ADD)
         self.assertEqual(cmd.processCellNumber, 5)
         self.assertEqual(cmd.phoneNumber, "2375129873")
         self.assertEqual(cmd.callSmsCall, CALL_SMS_CALL_SWITCH_TO_VOICE_MENU)
         self.assertEqual(cmd.callSmsSms, CALL_SMS_SMS_RECEIVE)
-        self.assertEqual(cmd.checksum, 52634)
-        self.assertEqual(cmd.rawData,  b'\x02\x08\x052\x11\x9a\xcd')
+        self.assertEqual(cmd.checksum, 21470)
+        self.assertEqual(cmd.rawData,  b'\x02\x08\x052375129873\x11\xdeS')
 
         #change some data
         cmd.processKeyNumberAction = PROCESS_KEY_NUMBER_ACTION_REMOVE
@@ -2837,14 +2830,14 @@ class TestCase(unittest.TestCase):
         cmd.callSmsCall = CALL_SMS_CALL_CHANGE_SECURITY
         cmd.callSmsSms = CALL_SMS_SMS_IGNORE
 
-        self.assertEqual(cmd.processKeyNumberAction, 
+        self.assertEqual(cmd.processKeyNumberAction,
             PROCESS_KEY_NUMBER_ACTION_REMOVE)
         self.assertEqual(cmd.processCellNumber, 7)
         self.assertEqual(cmd.phoneNumber, "0030070010")
         self.assertEqual(cmd.callSmsCall, CALL_SMS_CALL_CHANGE_SECURITY)
         self.assertEqual(cmd.callSmsSms, CALL_SMS_SMS_IGNORE)
-        self.assertEqual(cmd.checksum, 31994)
-        self.assertEqual(cmd.rawData,  b'\x02\x08\x170 \xfa|')
+        self.assertEqual(cmd.checksum, 61952)
+        self.assertEqual(cmd.rawData,  b'\x02\x08\x170030070010 \x00\xf2')
 
     def test_commandProtocolTypeStructure(self):
         cmd = CommandProtocolTypeStructure({
@@ -3207,47 +3200,3 @@ class TestCase(unittest.TestCase):
             str(SIM_AUTOSWITCHING_IS_DISALLOWED))
         self.assertEqual(cmd.checksum, 37083)
         self.assertEqual(cmd.rawData, b'\x02\x19\x00\xdb\x90')
-
-
-"""
-Command()
-
-commands["CommandProtocolTypeStructure"]
-obj = commands.CommandProtocolTypeStructure()
-
-
-
-
-commands_list = ["CommandSetGprsParameters", 4, 654, 
-    [["ip", "ip"], ["port", "H"]]]
-
-
-#ip, B, 4B
-commands_dict = {
-    "name": " CommandSetGprsParameters",
-    "number": 4,
-    "fields": [{
-        "name": "ip",
-        "type": "ip"
-    }, {
-        "name": "port",
-        "type": "H"
-    }]
-}
-
-
-generate_classes(commands_list)
-"""
-
-
-
-
-
-
-
-
-
-
-
-
-

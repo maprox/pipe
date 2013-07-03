@@ -116,8 +116,11 @@ class MessageBroker:
         log.debug("Processing AMQP command answer")
 
         guid = command['body']['guid']
-        data_dict = data.get_dict()
-        data_string = data.get_parameters_string()
+
+        data_string = data
+        if not isinstance(data, str):
+            data_string = data.get_parameters_string()
+
         answer_update = {
             "guid": guid,
             "status": "2",

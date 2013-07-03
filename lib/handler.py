@@ -294,7 +294,6 @@ class AbstractHandler(object):
             log.info('%s::sendImages(): Images have been sent.',
               self.__class__)
         else:
-            #print(result.getErrorsList())
             # ? Error messages should be converted into readable format
             log.error('%s::sendImages():\n %s',
               self.__class__, result.getErrorsList())

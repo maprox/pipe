@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Class implements communication with pipe-controller
-@copyright 2009-2011, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
 from kernel.logger import log
@@ -28,15 +28,11 @@ class Manager(Store):
         """
          Sending data to the controller receiving packets from the devices
         """
-        
-        #~print("Calling Manager send!!!")
-        
         result = lib.falcon.FalconAnswer()
         try:
             packets = list()
             if (isinstance(obj, list)):
                 # if multiple packets
-                
                 packets = obj
             elif (isinstance(obj, dict)):
                 # if one packet
@@ -49,25 +45,7 @@ class Manager(Store):
               'packets': packets
             })}
             # Let's send packets to AMQP broker
-            
-            
-            #~print("~~~~~~~~~~~~~~~~~~~~~~~~~SENDING PACKETS~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-            
-            
             self.sendPacketsViaBroker(packets)
-            
-            #~print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~SENT PACVKETSA VIA BROCKERUCVEU")
-            
-            # Connecting with the server and getting data
-            #params = urllib.parse.urlencode(url_data).encode('utf-8')
-            #request = urllib.request.Request(conf.pipeSetUrl)
-            #request.add_header("Content-Type",
-            #  "application/x-www-form-urlencoded;charset=utf-8")
-            #connection = urllib.request.urlopen(request, params)
-            #answer_str = connection.read()
-            #log.debug(answer_str)
-            #answer_dec = json.loads(answer_str.decode())
-            #result.load(answer_dec)
         except Exception as E:
             result.error('500', ['Error sending packets: ' + str(E)])
             log.error(E)
@@ -87,11 +65,11 @@ class Manager(Store):
 
 class TestManager(Manager):
     stored_packets = []
-    
+
     def __init__(self):
         self.stored_packets = []
         super(TestManager, self).__init__
-    
+
     def send(self, obj):
         result = lib.falcon.FalconAnswer()
         packets = list()
@@ -103,6 +81,6 @@ class TestManager(Manager):
             packets.append(obj)
         self.stored_packets.extend(packets)
         return result
-    
+
     def get_stored_packets(self):
         return self.stored_packets

@@ -60,7 +60,6 @@ class NavisetHandler(AbstractHandler):
         if isinstance(protocolPacket, packets.PacketAnswer):
             log.info("Storing command answer packet")
             broker.sendAmqpAnswer(self.uid, protocolPacket)
-            #self.storeCommandPacket(protocolPacket)
             return
 
         if not isinstance(protocolPacket, packets.PacketData):
@@ -77,30 +76,6 @@ class NavisetHandler(AbstractHandler):
         log.info(observerPackets)
         self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
-
-        #self.sendCommand(packets.CommandGetStatus())
-        #self.sendCommand(packets.CommandGetPhones())
-
-        #b'\x01868204003057949'
-
-
-        #self.sendCommand(packets.CommandGetImei())
-
-
-        #self.sendCommand(packets.CommandGetRegisteredIButtons())
-        #self.sendCommand(packets.CommandSwitchSecurityMode({'securityMode': 0}))
-        #self.sendCommand(packets.CommandGetTrackParams())
-
-    def storeCommandPacket(self, commandPacket):
-        #~print("Called command packet storing procedure")
-        #~print(commandPacket)
-        #~print(str(commandPacket.__dict__))
-
-        stored_information = [{"guid": "GUID", "status": 2, 
-                               "data": str(commandPacket.__dict__)}]
-
-        self.store(stored_information)
-
 
     def sendCommand(self, command):
         """
@@ -428,4 +403,3 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packetItem2['sensors']['int_temperature'], 36)
         self.assertEqual(packetItem2['sensors']['ext_battery_voltage'], 11450)
         self.assertEqual(packetItem2['sensors']['sat_antenna_connected'], 1)
-        

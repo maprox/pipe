@@ -29,7 +29,6 @@ class ClientThread(BaseRequestHandler):
 
     def handle(self):
         try:
-            #print("Dispatching!")
             disp.dispatch(self)
         except Exception as E:
             log.error("Dispatch error: %s", traceback.format_exc())

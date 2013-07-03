@@ -480,6 +480,24 @@ class GlobalsatHandler(AbstractHandler):
         string = self.addChecksum(string)
         return string
 
+    def getCommandTextByName(self, alias, params):
+        """
+          Returns command text according to command alias and params
+          @param alias: command name
+          @param params: dict with command params
+          @return str or None
+        """
+        commandText = None
+        if alias == "custom":
+            commandText = params['message']
+        if alias == "activate_digital_output":
+            commandText = "Lo(%d,1)" % params['outputNumber']
+        elif alias == "deactivate_digital_output":
+            commandText = "Lo(%d,0)" % params['outputNumber']
+        elif alias == "restart_tracker":
+            commandText = "LH"
+        return commandText
+
     def processAmqpCommand(self, command):
         """
          Processing AMQP command
@@ -493,16 +511,7 @@ class GlobalsatHandler(AbstractHandler):
 
         commandName = command["command"]
         commandParams = command["params"]
-
-        commandText = None
-        if commandName == "custom":
-            commandText = commandParams['message']
-        if commandName == "activate_digital_output":
-            commandText = "DO%d=1" % commandParams['outputNumber']
-        elif commandName == "deactivate_digital_output":
-            commandText = "DO%d=0" % commandParams['outputNumber']
-        elif commandName == "restart_tracker":
-            commandText = "LH"
+        commandText = self.getCommandTextByName(commandName, commandParams)
 
         if not commandText:
             broker.sendAmqpError(self.uid, command,

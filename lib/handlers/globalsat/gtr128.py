@@ -75,6 +75,20 @@ class Handler(GlobalsatHandler):
                 command += ',S8=' + val
         return command
 
+    #def getCommandTextByName(self, alias, params):
+    #    """
+    #      Returns command text according to command alias and params
+    #      @param alias: command name
+    #      @param params: dict with command params
+    #      @return str or None
+    #    """
+    #    if alias == "activate_digital_output":
+    #        return "Lo(1,1)"
+    #    elif alias == "deactivate_digital_output":
+    #        return "Lo(1,0)"
+    #    return super(Handler, self).getCommandTextByName(alias, params)
+
+
 # ===========================================================================
 # TESTS
 # ===========================================================================

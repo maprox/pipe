@@ -2,50 +2,6 @@
 
 cd $5
 
-if [ "$1" = 'tr600' ]; then
-  echo 'Starting TR-600 listener'
-  ./run_tr600.sh $2 $3 $4 &
-fi
-
-if [ "$1" = 'gtr128' ]; then
-  echo 'Starting GTR-128/GTR-129 listener'
-  ./run_gtr128.sh $2 $3 $4 &
-fi
-
-if [ "$1" = 'tr203' ]; then
-  echo 'Starting TR-203 listener'
-  ./run_tr203.sh $2 $3 $4 &
-fi
-
-if [ "$1" = 'tr206' ]; then
-  echo 'Starting TR-206 listener'
-  ./run_tr206.sh $2 $3 $4 &
-fi
-
-if [ "$1" = 'tr151' ]; then
-  echo 'Starting TR-151 listener'
-  ./run_tr151.sh $2 $3 $4 &
-fi
-
-if [ "$1" = 'galileo' ]; then
-  echo 'Starting Galileo listener'
-  ./run_galileo.sh $2 $3 $4 &
-fi
-
-if [ "$1" = 'naviset' ]; then
-  echo 'Starting Naviset listener'
-  ./run_naviset.sh $2 $3 $4 &
-fi
-
-if [ "$1" = 'teltonika' ]; then
-  echo 'Starting Teltonika listener'
-  ./run_teltonika.sh $2 $3 $4 &
-fi
-
-if [ "$1" = 'atrack' ]; then
-  echo 'Starting ATrack listener'
-  ./run_atrack.sh $2 $3 $4 &
-fi
-
+./bin/run_$1.sh $2 $3 $4 &
 
 exit 0

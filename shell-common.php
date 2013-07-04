@@ -10,13 +10,10 @@ function arguments($argv)
 	$_ARG = array('input' => array());
 	// First param is this scripts name..
 	$_ARG['name'] = array_shift($argv);
-	foreach ($argv as $arg)
-	{
-		if (preg_match('#^-{1,2}([a-zA-Z0-9]*)=?(.*)$#', $arg, $matches))
-		{
+	foreach ($argv as $arg) {
+		if (preg_match('#^-{1,2}([a-zA-Z0-9]*)=?(.*)$#', $arg, $matches)) {
 			$key = $matches[1];
-			switch ($matches[2])
-			{
+			switch ($matches[2]) {
 				case '':
 				case 'true':
 					$arg = true;
@@ -28,13 +25,10 @@ function arguments($argv)
 					$arg = $matches[2];
 			}
 			$_ARG[$key] = $arg;
-		}
-		else
-		{
+		} else {
 			$_ARG['input'][] = $arg;
 		}
 	}
-
 	return $_ARG;
 }
 
@@ -44,17 +38,13 @@ function arguments($argv)
  */
 function getAllTrackers()
 {
-	$files = glob(WORKING_DIR . "conf/serv-*.conf");
+	$files = glob(WORKING_DIR . "conf/handlers/*.conf");
 	$return = array();
-
-	foreach ($files as $file)
-	{
-		preg_match('/conf\/serv-(.*)\.conf/ui', $file, $key);
+	foreach ($files as $file) {
+		preg_match('/conf\/handlers\/(.*)\.conf/ui', $file, $key);
 		$name = $key[1];
-
 		$return[$name] = readTrackerConfig($name);
 	}
-
 	return array_filter($return);
 }
 
@@ -65,11 +55,9 @@ function getAllTrackers()
 function getTrackers($names, $port = false)
 {
 	$return = array();
-	foreach ($names as $name)
-	{
+	foreach ($names as $name) {
 		$return[$name] = readTrackerConfig($name, $port);
 	}
-
 	return array_filter($return);
 }
 
@@ -79,24 +67,16 @@ function getTrackers($names, $port = false)
  */
 function readTrackerConfig($name, $port = false)
 {
-	$file = WORKING_DIR . "conf/serv-$name.conf";
-	if (!file_exists($file))
-	{
-		return false;
-	}
+	$file = WORKING_DIR . "conf/handlers/$name.conf";
+	if (!file_exists($file)) { return false; }
 
-	$return = array(
-		'pipeconf' => getPipeConf($name)
-	);
+	$return = array('pipeconf' => getPipeConf($name));
 	$return['config'] = readIni(WORKING_DIR . $return['pipeconf'], 'urlconfig');
 	$return['host'] = readIni(WORKING_DIR . $return['pipeconf'], 'host');
 
-	if ($port)
-	{
+	if ($port) {
 		$return['port'] = $port;
-	}
-	else
-	{
+	} else {
 		$return['port'] = readIni($file, 'port');
 	}
 
@@ -111,15 +91,11 @@ function readTrackerConfig($name, $port = false)
 function readIni($file, $option)
 {
 	$data = file($file);
-
-	foreach ($data as $line)
-	{
-		if (preg_match('/^' . $option . '=(.*)/', trim($line), $config))
-		{
+	foreach ($data as $line) {
+		if (preg_match('/^' . $option . '=(.*)/', trim($line), $config)) {
 			return $config[1];
 		}
 	}
-
 	return null;
 }
 

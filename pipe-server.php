@@ -31,7 +31,6 @@ include WORKING_DIR . 'shell-common.php';
 function isPortOpen($port)
 {
 	$output = shell_exec("sudo fuser -v $port/tcp 2>&1");
-
 	return $output == NULL;
 }
 
@@ -43,19 +42,17 @@ function isPortOpen($port)
 function forceOpenPort($port)
 {
 	$counter = MAX_WAIT_COUNT;
-	print "Closing port $port";
-	while (!isPortOpen($port))
-	{
+	print("Closing port $port");
+	while (!isPortOpen($port)) {
 		shell_exec("sudo fuser -vk $port/tcp 2>&1");
-		print ".";
-		if ($counter-- < 1)
-		{
-			print "[FAIL]\n";
+		print(".");
+		if ($counter-- < 1) {
+			print("[FAIL]\n");
 			return false;
 		}
 		sleep(SLEEP_TIME);
 	}
-	print "[OK]\n";
+	print("[OK]\n");
 	return true;
 }
 
@@ -68,8 +65,7 @@ function getUserConfirm($default = true)
 {
 	$handle = fopen("php://stdin", "r");
 	$line = strtolower(trim(fgets($handle)));
-	if (strlen($line) === 0)
-	{
+	if (strlen($line) === 0) {
 		return $default;
 	}
 	return ($line === 'y');
@@ -94,9 +90,7 @@ function getMask($key, $flag)
 function isProcessRunning($mask)
 {
 	$mask = "[p]ython.*pipe_server_mask=$mask";
-
 	$output = shell_exec("sudo pgrep -f $mask 2>&1");
-
 	return $output != NULL;
 }
 
@@ -108,11 +102,12 @@ function killProcess($mask)
 {
 	$mask = "[p]ython.*pipe_server_mask=$mask";
 
-	print "Stopping... ";
+	print("Stopping... ");
 	$command = "sudo pkill -f $mask 2>&1";
 	$output = shell_exec($command);
 	print_r($output);
-	print "[OK]\n";
+
+	print("[OK]\n");
 }
 
 /**
@@ -122,12 +117,12 @@ function killAll()
 {
 	$mask = "[p]ython.*pipe_server_mask=";
 
-	print "Stopping all processes... ";
+	print("Stopping all processes... ");
 	$command = "sudo pkill -f $mask 2>&1";
 	$output = shell_exec($command);
 	print_r($output);
 
-	print "[OK]\n";
+	print("[OK]\n");
 }
 
 /**
@@ -137,9 +132,7 @@ function killAll()
 function doConfigStart($trackers)
 {
 	$config = buildConfigArray($trackers);
-
-	foreach ($config as $host => $command)
-	{
+	foreach ($config as $host => $command) {
 		file_get_contents($command);
 	}
 }
@@ -151,9 +144,7 @@ function doConfigStart($trackers)
 function doConfigStop($trackers)
 {
 	$config = buildConfigArray($trackers, true);
-
-	foreach ($config as $host => $command)
-	{
+	foreach ($config as $host => $command) {
 		file_get_contents($command);
 	}
 }
@@ -164,9 +155,7 @@ function doConfigStop($trackers)
 function doConfigStopAll()
 {
 	$config = buildConfigArray(getAllTrackers(), true);
-
-	foreach ($config as $host => $command)
-	{
+	foreach ($config as $host => $command) {
 		file_get_contents($command);
 	}
 }
@@ -180,16 +169,12 @@ function doConfigStopAll()
 function buildConfigArray($trackers, $stop = false)
 {
 	$return = array();
-	foreach ($trackers as $tracker => $data)
-	{
+	foreach ($trackers as $tracker => $data) {
 		$mask = getMask($tracker, 'config');
 		$port = $stop ? 0 : $data['port'];
-
-		if (empty($return[$data['config']]))
-		{
+		if (empty($return[$data['config']])) {
 			$return[$data['config']] = "$data[config]host=$data[host]";
 		}
-
 		$return[$data['config']] .= "&tracker[$mask]=$tracker&port[$mask]=$port";
 	}
 
@@ -201,13 +186,12 @@ function buildConfigArray($trackers, $stop = false)
  */
 function startProcess($trackers, $flag)
 {
-	foreach ($trackers as $key => $config)
-	{
+	foreach ($trackers as $key => $config) {
 		$mask = getMask($key, $flag);
-
-		print "Starting process for tracker $key... ";
-		startInBackground("sudo -u pipe " . WORKING_DIR . "pipe-start $key $mask $config[port] $config[pipeconf] " . WORKING_DIR);
-		print "[OK]\n";
+		print("Starting process for tracker $key... ");
+		startInBackground("sudo -u pipe " . WORKING_DIR .
+			"pipe-start $key $mask $config[port] $config[pipeconf] " . WORKING_DIR);
+		print("[OK]\n");
 	}
 }
 
@@ -216,29 +200,23 @@ function startProcess($trackers, $flag)
  */
 function serviceStart($params)
 {
-	if (empty($params['input']))
-	{
+	if (empty($params['input'])) {
 		$trackers = getAllTrackers();
-	}
-	else
-	{
+	} else {
 		$trackers = getTrackers($params['input'], $params['port']);
 	}
 
-	print "Ports check\n";
+	print("Ports check\n");
 	$silentMode = false;
 
-	foreach ($trackers as $key => $config)
-	{
+	foreach ($trackers as $key => $config) {
 		$mask = getMask($key, $params['flag']);
 		// check if process already running
-		if (isProcessRunning($mask))
-		{
-			if (!$silentMode)
-			{
-				print "Pipe-process for protocol $key with $params[flag] flag is already running. Restart? [Y/n]:";
-				if (!getUserConfirm())
-				{
+		if (isProcessRunning($mask)) {
+			if (!$silentMode) {
+				print("Pipe-process for protocol $key with $params[flag] flag " .
+					" is already running. Restart? [Y/n]:");
+				if (!getUserConfirm()) {
 					unset($trackers[$key]);
 					continue;
 				}
@@ -247,21 +225,17 @@ function serviceStart($params)
 		}
 
 		// check for opened ports
-		if (!isPortOpen($config['port']))
-		{
-			print "Port $config[port] are busy by someone else.\n";
-			if (!$silentMode)
-			{
-				print "Free port $config[port] forcefully? [Y/n]";
-				if (!getUserConfirm())
-				{
+		if (!isPortOpen($config['port'])) {
+			print("Port $config[port] are busy by someone else.\n");
+			if (!$silentMode) {
+				print("Free port $config[port] forcefully? [Y/n]");
+				if (!getUserConfirm()) {
 					unset($trackers[$key]);
 					continue;
 				}
 			}
-			if (!forceOpenPort($config['port']))
-			{
-				print "Failed to free port $config[port]";
+			if (!forceOpenPort($config['port'])) {
+				print("Failed to free port $config[port]");
 				unset($trackers[$key]);
 				continue;
 			}
@@ -269,7 +243,6 @@ function serviceStart($params)
 	}
 
 	startProcess($trackers, $params['flag']);
-
 	doConfigStart($trackers);
 }
 
@@ -278,31 +251,21 @@ function serviceStart($params)
  */
 function serviceStop($params)
 {
-	if ($params['stop'] == 'all')
-	{
+	if ($params['stop'] == 'all') {
 		killAll();
 		doConfigStopAll();
-	}
-	else
-	{
-		if (empty($params['input']))
-		{
+	} else {
+		if (empty($params['input'])) {
 			$trackers = getAllTrackers();
-		}
-		else
-		{
+		} else {
 			$trackers = getTrackers($params['input'], $params['port']);
 		}
-
-		foreach ($trackers as $key => $devNull)
-		{
+		foreach ($trackers as $key => $devNull) {
 			$mask = getMask($key, $params['flag']);
 			killProcess($mask);
 		}
-
 		doConfigStop($trackers);
 	}
-
 }
 
 /**
@@ -310,26 +273,16 @@ function serviceStop($params)
  */
 function serviceTest($params)
 {
-	if (empty($params['input']))
-	{
+	if (empty($params['input'])) {
 		$trackers = getAllTrackers();
-	}
-	else
-	{
+	} else {
 		$trackers = getTrackers($params['input'], $params['port']);
 	}
 
-	foreach ($trackers as $key => $devNull)
-	{
+	foreach ($trackers as $key => $devNull) {
 		$mask = getMask($key, $params['flag']);
-		if (isProcessRunning($mask))
-		{
-			print "Listener for protocol $key with $params[flag] flag is running\n";
-		}
-		else
-		{
-			print "Listener for protocol $key with $params[flag] flag is down\n";
-		}
+		$status = isProcessRunning($mask) ? "running" : "down";
+		print("Listener for protocol $key with $params[flag] flag is $status\n");
 	}
 }
 
@@ -341,10 +294,10 @@ function doInstall()
 	shell_exec('sudo ln -s ' . __FILE__ . ' /etc/init.d/pipe-server');
 	shell_exec('sudo chmod +x ' . __FILE__);
 	shell_exec('sudo update-rc.d pipe-server defaults');
-	print "Installation complete\n";
+	print("Installation complete\n");
 }
 
-print "Pipe-server Starter v1.0.5\n";
+print("Pipe-server Starter v2.0\n");
 
 // read input arguments
 $command = '';
@@ -392,7 +345,10 @@ switch ($command)
 		break;
 	default:
 		$file = basename(__FILE__, '.php');
-		print "Usage: service $file {start|stop|restart|reload|force-reload|status}" .
-			" [{--stop|-s}=all] [{--flag|-f}=%FLAG%] [{--port|-p}=%PORT%] [%TRACKER_1%] [%TRACKER_2%] ... [%TRACKER_N%]\n" .
+		print("Usage: service $file " .
+			"{start|stop|restart|reload|force-reload|status}" .
+			" [{--stop|-s}=all] [{--flag|-f}=%FLAG%] " .
+			"[{--port|-p}=%PORT%] [%TRACKER_1%] [%TRACKER_2%] " .
+			"... [%TRACKER_N%]\n" .
 			"Install: php " . $params['name'] . " install\n";
 }

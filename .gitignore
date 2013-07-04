@@ -19,3 +19,5 @@ trash/*
 kernel/version.txt
 
 .idea
+.project
+.pydevproject

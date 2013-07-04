@@ -1,7 +1,13 @@
 eclipse.preferences.version=1
+encoding//kernel/commandline.py=utf8
+encoding//kernel/config.py=utf8
+encoding//kernel/controller.py=utf8
+encoding//kernel/dispatcher.py=utf8
+encoding//lib/bits.py=utf8
 encoding//lib/broker.py=utf8
 encoding//lib/handler.py=utf8
 encoding//lib/handlers/globalsat/abstract.py=utf8
 encoding//lib/handlers/globalsat/gtr128.py=utf8
+encoding//lib/handlers/list.py=utf8
 encoding//lib/handlers/naviset/abstract.py=utf8
 encoding//lib/handlers/naviset/packets.py=utf8

@@ -33,20 +33,22 @@ class Controller(object):
             commands = db.getController().getCommands()
             store = pipe.Manager()
             for command in commands:
-                handler = 'lib.handlers.' + command['handler']
-                for HandlerClass in handlersList:
-                    if HandlerClass.__module__ == handler:
-                        handler = HandlerClass(store, False)
-                        handler.uid = command['uid']
-                        function_name = 'processCommand' \
-                          + command['action'][0].upper() \
-                          + command['action'][1:]
-                        log.debug('Command is: ' + function_name)
-                        function = getattr(handler, function_name)
-                        if 'value' in command:
-                            function(command['id'], command['value'])
-                        else:
-                            function(command['id'], None)
+                # controller is temporarily disabled
+                pass
+                #handler = 'lib.handlers.' + command['handler']
+                #for HandlerClass in handlersList:
+                #    if HandlerClass.__module__ == handler:
+                #        handler = HandlerClass(store, False)
+                #        handler.uid = command['uid']
+                #        function_name = 'processCommand' \
+                #          + command['action'][0].upper() \
+                #          + command['action'][1:]
+                #        log.debug('Command is: ' + function_name)
+                #        function = getattr(handler, function_name)
+                #        if 'value' in command:
+                #            function(command['id'], command['value'])
+                #        else:
+                #            function(command['id'], None)
         except Exception as E:
             log.critical(E)
 

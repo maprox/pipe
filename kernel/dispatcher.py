@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 '''
 @project   Maprox <http://www.maprox.net>
-@info      Dispatcher of protocols
+@info      Dispatcher of protocol handlers
 @copyright 2009-2011, Maprox LLC
 '''
 
@@ -9,7 +9,7 @@ from kernel.config import conf
 from kernel.logger import log
 
 import kernel.pipe as pipe
-from lib.handlers.list import handlersList
+from lib.handlers.list import HandlerClass
 
 class Dispatcher(object):
     """
@@ -35,11 +35,12 @@ class Dispatcher(object):
          Dispatching incoming data from device to protocol handler
         """
         self.__thread = clientThread
-        for HandlerClass in handlersList:
+        if HandlerClass:
             log.debug('Protocol handler: %s', HandlerClass.__doc__)
             HandlerClass(self.getStore(), clientThread).dispatch()
-            return self # We are working with first handler only
-        log.warn('No protocol handlers found')
+        else:
+            log.error('No protocol handlers found!')
+        return self # We are working with first handler only
 
 # let's create instance of global protocol dispatcher
 disp = Dispatcher()

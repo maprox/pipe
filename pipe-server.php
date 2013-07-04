@@ -188,7 +188,11 @@ function startProcess($trackers, $flag)
 {
 	foreach ($trackers as $key => $config) {
 		$mask = getMask($key, $flag);
-		print("Starting process for tracker $key... ");
+		print("Starting [$key] protocol process... ");
+		//$cmd = "sudo -u pipe " . WORKING_DIR .
+		//	"pipe-start $key $mask $config[port] $config[pipeconf] " .
+		//	WORKING_DIR;
+		//print($cmd);
 		startInBackground("sudo -u pipe " . WORKING_DIR .
 			"pipe-start $key $mask $config[port] $config[pipeconf] " . WORKING_DIR);
 		print("[OK]\n");
@@ -350,5 +354,5 @@ switch ($command)
 			" [{--stop|-s}=all] [{--flag|-f}=%FLAG%] " .
 			"[{--port|-p}=%PORT%] [%TRACKER_1%] [%TRACKER_2%] " .
 			"... [%TRACKER_N%]\n" .
-			"Install: php " . $params['name'] . " install\n";
+			"Install: php " . $params['name'] . " install\n");
 }

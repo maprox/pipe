@@ -18,7 +18,7 @@ from kernel.commandline import options
 conf = ConfigParser()
 conf.optionxform = str
 try:
-    conf.read(options.servconf)
+    conf.read(options.handlerconf)
 
     # server's base settings
     if options.port:
@@ -31,13 +31,9 @@ try:
     conf.setDaemon = conf.getboolean("general", "setDaemon")
     conf.pathStorage = conf.get("general", "pathStorage")
     conf.pathTrash = conf.get("general", "pathTrash")
-    conf.protocols = []
-    for item in conf.items('protocols'):
-        conf.protocols.append(item[0])
-    #conf.protocols = list(conf.items('protocols'))
 
 except Exception as E:
-    log.critical("Error reading " + options.servconf + ": " + E.message)
+    log.critical("Error reading " + options.handlerconf + ": " + E.message)
     exit(1)
 
 try:

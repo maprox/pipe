@@ -29,9 +29,6 @@ class Dispatcher(object):
          Returns the store object
         """
         return self.__store
-    
-    def amqpDispatch(self):
-        print("Dispatchinfg AMQP!")
 
     def dispatch(self, clientThread):
         """

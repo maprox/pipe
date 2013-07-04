@@ -216,4 +216,11 @@ class MessageBroker:
             commandBody = command['body']
         return commandBody
 
+# --------------------------------------------------------------------
+
+class MessageBrokerThread:
+    """
+     Message broker thread for receiving amqp commands
+    """
+
 broker = MessageBroker()

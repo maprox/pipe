@@ -8,4 +8,4 @@
 from lib.handlers.galileo.abstract import GalileoHandler
 
 class Handler(GalileoHandler):
-    """ Galileo. Firmware 0116 """
+    """ Galileo. Default protocol """

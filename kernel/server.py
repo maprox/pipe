@@ -47,7 +47,7 @@ class ThreadingServer(ThreadingMixIn, TCPServer):
 def amqp_get_commands():
     from lib.handlers.list import handlersList
     from kombu import Connection, Exchange, Queue
-    
+
     for h in handlersList:
         print(h)
 
@@ -62,16 +62,16 @@ def amqp_get_commands():
             except E:
                 print(E)
         message.ack()
-    
+
     device_exchange = Exchange('production.mon.device.command.create', 
         'topic', durable = True)
-    
+
     # connections
     username = 'guest'
     password = 'guest'
     host = '10.233.10.13'
     url = 'amqp://{0}:{1}@{2}//'.format(username, password, host)
-    
+
     with Connection(url) as conn:
         routing_key = 'production.mon.device.command.create'
         command_queue = Queue(routing_key, exchange = device_exchange, 
@@ -118,14 +118,12 @@ class Server():
         #self.server_thread.daemon = True
         self.server_thread.setDaemon(conf.setDaemon)
         self.server_thread.start()
-        
-        
+        log.info("Server is started on port %s", self.port)
+
         #Uncomment when talking with AMQP server in thread
         #self.amqp_thread  = Thread(target = amqp_get_commands())
-        #self.amqp_thread.daemon = True
+        #self.amqp_thread.setDaemon(conf.setDaemon)
         #self.amqp_thread.start()
-        
-        log.info("Server is started on port %s", self.port)
 
     # -----------------------------
     def verify_request(self, request, client_address):

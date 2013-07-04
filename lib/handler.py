@@ -32,6 +32,9 @@ class AbstractHandler(object):
     confSectionName = "protocol.version"
     """ Configuration section name """
 
+    protocolAlias = None
+    """ Protocol name in the central database """
+
     def __init__(self, store, clientThread):
         """
          Constructor of Listener.
@@ -418,3 +421,11 @@ class AbstractHandler(object):
         """
         log.error('processCommandSetOption NOT IMPLEMENTED')
         return self.processCloseTask(task, None)
+
+    @classmethod
+    def initAmqpThread(cls, protocol):
+        """
+         AMQP thread initialization
+        """
+        log.debug('%s::initAmqpThread()', cls)
+        print(protocol)

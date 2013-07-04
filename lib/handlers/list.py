@@ -7,7 +7,6 @@
 
 from kernel.logger import log
 from kernel.config import conf
-from kernel.pipe import Manager
 
 # Load modules
 handlersList = list()
@@ -17,6 +16,7 @@ for protocol in conf.protocols:
         pkg = __import__(name, globals(), locals(), ['Handler'])
         if (hasattr(pkg, 'Handler')):
             cls = getattr(pkg, 'Handler')
+            cls.initAmqpThread(conf.get("protocols", protocol))
             handlersList.append(cls)
             log.info("Protocol is loaded: " + cls.__doc__)
         else:

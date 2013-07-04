@@ -18,19 +18,6 @@ class Controller(object):
      Pipe-server controller
     '''
 
-    __handlerTranslation = {
-       'tr600': 'globalsat.tr600',
-       'tr203': 'globalsat.tr203',
-       'tr206': 'globalsat.tr206',
-       'tr151': 'globalsat.tr151',
-       'globalsat_gtr128': 'globalsat.gtr128',
-       'naviset-gt10': 'naviset.gt10',
-       'naviset-gt20': 'naviset.gt20',
-       'galileo': 'galileo.firmware0119',
-       'teltonika_fmxxxx': 'teltonika.fmxxxx',
-       'atrack-ax5': 'atrack.ax5'
-    }
-
     def __init__(self):
         """
          Controller constructor
@@ -46,8 +33,7 @@ class Controller(object):
             commands = db.getController().getCommands()
             store = pipe.Manager()
             for command in commands:
-                handler = 'lib.handlers.' \
-                  + self.__handlerTranslation[command['handler']]
+                handler = 'lib.handlers.' + command['handler']
                 for HandlerClass in handlersList:
                     if HandlerClass.__module__ == handler:
                         handler = HandlerClass(store, False)

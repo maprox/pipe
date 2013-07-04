@@ -27,7 +27,6 @@ with Connection(url) as conn:
         try:
             while True:
                 conn.drain_events()
-                time.sleep(5)
         except:
             # no messages in queue
             pass

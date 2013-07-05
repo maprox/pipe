@@ -15,9 +15,10 @@ from kernel.config import conf
 from kernel.dbmanager import db
 from lib.storage import storage
 from urllib.request import urlopen
+from lib.broker import broker
+import lib.broker
 import http.client
 from lib.ip import get_ip
-from lib.broker import broker
 
 class AbstractHandler(object):
     """
@@ -431,3 +432,29 @@ class AbstractHandler(object):
         # start message broker thread for receiving sms commands
         from lib.broker import MessageBrokerThread
         MessageBrokerThread(cls, protocol)
+
+    def processProtocolCommand(self, command):
+        """
+         Handling command to the protocol
+         @param command: dict
+         @return:
+        """
+        commandStatus = {
+            "guid": command['guid'],
+            "status": lib.broker.COMMAND_STATUS_SUCCESS,
+            "data": "Command was successfully received and processed"
+        }
+
+        if command['command'] == 'configure':
+            config = self.getInitiationConfig(command['params'])
+            buffer = self.getInitiationData(config)
+            if buffer is None:
+                commandStatus['status'] = lib.broker.COMMAND_STATUS_ERROR
+                commandStatus['data'] = 'Empty configuration buffer'
+            else:
+                log.debug('Buffer: %s', buffer)
+
+        routingKeyCommandUpdate = "production.mon.device.command.update"
+        broker.send([commandStatus], routing_key = routingKeyCommandUpdate)
+
+        return False

@@ -58,7 +58,7 @@ class Manager(Store):
          @return:
         """
         try:
-            broker.sendPackets(packets)
+            broker.send(packets)
         except Exception as E:
             #~print(E)
             log.error(E)

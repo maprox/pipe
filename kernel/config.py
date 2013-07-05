@@ -32,7 +32,7 @@ try:
     conf.pathTrash = conf.get("general", "pathTrash")
 
 except Exception as E:
-    log.critical("Error reading " + options.handlerconf + ": " + E.message)
+    log.critical("Error reading " + options.handlerconf + ": %s", E)
     exit(1)
 
 try:
@@ -51,5 +51,5 @@ try:
     conf.amqpConnection = conf.get("amqp", "connection")
 
 except Exception as E:
-    log.critical("Error reading " + options.pipeconf + ": " + E.message)
+    log.critical("Error reading " + options.pipeconf + ": %s", E)
     exit(1)

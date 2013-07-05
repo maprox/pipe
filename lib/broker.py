@@ -10,7 +10,6 @@ from kernel.config import conf
 from kernel.logger import log
 from kombu import Connection, Exchange, Queue
 import anyjson
-import kernel.pipe as pipe
 
 COMMAND_STATUS_CREATED = 1
 COMMAND_STATUS_SUCCESS = 2
@@ -286,6 +285,7 @@ class MessageBrokerThread:
          @param body: amqp message body
          @param message: message instance
         """
+        import kernel.pipe as pipe
         log.debug('%s: Received AMQP command = %s', self.__class__, body)
 
         command = body

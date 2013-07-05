@@ -10,7 +10,6 @@ from kernel.config import conf
 from kernel.logger import log
 from kombu import Connection, Exchange, Queue
 import anyjson
-import kernel.pipe as pipe
 
 COMMAND_STATUS_CREATED = 1
 COMMAND_STATUS_SUCCESS = 2

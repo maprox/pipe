@@ -89,7 +89,7 @@ function getMask($key, $flag)
  */
 function isProcessRunning($mask)
 {
-	$mask = "[p]ython.*pipe_server_mask=$mask";
+	$mask = "[p]ython.*pipe_process_mask=$mask";
 	$output = shell_exec("sudo pgrep -f $mask 2>&1");
 	return $output != NULL;
 }
@@ -100,7 +100,7 @@ function isProcessRunning($mask)
  */
 function killProcess($mask)
 {
-	$mask = "[p]ython.*pipe_server_mask=$mask";
+	$mask = "[p]ython.*pipe_process_mask=$mask";
 
 	print("Stopping... ");
 	$command = "sudo pkill -f $mask 2>&1";
@@ -115,7 +115,7 @@ function killProcess($mask)
  */
 function killAll()
 {
-	$mask = "[p]ython.*pipe_server_mask=";
+	$mask = "[p]ython.*pipe_process_mask=";
 
 	print("Stopping all processes... ");
 	$command = "sudo pkill -f $mask 2>&1";

@@ -36,7 +36,7 @@ options.add_option(
 
 options.add_option(
     "-m",
-    "--mask",
+    "--pipe_process_mask",
     dest="mask",
     help="Pipe process identifier",
     metavar="ProcessId",

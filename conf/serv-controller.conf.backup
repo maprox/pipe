@@ -1,0 +1,26 @@
+[general]
+port=0
+socketTimeout=0
+socketPacketLength=0
+socketDataMaxLength=0
+setDaemon=False
+pathStorage=redundant
+pathTrash=redundant
+
+[protocols]
+globalsat.tr600=
+globalsat.tr203=
+globalsat.tr206=
+globalsat.tr151=
+globalsat.gtr128=
+galileo.firmware0119=
+naviset.gt10=
+naviset.gt20=
+teltonika.fmxxxx=
+
+[imap]
+host=imap.gmail.com
+port=993
+username=observer@maprox.net
+password=QUcEHiuohe65o4upou4Y
+filter=(FROM "esbreceiver@yandex.ru" UNSEEN)

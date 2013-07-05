@@ -446,15 +446,31 @@ class AbstractHandler(object):
         }
 
         if command['command'] == 'configure':
-            config = self.getInitiationConfig(command['params'])
+            params = command['params']
+            config = self.getInitiationConfig(params)
             buffer = self.getInitiationData(config)
             if buffer is None:
                 commandStatus['status'] = lib.broker.COMMAND_STATUS_ERROR
                 commandStatus['data'] = 'Empty configuration buffer'
             else:
-                log.debug('Buffer: %s', buffer)
+                if isinstance(buffer, str):
+                    buffer = [{'message': buffer}]
+                for item in buffer:
+                    data = {
+                        'type': command['transport'],
+                        'send_to': params['phone'],
+                        'message': item['message'],
+                        'callback': 'Sms_Configure',
+                        'remaining': 1,
+                        'id_object': params['id_object'],
+                        'id_firm': params['id_firm']
+                    }
+                    broker.send([data],
+                        routing_key = 'work.process',
+                        exchangeName = 'n.work')
 
         routingKeyCommandUpdate = "production.mon.device.command.update"
-        broker.send([commandStatus], routing_key = routingKeyCommandUpdate)
+        broker.send([commandStatus],
+            routing_key = routingKeyCommandUpdate)
 
         return False

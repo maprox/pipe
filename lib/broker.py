@@ -39,8 +39,8 @@ class MessageBroker:
          @return:
         """
         self._exchanges = {
-            'mon.device': Exchange(
-                'mon.device', 'topic', durable = True)
+            'mon.device': Exchange('mon.device', 'topic', durable = True),
+            'n.work': Exchange('n.work', 'topic', durable = True)
         }
 
     def getRoutingKey(self, imei):
@@ -74,13 +74,17 @@ class MessageBroker:
         if not imei in self._commands: return None
         return self._commands[imei]
 
-    def send(self, packets, routing_key = None):
+    def send(self, packets, routing_key = None, exchangeName = None):
         """
          Sends packets to the message broker
          @param packets: list of dict
+         @param routing_key: str
+         @param exchangeName: str
          @return:
         """
         exchange = self._exchanges['mon.device']
+        if (exchangeName is not None) and (exchangeName in self._exchanges):
+            exchange = self._exchanges[exchangeName]
         with Connection(conf.amqpConnection) as conn:
             with conn.Producer(serializer = 'json') as producer:
                 log.debug('BROKER: Connected to %s' % conf.amqpConnection)

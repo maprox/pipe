@@ -15,7 +15,6 @@ from kernel.logger import log
 from kernel.config import conf
 from kernel.dispatcher import disp
 
-
 # ===========================================================================
 class ClientThread(BaseRequestHandler):
     """
@@ -119,11 +118,6 @@ class Server():
         self.server_thread.setDaemon(conf.setDaemon)
         self.server_thread.start()
         log.info("Server is started on port %s", self.port)
-
-        #Uncomment when talking with AMQP server in thread
-        #self.amqp_thread  = Thread(target = amqp_get_commands())
-        #self.amqp_thread.setDaemon(conf.setDaemon)
-        #self.amqp_thread.start()
 
     # -----------------------------
     def verify_request(self, request, client_address):

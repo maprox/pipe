@@ -2,8 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Server configuration module
-@copyright 2009-2012, Maprox LLC
-@author    sunsay <box@sunsay.ru>
+@copyright 2009-2013, Maprox LLC
 '''
 
 import sys
@@ -37,7 +36,7 @@ except Exception as E:
     exit(1)
 
 try:
-    conf.read(options.pipeconf);
+    conf.read(options.pipeconf)
 
     # pipe settings
     conf.pipeKey = conf.get("pipe", "key")

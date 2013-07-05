@@ -428,3 +428,6 @@ class AbstractHandler(object):
          AMQP thread initialization
         """
         log.debug('%s::initAmqpThread() / %s', cls, protocol)
+        # start message broker thread for receiving sms commands
+        from lib.broker import MessageBrokerThread
+        MessageBrokerThread(cls, protocol)

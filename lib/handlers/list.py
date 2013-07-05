@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Protocol handlers list
-@copyright 2009-2011, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
 from kernel.logger import log

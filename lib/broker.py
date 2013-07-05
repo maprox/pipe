@@ -5,9 +5,11 @@
 @copyright 2013, Maprox LLC
 '''
 
+from threading import Thread
 from kernel.config import conf
 from kernel.logger import log
 from kombu import Connection, Exchange, Queue
+
 import anyjson
 
 class MessageBroker:
@@ -220,7 +222,59 @@ class MessageBroker:
 
 class MessageBrokerThread:
     """
-     Message broker thread for receiving amqp commands
+     Message broker thread for receiving AMQP commands
     """
+
+    _protocolHandlerClass = None
+    _protocolAlias = None
+    _thread = None
+
+    def __init__(self, protocolHandlerClass, protocolAlias):
+        """
+         Creates broker thread for listening AMQP commands sent to
+         the specified protocol (usually for sms transport)
+         @param handlerClass: protocol handler class
+         @param protocolAlias: protocol alias
+        """
+        log.debug('%s::__init__()', self.__class__)
+        self._protocolHandlerClass = protocolHandlerClass
+        self._protocolAlias = protocolAlias
+        # starting amqp thread
+        self._thread = Thread(target = self.threadHandler)
+        self._thread.start()
+
+    def threadHandler(self):
+        """
+         Thread handler
+        """
+        while True:
+            log.debug('%s: Init the AMQP connection...', self.__class__)
+            commandExchange = Exchange('mon.device', 'topic', durable = True)
+            commandRoutingKey = 'production.mon.device.command.' + \
+                self._protocolAlias
+            commandQueue = Queue(
+                commandRoutingKey,
+                exchange = commandExchange,
+                routing_key = commandRoutingKey
+            )
+            with Connection(conf.amqpConnection) as conn:
+                log.debug('%s: Successfully connected to %s',
+                    self.__class__, conf.amqpConnection)
+                with conn.Consumer([commandQueue],
+                    callbacks = [self.onReceivedCommand]) as consumer:
+                    try:
+                        while True:
+                            conn.drain_events()
+                    except Exception as E:
+                        log.error('%s: Error! %s', self.__class__, E)
+
+    def onReceivedCommand(self, body, message):
+        """
+         Executes when command is received from queue
+         @param body: amqp message body
+         @param message: message instance
+        """
+        log.debug('%s: Received AMQP command = %s', self.__class__, body)
+        message.ack()
 
 broker = MessageBroker()

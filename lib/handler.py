@@ -427,5 +427,4 @@ class AbstractHandler(object):
         """
          AMQP thread initialization
         """
-        log.debug('%s::initAmqpThread()', cls)
-        print(protocol)
+        log.debug('%s::initAmqpThread() / %s', cls, protocol)

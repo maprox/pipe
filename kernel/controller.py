@@ -10,7 +10,6 @@ import kernel.pipe as pipe
 from kernel.config import conf
 from kernel.logger import log
 from kernel.dbmanager import db
-from lib.handlers.list import handlersList
 
 # ===========================================================================
 class Controller(object):
@@ -34,21 +33,27 @@ class Controller(object):
             store = pipe.Manager()
             for command in commands:
                 # controller is temporarily disabled
-                pass
-                #handler = 'lib.handlers.' + command['handler']
-                #for HandlerClass in handlersList:
-                #    if HandlerClass.__module__ == handler:
-                #        handler = HandlerClass(store, False)
-                #        handler.uid = command['uid']
-                #        function_name = 'processCommand' \
-                #          + command['action'][0].upper() \
-                #          + command['action'][1:]
-                #        log.debug('Command is: ' + function_name)
-                #        function = getattr(handler, function_name)
-                #        if 'value' in command:
-                #            function(command['id'], command['value'])
-                #        else:
-                #            function(command['id'], None)
+                handlerClassPath = 'lib.handlers.' + command['handler']
+                try:
+                    pkg = __import__(
+                        handlerClassPath, globals(), locals(), ['Handler']
+                    )
+                except Exception as E:
+                    log.error(E)
+                    continue
+                if hasattr(pkg, 'Handler'):
+                    HandlerClass = getattr(pkg, 'Handler')
+                    handler = HandlerClass(store, False)
+                    handler.uid = command['uid']
+                    function_name = 'processCommand' \
+                      + command['action'][0].upper() \
+                      + command['action'][1:]
+                    log.debug('Command is: ' + function_name)
+                    function = getattr(handler, function_name)
+                    if 'value' in command:
+                        function(command['id'], command['value'])
+                    else:
+                        function(command['id'], None)
         except Exception as E:
             log.critical(E)
 

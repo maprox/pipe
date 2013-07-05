@@ -42,7 +42,7 @@ function serviceStart($debug)
 		} else {
 			$params = '';
 		}
-		exec("cd $dir && sudo -u pipe python3.2 send.py $params >/dev/null &");
+		exec("cd $dir && sudo -u pipe python3 send.py $params >/dev/null &");
 		print "[OK]\n";
 }
 

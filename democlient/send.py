@@ -164,7 +164,14 @@ def movecar(packet):
                       'ext_battery_level': row['sensor_ext_battery_level'] \
                           if 'sensor_ext_battery_level' in row else None,
                       'ain0': row['ain0'] \
-                          if 'ain0' in row else None
+                          if 'ain0' in row else None,
+                      'latitude': row['latitude'],
+                      'longitude': row['longitude'],
+                      'altitude': row['altitude'],
+                      'speed': row['speed'],
+                      'azimuth': row['azimuth'],
+                      'sat_count': row['satellitescount'],
+                      'hdop': row['hdop']
                     }
 
                     odometer = row['sensor_odometer'] \
@@ -180,13 +187,6 @@ def movecar(packet):
                         'time': datetime.utcnow(),
                         'odometer': row['sensor_odometer']
                           if 'sensor_odometer' in row else None,
-                        'lat': row['latitude'],
-                        'lon': row['longitude'],
-                        'alt': row['altitude'],
-                        'speed': row['speed'],
-                        'azimuth': row['azimuth'],
-                        'satellitescount': row['satellitescount'],
-                        'hdop': row['hdop'],
                         'sensors': json.dumps(sensors)
                     }
 

@@ -1,16 +1,15 @@
 # -*- coding: utf8 -*-
 '''
 @project   Maprox <http://www.maprox.net>
-@info      ATrack AX5 firmware
+@info      Some device firmware
 @copyright 2013, Maprox LLC
 '''
 
 from lib.handlers.atrack.abstract import AtrackHandler
 
 class Handler(AtrackHandler):
-    """ ATrack. AX5 """
-    confSectionName = "atrack.ax5"
-
+    """ Manufacturer. Protocol """
+    pass
 
 # ===========================================================================
 # TESTS

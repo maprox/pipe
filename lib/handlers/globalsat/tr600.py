@@ -15,7 +15,6 @@ from lib.handlers.globalsat.abstract import GlobalsatHandler
 class Handler(GlobalsatHandler):
     """ Globalsat. TR-600 """
 
-    confSectionName = "globalsat.tr600"
     reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
 
     def translateConfigOptions(self, send, options):
@@ -54,9 +53,10 @@ class Handler(GlobalsatHandler):
         for char in data:
             value = data[char]
             if char == "n":
-                batteryLevel = self.formatBatteryLevel(value)
-                packet['batterylevel'] = batteryLevel # old version
-                sensor['int_battery_level'] = batteryLevel # new version
+                intBatteryLevel = self.formatBatteryLevel(value)
+                extBatteryVoltage = self.formatExtBatteryVoltage(value)
+                sensor['int_battery_level'] = intBatteryLevel
+                sensor['ext_battery_voltage'] = extBatteryVoltage
         packet['sensors'] = sensor
         return packet
 

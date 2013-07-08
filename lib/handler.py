@@ -30,9 +30,6 @@ class AbstractHandler(object):
     uid = False
     """ Uid of currently connected device """
 
-    confSectionName = "protocol.version"
-    """ Configuration section name """
-
     protocolAlias = None
     """ Protocol name in the central database """
 
@@ -391,8 +388,8 @@ class AbstractHandler(object):
          @param defaultValue: Default value if key is not found
          @return: mixed
         """
-        if conf.has_section(self.confSectionName):
-            section = conf[self.confSectionName]
+        if conf.has_section('settings'):
+            section = conf['settings']
             return section.get(key, defaultValue)
         return defaultValue
 

@@ -9,7 +9,7 @@ from lib.handlers.atrack.abstract import AtrackHandler
 
 class Handler(AtrackHandler):
     """ ATrack. AX5 """
-    confSectionName = "atrack.ax5"
+    pass
 
 # ===========================================================================
 # TESTS
@@ -24,5 +24,4 @@ class TestCase(unittest.TestCase):
 
     def test_config(self):
         h = self.handler
-        self.assertEqual(h.confSectionName, 'atrack.ax5')
         self.assertEqual(h.getConfigOption('positionReportPrefix', '@P'), '@P')

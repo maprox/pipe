@@ -488,8 +488,8 @@ class TestCase(unittest.TestCase):
         from configparser import ConfigParser
         conf = ConfigParser()
         conf.optionxform = str
-        conf.read('conf/serv-atrack.conf')
-        section = conf['atrack.ax5']
+        conf.read('conf/handlers/atrack.ax5.conf')
+        section = conf['settings']
         config = {}
         for key in section.keys():
             config[key] = section[key]

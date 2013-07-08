@@ -16,24 +16,6 @@ from kernel.commandline import options
 
 conf = ConfigParser()
 conf.optionxform = str
-try:
-    conf.read(options.handlerconf)
-
-    # server's base settings
-    if options.port:
-        conf.port = int(options.port)
-    else:
-        conf.port = conf.getint("general", "port")
-    conf.socketTimeout = conf.getint("general", "socketTimeout")
-    conf.socketPacketLength = conf.getint("general", "socketPacketLength")
-    conf.socketDataMaxLength = conf.getint("general", "socketDataMaxLength")
-    conf.setDaemon = conf.getboolean("general", "setDaemon")
-    conf.pathStorage = conf.get("general", "pathStorage")
-    conf.pathTrash = conf.get("general", "pathTrash")
-
-except Exception as E:
-    log.critical("Error reading " + options.handlerconf + ": %s", E)
-    exit(1)
 
 try:
     conf.read(options.pipeconf)
@@ -52,4 +34,23 @@ try:
 
 except Exception as E:
     log.critical("Error reading " + options.pipeconf + ": %s", E)
+    exit(1)
+
+try:
+    conf.read(options.handlerconf)
+
+    # server's base settings
+    if options.port:
+        conf.port = int(options.port)
+    else:
+        conf.port = conf.getint("general", "port")
+    conf.socketTimeout = conf.getint("general", "socketTimeout")
+    conf.socketPacketLength = conf.getint("general", "socketPacketLength")
+    conf.socketDataMaxLength = conf.getint("general", "socketDataMaxLength")
+    conf.setDaemon = conf.getboolean("general", "setDaemon")
+    conf.pathStorage = conf.get("general", "pathStorage")
+    conf.pathTrash = conf.get("general", "pathTrash")
+
+except Exception as E:
+    log.critical("Error reading " + options.handlerconf + ": %s", E)
     exit(1)

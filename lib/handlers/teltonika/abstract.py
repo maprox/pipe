@@ -353,7 +353,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(len(parts), 2)
         self.assertEqual(len(parts[0]), consts.SMS_BINARY_MAX_LENGTH)
         self.assertEqual(len(parts[1]), 32)
-    
+
     def test_processData(self):
         h = self.handler
         data = b'\x00\x0f012896001609129' +\
@@ -404,17 +404,17 @@ class TestCase(unittest.TestCase):
                b'\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01<\x94T' +\
                b'\xdc4\x00\x16B7\x80!#2@\x01\x18\x00\x00\x08\x00\x00\x00' +\
                b'\x00\x00\x00\x00\x00\x19\x00\x00\x1bb'
-               
+   
         h.processData(data)
         stored_packets = h.getStore().get_stored_packets()
-        
+
         self.assertEqual(len(stored_packets), 25)
         packet = stored_packets[0]
-        
+
         self.assertEqual(packet['uid'], '012896001609129')
         self.assertEqual(packet['altitude'], 291)
         self.assertEqual(packet['time'], '2013-02-01T10:15:20.510000')
-        
+
         self.assertEqual(packet['sensors']['sat_count'], 7)
         self.assertEqual(packet['sensors']['altitude'], 291)
         

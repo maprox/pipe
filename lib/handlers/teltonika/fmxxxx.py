@@ -9,7 +9,7 @@ from lib.handlers.teltonika.abstract import TeltonikaHandler
 
 class Handler(TeltonikaHandler):
     """ Teltonika. FMXXXX """
-    confSectionName = "teltonika.fmxxxx"
+    pass
 
 
 # ===========================================================================

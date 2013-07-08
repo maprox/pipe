@@ -26,8 +26,8 @@ class AtrackHandler(AbstractHandler):
          @return:
         """
         config = {}
-        if conf.has_section(self.confSectionName):
-            section = conf[self.confSectionName]
+        if conf.has_section('settings'):
+            section = conf['settings']
             for key in section.keys():
                 config[key] = section[key]
         self._packetsFactory = packets.PacketFactory(config)
@@ -142,8 +142,8 @@ class TestCase(unittest.TestCase):
         from configparser import ConfigParser
         conf = ConfigParser()
         conf.optionxform = str
-        conf.read('conf/serv-atrack.conf')
-        section = conf['atrack.ax5']
+        conf.read('conf/handlers/atrack.ax5.conf')
+        section = conf['settings']
         config = {}
         for key in section.keys():
             config[key] = section[key]

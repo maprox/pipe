@@ -24,7 +24,6 @@ class GlobalsatHandler(AbstractHandler):
      Base handler for Globalsat protocol
     """
 
-    confSectionName = "globalsat.protocolname"
     reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
     commandStart = "GSS,{0},3,0"
 
@@ -161,8 +160,8 @@ class GlobalsatHandler(AbstractHandler):
          for it's configuration parameters.
          By now we will read settings from server config file.
         """
-        if conf.has_section(self.confSectionName):
-            section = conf[self.confSectionName]
+        if conf.has_section('settings'):
+            section = conf['settings']
             self.reportFormat = section.get("defaultReportFormat", 
                 self.reportFormat)
         self.reportFormat = self.truncateChecksum(self.reportFormat)
@@ -287,17 +286,25 @@ class GlobalsatHandler(AbstractHandler):
         self.setPacketSensors(packet, sensor)
         return packet
 
+    def formatExtBatteryVoltage(self, value):
+        """
+         Get external battery voltage
+         @param value: string data from gps-tracker
+        """
+        if self.re_volts.match(value):
+            return float(self.re_volts.search(value).group(1))
+        else:
+            return 0
+
     def formatBatteryLevel(self, value):
         """
          Formats batterylevel into float
          @param value: string data from gps-tracker
         """
-        if (self.re_volts.match(value)):
-            return 1
-        elif (self.re_percents.match(value)):
-            return float(self.re_percents.search(value).group(1)) / 100
-        elif (self.re_number.match(value)):
-            return int(value) / 100
+        if self.re_percents.match(value):
+            return float(self.re_percents.search(value).group(1))
+        elif self.re_volts.match(value) or self.re_number.match(value):
+            return 100
         else:
             return 0
 

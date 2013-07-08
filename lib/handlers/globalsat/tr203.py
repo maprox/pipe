@@ -15,7 +15,6 @@ from lib.handlers.globalsat.abstract import GlobalsatHandler
 class Handler(GlobalsatHandler):
     """ Globalsat. TR-203 """
 
-    confSectionName = "globalsat.tr203"
     reportFormat = "SPRAB27GHKLMNO*U!"
 
     def __init__(self, store, thread):
@@ -58,9 +57,7 @@ class Handler(GlobalsatHandler):
         for char in data:
             value = data[char]
             if char == "N":
-                batteryLevel = self.formatBatteryLevel(value)
-                packet['batterylevel'] = batteryLevel # old version
-                sensor['int_battery_level'] = batteryLevel # new version
+                sensor['int_battery_level'] = self.formatBatteryLevel(value)
         packet['sensors'] = sensor
         return packet
 

@@ -9,7 +9,7 @@ from lib.handlers.naviset.abstract import NavisetHandler
 
 class Handler(NavisetHandler):
     """ Naviset. GT-20 """
-    confSectionName = "naviset.gt20"
+    pass
 
 
 # ===========================================================================

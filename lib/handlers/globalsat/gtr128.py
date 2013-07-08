@@ -15,7 +15,6 @@ from lib.handlers.globalsat.abstract import GlobalsatHandler
 class Handler(GlobalsatHandler):
     """ Globalsat. GTR-128/GTR-129 """
 
-    confSectionName = "globalsat.gtr128"
     reportFormat = "SPRXYAB27GHKLMnaic*U!"
 
     def translateConfigOptions(self, send, options):
@@ -51,9 +50,10 @@ class Handler(GlobalsatHandler):
             if char == "c":
                 sensor['gsm_signal_strength'] = float(value)
             if char == "n":
-                batteryLevel = self.formatBatteryLevel(value)
-                packet['batterylevel'] = batteryLevel # old version
-                sensor['int_battery_voltage'] = batteryLevel # new version
+                intBatteryLevel = self.formatBatteryLevel(value)
+                extBatteryVoltage = self.formatExtBatteryVoltage(value)
+                sensor['int_battery_level'] = intBatteryLevel
+                sensor['ext_battery_voltage'] = extBatteryVoltage
         packet['sensors'] = sensor
         return packet
 
@@ -109,6 +109,8 @@ class TestCase(unittest.TestCase):
         self.assertIsNotNone(m)
         packet = h.translate(m.groupdict())
         self.assertEqual(packet['uid'], "012896007472407")
+        self.assertEqual(packet['sensors']['ext_battery_voltage'], 13660)
+        self.assertEqual(packet['sensors']['int_battery_level'], 100)
 
     def test_bufferData(self):
         h = self.handler

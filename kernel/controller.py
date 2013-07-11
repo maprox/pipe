@@ -28,7 +28,7 @@ class Controller(object):
          Temp function for handler config rewrite
          @param path: config path
         """
-        log.debug('Configuration path: ' % path)
+        log.debug('Configuration path: %s' % path)
         conf.read(path)
         conf.port = conf.getint("general", "port")
         conf.socketTimeout = conf.getint("general", "socketTimeout")

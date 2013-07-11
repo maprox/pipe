@@ -23,6 +23,21 @@ class Controller(object):
         """
         log.debug('Controller::__init__')
 
+    def configRewrite(self, path):
+        """
+         Temp function for handler config rewrite
+         @param path: config path
+        """
+        log.debug('Configuration path: ' % path)
+        conf.read(path)
+        conf.port = conf.getint("general", "port")
+        conf.socketTimeout = conf.getint("general", "socketTimeout")
+        conf.socketPacketLength = conf.getint("general", "socketPacketLength")
+        conf.socketDataMaxLength = conf.getint("general", "socketDataMaxLength")
+        conf.setDaemon = conf.getboolean("general", "setDaemon")
+        conf.pathStorage = conf.get("general", "pathStorage")
+        conf.pathTrash = conf.get("general", "pathTrash")
+
     def run(self):
         """
          Starting check of execution commands
@@ -42,6 +57,10 @@ class Controller(object):
                     log.error(E)
                     continue
                 if hasattr(pkg, 'Handler'):
+                    # read config temporarily
+                    path = 'conf/handlers/' + command['handler'] + '.conf'
+                    self.configRewrite(path)
+
                     HandlerClass = getattr(pkg, 'Handler')
                     handler = HandlerClass(store, False)
                     handler.uid = command['uid']

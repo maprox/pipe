@@ -126,62 +126,6 @@ function killAll()
 }
 
 /**
- * Sends to Observer information about location of tracker servers
- * @param Array[] $trackers
- */
-function doConfigStart($trackers)
-{
-	$config = buildConfigArray($trackers);
-	foreach ($config as $host => $command) {
-		file_get_contents($command);
-	}
-}
-
-/**
- * Sends to Observer information about which trackers have stopped
- * @param Array[] $trackers
- */
-function doConfigStop($trackers)
-{
-	$config = buildConfigArray($trackers, true);
-	foreach ($config as $host => $command) {
-		file_get_contents($command);
-	}
-}
-
-/**
- * Sends to Observer information that all trackers have stopped
- */
-function doConfigStopAll()
-{
-	$config = buildConfigArray(getAllTrackers(), true);
-	foreach ($config as $host => $command) {
-		file_get_contents($command);
-	}
-}
-
-/**
- * Builds urls which would notufy Observer about trackers status
- * @param Array[] $trackers
- * @param Boolean $stop build stop command instead
- * @return String[]
- */
-function buildConfigArray($trackers, $stop = false)
-{
-	$return = array();
-	foreach ($trackers as $tracker => $data) {
-		$mask = getMask($tracker, 'config');
-		$port = $stop ? 0 : $data['port'];
-		if (empty($return[$data['config']])) {
-			$return[$data['config']] = "$data[config]host=$data[host]";
-		}
-		$return[$data['config']] .= "&tracker[$mask]=$tracker&port[$mask]=$port";
-	}
-
-	return $return;
-}
-
-/**
  * Start process
  */
 function startProcess($trackers, $flag)
@@ -247,7 +191,6 @@ function serviceStart($params)
 	}
 
 	startProcess($trackers, $params['flag']);
-	doConfigStart($trackers);
 }
 
 /**
@@ -257,7 +200,6 @@ function serviceStop($params)
 {
 	if ($params['stop'] == 'all') {
 		killAll();
-		doConfigStopAll();
 	} else {
 		if (empty($params['input'])) {
 			$trackers = getAllTrackers();
@@ -268,7 +210,6 @@ function serviceStop($params)
 			$mask = getMask($key, $params['flag']);
 			killProcess($mask);
 		}
-		doConfigStop($trackers);
 	}
 }
 

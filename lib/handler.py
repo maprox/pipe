@@ -18,7 +18,6 @@ from urllib.request import urlopen
 from lib.broker import broker
 import lib.broker
 import http.client
-from lib.ip import get_ip
 
 class AbstractHandler(object):
     """
@@ -27,11 +26,11 @@ class AbstractHandler(object):
     _buffer = None # buffer of the current dispatch loop (for storage save)
     _packetsFactory = None # packets factory link
 
+    hostNameNotSupported = False
+    """ False if protocol doesn't support dns hostname (only ip-address) """
+
     uid = False
     """ Uid of currently connected device """
-
-    protocolAlias = None
-    """ Protocol name in the central database """
 
     def __init__(self, store, clientThread):
         """
@@ -320,10 +319,8 @@ class AbstractHandler(object):
         self.dictCheckItem(data, 'identifier', '')
         # host and port part of input
         self.dictCheckItem(data, 'port', str(conf.port))
-        if 'host' not in data:
-            # host has exception calling dictCheckItem cause
-            # it will execute get_ip() even if 'host' is in data
-            data['host'] = str(get_ip())
+        self.dictCheckItem(data, 'host', conf.hostIp \
+            if self.hostNameNotSupported else conf.hostName)
         # device part of input
         self.dictCheckItem(data, 'device', {})
         self.dictCheckItem(data['device'], 'login', '')

@@ -71,8 +71,6 @@ function readTrackerConfig($name, $port = false)
 	if (!file_exists($file)) { return false; }
 
 	$return = array('pipeconf' => getPipeConf($name));
-	$return['config'] = readIni(WORKING_DIR . $return['pipeconf'], 'urlconfig');
-	$return['host'] = readIni(WORKING_DIR . $return['pipeconf'], 'host');
 
 	if ($port) {
 		$return['port'] = $port;

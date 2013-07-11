@@ -17,7 +17,6 @@ class Handler(TeltonikaHandler):
 # ===========================================================================
 
 import unittest
-from lib.ip import get_ip
 class TestCase(unittest.TestCase):
 
     def setUp(self):

@@ -9,7 +9,6 @@
 import os
 import binascii
 from struct import pack
-from lib.ip import get_ip
 
 from kernel.logger import log
 from kernel.config import conf
@@ -29,6 +28,9 @@ class TeltonikaHandler(AbstractHandler):
 
     # private buffer for headPacket data
     __headPacketRawData = None
+
+    hostNameNotSupported = True
+    """ False if protocol doesn't support dns hostname (only ip-address) """
 
     def initialization(self):
         """
@@ -184,7 +186,7 @@ class TeltonikaHandler(AbstractHandler):
         # TP-UD
         buffer += self.packString(data['device']['login'])
         buffer += self.packString(data['device']['password'])
-        buffer += self.packString(str(get_ip()))
+        buffer += self.packString(data['host'])
         buffer += pack('>H', data['port'])
         buffer += self.packString(data['gprs']['apn'])
         buffer += self.packString(data['gprs']['username'])
@@ -284,7 +286,7 @@ class TeltonikaHandler(AbstractHandler):
         packet.addParam(packets.CFG_DEEP_SLEEP_MODE, 0)
         packet.addParam(packets.CFG_SORTING, packets.CFG_SORTING_ASC)
         packet.addParam(packets.CFG_ACTIVE_DATA_LINK_TIMEOUT, 20)
-        packet.addParam(packets.CFG_TARGET_SERVER_IP_ADDRESS, str(get_ip()))
+        packet.addParam(packets.CFG_TARGET_SERVER_IP_ADDRESS, config['host'])
         packet.addParam(packets.CFG_TARGET_SERVER_PORT, str(config['port']))
         packet.addParam(packets.CFG_APN_NAME, config['gprs']['apn'])
         packet.addParam(packets.CFG_APN_USERNAME, config['gprs']['username'])

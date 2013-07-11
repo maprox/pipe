@@ -12,7 +12,6 @@ from struct import pack
 
 from kernel.logger import log
 from lib.handler import AbstractHandler
-from lib.ip import get_ip
 
 # ---------------------------------------------------------------------------
 

@@ -14,7 +14,6 @@ from kernel.config import conf
 from kernel.dbmanager import db
 from lib.handler import AbstractHandler
 from lib.geo import Geo
-from lib.ip import get_ip
 from urllib.parse import urlencode
 from urllib.request import urlopen
 

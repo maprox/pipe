@@ -24,13 +24,18 @@ try:
     conf.pipeKey = conf.get("pipe", "key")
     conf.pipeSetUrl = conf.get("pipe", "urlset")
     conf.pipeFinishUrl = conf.get("pipe", "urlfinish")
-    conf.pipeConfigUrl = conf.get("pipe", "urlconfig")
     conf.pipeRequestUrl = conf.get("pipe", "urlrequest")
-    conf.pipeRestUrl = conf.get("pipe", "urlrest")
     conf.redisHost = conf.get("redis", "host")
     conf.redisPort = int(conf.get("redis", "port"))
     conf.redisPassword = conf.get("redis", "password")
     conf.amqpConnection = conf.get("amqp", "connection")
+    conf.hostName = conf.get("pipe", "hostname")
+    conf.hostIp = conf.get("pipe", "hostip")
+    if not conf.hostIp:
+        from lib.ip import get_ip
+        conf.hostIp = get_ip()
+    if not conf.hostName:
+        conf.hostName = conf.hostIp
 
 except Exception as E:
     log.critical("Error reading " + options.pipeconf + ": %s", E)

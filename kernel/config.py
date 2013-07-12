@@ -36,6 +36,9 @@ try:
         conf.hostIp = get_ip()
     if not conf.hostName:
         conf.hostName = conf.hostIp
+    conf.environment = conf.get("pipe", "environment")
+    if not conf.environment:
+        conf.environment = 'production'
 
 except Exception as E:
     log.critical("Error reading " + options.pipeconf + ": %s", E)
@@ -45,7 +48,7 @@ try:
     conf.read(options.handlerconf)
 
     # server's base settings
-    if options.port:
+    if options.port and (options.port != '0'):
         conf.port = int(options.port)
     else:
         conf.port = conf.getint("general", "port")

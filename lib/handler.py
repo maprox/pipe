@@ -424,8 +424,8 @@ class AbstractHandler(object):
         """
         log.debug('%s::initAmqpThread() / %s', cls, protocol)
         # start message broker thread for receiving sms commands
-        #from lib.broker import MessageBrokerThread
-        #MessageBrokerThread(cls, protocol)
+        from lib.broker import MessageBrokerThread
+        MessageBrokerThread(cls, protocol)
 
     def processProtocolCommand(self, command):
         """
@@ -439,31 +439,41 @@ class AbstractHandler(object):
             "data": "Command was successfully received and processed"
         }
 
+        log.debug('Processing protocol command...')
         if command['command'] == 'configure':
+            config = command['config']
             params = command['params']
-            config = self.getInitiationConfig(params)
-            buffer = self.getInitiationData(config)
-            if buffer is None:
+            initiationConfig = self.getInitiationConfig(params)
+            initiationBuffer = self.getInitiationData(initiationConfig)
+            if initiationBuffer is None:
                 commandStatus['status'] = lib.broker.COMMAND_STATUS_ERROR
                 commandStatus['data'] = 'Empty configuration buffer'
             else:
-                if isinstance(buffer, str):
-                    buffer = [{'message': buffer}]
-                for item in buffer:
+                log.debug('Configuration data is prepared.')
+                if isinstance(initiationBuffer, str):
+                    initiationBuffer = [{'message': initiationBuffer}]
+                for item in initiationBuffer:
                     data = {
                         'type': command['transport'],
-                        'send_to': params['phone'],
+                        'send_to': config['address'],
                         'message': item['message'],
                         'callback': 'Sms_Configure',
-                        'remaining': 1,
-                        'id_object': params['id_object'],
-                        'id_firm': params['id_firm']
+                        'remaining': 1
                     }
+                    if 'id_object' in config:
+                        data['id_object'] = config['id_object']
+                    if 'id_firm' in config:
+                        data['id_firm'] = config['id_firm']
+                    if 'from' in config:
+                        data['params'] = {}
+                        data['params']['from'] = config['from']
+                    log.debug('Sending AMQP message to [work.process]...')
                     broker.send([data],
-                        routing_key = 'work.process',
+                        routing_key = 'n.work.work.process',
                         exchangeName = 'n.work')
 
-        routingKeyCommandUpdate = "production.mon.device.command.update"
+        log.debug('Sending AMQP message to [command.update]...')
+        routingKeyCommandUpdate = "mon.device.command.update"
         broker.send([commandStatus],
             routing_key = routingKeyCommandUpdate)
 

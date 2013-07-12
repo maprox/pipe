@@ -53,8 +53,7 @@ class MessageBroker:
             workerNum = imei[-1:].upper()
         if workerNum not in '0123456789':
             workerNum = '0'
-        routingKey = 'production.mon.device.' + \
-            'packet.create.worker%s' % workerNum
+        routingKey = 'mon.device.packet.create.worker%s' % workerNum
         return routingKey
 
     def getConnection(self, imei):
@@ -95,6 +94,7 @@ class MessageBroker:
                     if not routing_key:
                         rkey = self.getRoutingKey(uid)
 
+                    rkey = conf.environment + '.' + rkey
                     packet_queue = Queue(
                         rkey,
                         exchange = exchange,
@@ -139,8 +139,7 @@ class MessageBroker:
 
         log.debug("Sending answer: %s" % answer_update)
 
-        self.send([answer_update],
-            routing_key = "production.mon.device.command.update")
+        self.send([answer_update], routing_key = "mon.device.command.update")
 
         command['message'].ack()
 
@@ -166,8 +165,7 @@ class MessageBroker:
             "data": error
         }
 
-        self.send([error_update],
-            routing_key = "production.mon.device.command.update")
+        self.send([error_update], routing_key = "mon.device.command.update")
 
         command['message'].ack()
 
@@ -190,7 +188,7 @@ class MessageBroker:
         )
 
         conn = self.getConnection(imei)
-        routing_key = 'production.mon.device.command.' + str(imei)
+        routing_key = conf.environment + '.mon.device.command.' + str(imei)
         command_queue = Queue(
             routing_key,
             exchange = device_exchange,
@@ -265,7 +263,7 @@ class MessageBrokerThread:
         """
         while True:
             log.debug('%s: Init the AMQP connection...', self.__class__)
-            commandRoutingKey = 'production.mon.device.command.' + \
+            commandRoutingKey = conf.environment + '.mon.device.command.' + \
                 self._protocolAlias
             commandQueue = Queue(
                 commandRoutingKey,

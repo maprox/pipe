@@ -9,30 +9,13 @@ import time
 import socket
 from datetime import datetime
 from struct import unpack, pack
+from kernel.utils import *
 import lib.bits as bits
 import lib.crc16 as crc16
 from lib.packets import *   
 from lib.factory import AbstractPacketFactory
 
 # ---------------------------------------------------------------------------
-
-
-
-def dictCheckItem(data, name, value):
-    """
-     Checks if "name" is in "data" dict. If yes, returns data[name],
-     if no, returns default "value"
-     @param data: input dict
-     @param name: key of dict to check
-     @param value: value of dict item at key "name"
-    """
-    if not data:
-        return value
-    elif name not in data:
-        return value
-    else:
-        return data[name]
-
 
 class NavisetBase(BasePacket):
     """
@@ -1289,7 +1272,7 @@ class CommandConfigureOutputs(Command):
         @return:
         """
 
-        self.outputMode = int(dictCheckItem(params, 
+        self.outputMode = int(dictCheckItem(params,
             'outputMode', OUTPUT_TURN_OFF)
         )
         self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
@@ -2463,9 +2446,6 @@ class PacketFactory(AbstractPacketFactory):
             raise Exception('Class for %s is not found with number %s' 
                             % (data, number))
         return CLASS(data)
-
-
-
 
 import inspect
 import sys

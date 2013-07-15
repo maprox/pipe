@@ -248,10 +248,10 @@ class NavisetHandler(AbstractHandler):
             "configure_outputs": "CommandConfigureOutputs",
             "switch_security_mode": "CommandSwitchSecurityMode",
             "set_temporary_security_parameters": 
-            "CommandTemporarySecurityParameters",
+                "CommandTemporarySecurityParameters",
             "remove_track_from_buffer": "CommandRemoveTrackFromBuffer",
             "set_voice_connection_parameters": 
-            "CommandVoiceConnectionParameters",
+                "CommandVoiceConnectionParameters",
             "restart_tracker": "CommandRestart",
             "upgrade_software": "CommandSoftwareUpgrade",
             "get_image": "CommandGetImage",
@@ -261,7 +261,7 @@ class NavisetHandler(AbstractHandler):
             "switch_to_new_configuration_server": 
             "CommandSwitchToConfigurationServer",
             "toggle_sim_autoswitching":
-                "CommandAllowDisallowSimAutoswitching",
+                 "CommandAllowDisallowSimAutoswitching",
             "activate_digital_output": "CommandActivateDigitalOutput",
             "deactivate_digital_output": "CommandDeactivateDigitalOutput"
         }

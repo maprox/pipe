@@ -5,19 +5,31 @@
 @copyright 2013, Maprox LLC
 '''
 
-class AbstractPacketFactory:
+class AbstractFactory:
     """
-     Abstract packet factory
+     Abstract factory
     """
     config = None
 
     def __init__(self, config = None):
         """
-         Constructor of Packet Factory.
+         Constructor of Factory.
          @param params: Factory parameters
         """
         self.config = config or {}
 
+    def getInstance(self, data):
+        """
+          Returns a packet instance by supplied data
+          @param data: some data
+          @return: BinaryPacket
+        """
+        return None
+
+class AbstractPacketFactory(AbstractFactory):
+    """
+     Abstract packet factory
+    """
     def getPacketsFromBuffer(self, data = None):
         """
          Returns an array of BasePacket instances from data
@@ -33,9 +45,8 @@ class AbstractPacketFactory:
             if not data or len(data) == 0: break
         return packets
 
-    def getInstance(self, data):
-        """
-          Returns a packet instance by supplied data
-          @return: BinaryPacket
-        """
-        return None
+class AbstractCommandFactory(AbstractFactory):
+    """
+     Abstract command factory
+    """
+    pass

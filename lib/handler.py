@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Abstract class for all implemented protocols
-@copyright 2009-2012, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
 from datetime import datetime
@@ -16,6 +16,7 @@ from kernel.dbmanager import db
 from lib.storage import storage
 from urllib.request import urlopen
 from lib.broker import broker
+from kernel.utils import *
 import lib.broker
 import http.client
 
@@ -25,6 +26,7 @@ class AbstractHandler(object):
     """
     _buffer = None # buffer of the current dispatch loop (for storage save)
     _packetsFactory = None # packets factory link
+    _commandsFactory = None # commands factory link
 
     hostNameNotSupported = False
     """ False if protocol doesn't support dns hostname (only ip-address) """
@@ -298,16 +300,6 @@ class AbstractHandler(object):
             log.error('%s::sendImages():\n %s',
               self.__class__, result.getErrorsList())
 
-    @classmethod
-    def dictCheckItem(cls, data, name, value):
-        """
-         Checks if "name" is in "data" dict. If not, creates it with "value"
-         @param data: input dict
-         @param name: key of dict to check
-         @param value: value of dict item at key "name"
-        """
-        if name not in data: data[name] = value
-
     def getInitiationConfig(self, rawConfig):
         """
          Returns prepared initiation data object
@@ -316,20 +308,20 @@ class AbstractHandler(object):
         """
         data = rawConfig
         if isinstance(data, str): data = json.loads(data)
-        self.dictCheckItem(data, 'identifier', '')
+        dictSetItemIfNotSet(data, 'identifier', '')
         # host and port part of input
-        self.dictCheckItem(data, 'port', str(conf.port))
-        self.dictCheckItem(data, 'host', conf.hostIp \
+        dictSetItemIfNotSet(data, 'port', str(conf.port))
+        dictSetItemIfNotSet(data, 'host', conf.hostIp \
             if self.hostNameNotSupported else conf.hostName)
         # device part of input
-        self.dictCheckItem(data, 'device', {})
-        self.dictCheckItem(data['device'], 'login', '')
-        self.dictCheckItem(data['device'], 'password', '')
+        dictSetItemIfNotSet(data, 'device', {})
+        dictSetItemIfNotSet(data['device'], 'login', '')
+        dictSetItemIfNotSet(data['device'], 'password', '')
         # gprs part of input
-        self.dictCheckItem(data, 'gprs', {})
-        self.dictCheckItem(data['gprs'], 'apn', '')
-        self.dictCheckItem(data['gprs'], 'username', '')
-        self.dictCheckItem(data['gprs'], 'password', '')
+        dictSetItemIfNotSet(data, 'gprs', {})
+        dictSetItemIfNotSet(data['gprs'], 'apn', '')
+        dictSetItemIfNotSet(data['gprs'], 'username', '')
+        dictSetItemIfNotSet(data['gprs'], 'password', '')
         return data
 
     def getInitiationData(self, config):
@@ -440,6 +432,14 @@ class AbstractHandler(object):
         }
 
         log.debug('Processing protocol command...')
+        if self._commandsFactory:
+            try:
+                cmd = self._commandsFactory.getInstance(command)
+                if cmd and isinstance(cmd, Command):
+                    pass
+            except Exception as E:
+                log.error("processProtocolCommand error: %s", E)
+
         if command['command'] == 'configure':
             config = command['config']
             params = command['params']

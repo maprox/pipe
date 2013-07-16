@@ -22,3 +22,12 @@ def dictCheckItem(data, name, value):
     else:
         return data[name]
 
+def dictSetItemIfNotSet(data, name, value):
+    """
+     Checks if "name" is in "data" dict. If not, creates it with "value"
+     @param data: input dict
+     @param name: key of dict to check
+     @param value: value of dict item at key "name"
+    """
+    if name not in data: data[name] = value
+

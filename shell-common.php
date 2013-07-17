@@ -1,6 +1,15 @@
 <?php
 
 /**
+ * Returns true if script is running on linux machine
+ * @return bool
+ */
+function isLinux()
+{
+	return function_exists('posix_getuid');
+}
+
+/**
  * Arguments parsing
  * @param array $argv
  * @return array

@@ -24,6 +24,10 @@ include WORKING_DIR . 'shell-common.php';
  */
 function doInstall()
 {
+	if (!isLinux()) {
+		print "Install is not supported on windows!";
+		die();
+	}
 	shell_exec('sudo ln -s ' . __FILE__ . ' /etc/init.d/pipe-demo');
 	shell_exec('sudo chmod +x ' . __FILE__);
 	shell_exec('sudo update-rc.d pipe-demo defaults');
@@ -42,7 +46,11 @@ function serviceStart($debug)
 		} else {
 			$params = '';
 		}
-		exec("cd $dir && sudo -u pipe python3 send.py $params >/dev/null &");
+		if (isLinux()) {
+			exec("cd $dir && sudo -u pipe python3 send.py $params >/dev/null &");
+		} else {
+			exec("cd $dir && python3 send.py $params");
+		}
 		print "[OK]\n";
 }
 

@@ -46,7 +46,6 @@ try:
     urlParts = re.search('//(.+?)(/.+)', conf.pipeRestUrl)
     conf.restHost = urlParts.group(1)
     conf.restPath = urlParts.group(2)
-    conf.host = conf.get("tracker", "host")
 except Exception as E:
     logger.critical("Error reading " + options.pipeconf + ": " + E.message)
     exit(1)
@@ -87,6 +86,7 @@ def movecar(packet):
     from datetime import datetime
 
     while (True):
+        x = None
         try:
             for track in packet['track_files']:
                 logger.debug('OPEN: ' + track)
@@ -104,6 +104,7 @@ def movecar(packet):
                   delimiter=';'
                 )
                 for row in reader:
+                    x = row
                     dt = datetime.strptime(row['time'], "%Y-%m-%d %H:%M:%S")
                     curTime = time.mktime(dt.timetuple())
 
@@ -198,6 +199,7 @@ def movecar(packet):
                 time.sleep(interval)
         except Exception as E:
             logger.exception(E)
+            logger.debug(x)
 
 data = []
 

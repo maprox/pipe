@@ -40,16 +40,16 @@ function doInstall()
 function serviceStart($debug)
 {
 		print "Starting demo-server... ";
-		$dir = WORKING_DIR . 'democlient/';
 		if ($debug) {
-			$params = '-d navitech -p ../conf/pipe-debug.conf';
+			$params = '-d navitech -p conf/pipe-debug.conf';
 		} else {
 			$params = '';
 		}
 		if (isLinux()) {
-			exec("cd $dir && sudo -u pipe python3 send.py $params >/dev/null &");
+			exec("sudo -u pipe python3 demo.py $params >/dev/null &");
 		} else {
-			exec("cd $dir && python3 send.py $params");
+			$shell = new COM("WScript.Shell");
+			$shell->run("python3 demo.py $params", 0, false);
 		}
 		print "[OK]\n";
 }
@@ -60,13 +60,17 @@ function serviceStart($debug)
 function serviceStop($debug)
 {
 	if ($debug) {
-		$mask = "[p]ython.*send\.py.*debug";
+		$mask = "[p]ython.*demo\.py.*debug";
 	} else {
-		$mask = "[p]ython.*send\.py\s*$";
+		$mask = "[p]ython.*demo\.py\s*$";
 	}
 
 	print "Stopping... ";
 	$command = "sudo pkill -f $mask 2>&1";
+	if (!isLinux()) {
+		$command = "wmic Path win32_process Where " .
+			"\"CommandLine Like '%python% demo.py%'\" Call Terminate";
+	}
 	$output = shell_exec($command);
 	print_r($output);
 	print "[OK]\n";
@@ -77,21 +81,17 @@ function serviceStop($debug)
  */
 function serviceTest()
 {
-	$mask = "[p]ython.*send\.py";
-
+	if (!isLinux()) { return; }
+	$mask = "[p]ython.*demo\.py";
 	$output = shell_exec("sudo pgrep -f $mask 2>&1");
-
-	if ($output != NULL)
-	{
+	if ($output != NULL) {
 		print "Democlient is running\n";
-	}
-	else
-	{
+	} else {
 		print "Democlient is down\n";
 	}
 }
 
-print "Pipe-demo Starter v1.0.0\n";
+print "Pipe-demo Starter v2.0.0\n";
 
 // read input arguments
 $command = '';

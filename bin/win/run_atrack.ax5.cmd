@@ -1,2 +1,2 @@
 cd ../..
-python3.2 main.py -s conf/serv-atrack.conf -l conf/log-atrack.conf
+python3 main.py -c conf/handlers/atrack.ax5.conf -l conf/logs/log-atrack.conf

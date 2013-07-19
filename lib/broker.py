@@ -9,7 +9,7 @@ from threading import Thread
 from kernel.config import conf
 from kernel.logger import log
 from kombu import Connection, Exchange, Queue
-import anyjson
+import json
 
 COMMAND_STATUS_CREATED = 1
 COMMAND_STATUS_SUCCESS = 2
@@ -58,17 +58,32 @@ class MessageBroker:
 
     def getConnection(self, imei):
         """
-          Returns an AMQP connection handler
-          @param imei: imei of the device
+         Returns an AMQP connection handler
+         @param imei: imei of the device
         """
         if not imei in self._connections:
             self._connections[imei] = Connection(conf.amqpConnection)
         return self._connections[imei]
 
+    def storeCommand(self, command, message):
+        """
+         Stores command as current
+         @param command: Command object as dict or string
+         @param message: AMQP message instance
+         @return dict Command dict object
+        """
+        if isinstance(command, str):
+            command = json.loads(command)
+        self._commands[command["uid"]] = {
+            "message": message,
+            "content": command
+        }
+        return command
+
     def getCommand(self, imei):
         """
-          Returns an AMQP message from local buffer
-          @param imei: imei of the device
+         Returns an AMQP message from local buffer
+         @param imei: imei of the device
         """
         if not imei in self._commands: return None
         return self._commands[imei]
@@ -79,7 +94,6 @@ class MessageBroker:
          @param packets: list of dict
          @param routing_key: str
          @param exchangeName: str
-         @return:
         """
         exchange = self._exchanges['mon.device']
         if (exchangeName is not None) and (exchangeName in self._exchanges):
@@ -114,9 +128,12 @@ class MessageBroker:
                         log.debug('Message is sent via message broker')
         log.debug('BROKER: Disconnected')
 
-    def sendAmqpAnswer(self, imei, data):
+    def amqpCommandUpdate(self, imei, status, data):
         """
-          Response on amqp comand
+         Command update via message broker
+         @param imei: str Device identifier
+         @param status: int Command status
+         @param data: str Command data string
         """
         command = self.getCommand(imei)
         if not command:
@@ -124,8 +141,7 @@ class MessageBroker:
             return
 
         log.debug("Processing AMQP command answer")
-
-        guid = command['body']['guid']
+        guid = command['content']['guid']
 
         data_string = data
         if not isinstance(data, str):
@@ -133,12 +149,11 @@ class MessageBroker:
 
         answer_update = {
             "guid": guid,
-            "status": COMMAND_STATUS_SUCCESS,
+            "status": status,
             "data": data_string
         }
 
         log.debug("Sending answer: %s" % answer_update)
-
         self.send([answer_update], routing_key = "mon.device.command.update")
 
         command['message'].ack()
@@ -149,49 +164,35 @@ class MessageBroker:
         del self._connections[imei]
         del self._commands[imei]
 
-    def sendAmqpError(self, imei, data, error):
+    def sendAmqpAnswer(self, imei, data):
         """
-          Response on amqp comand
+         Response on amqp comand
+         @param imei: str Device identifier
+         @param data: str Command data
         """
-        command = self.getCommand(imei)
-        if not command:
-            log.debug("Error: no command found for %s!" % imei)
-            return
+        self.amqpCommandUpdate(imei, COMMAND_STATUS_SUCCESS, data)
 
-        guid = command['body']['guid']
-        error_update = {
-            "guid": guid,
-            "status": COMMAND_STATUS_ERROR,
-            "data": error
-        }
-
-        self.send([error_update], routing_key = "mon.device.command.update")
-
-        command['message'].ack()
-
-        conn = self.getConnection(imei)
-        conn.release()
-
-        del self._connections[imei]
-        del self._commands[imei]
+    def sendAmqpError(self, imei, command, error):
+        """
+         Response on amqp comand
+         @param imei: str Device identifier
+         @param command: dict Command initial params
+         @param error: str Command error string
+        """
+        self.amqpCommandUpdate(imei, COMMAND_STATUS_ERROR, error)
 
     def getCommands(self, imei):
         """
-        Receives packets from the message broker.
-        Runs until receives packet or timeout passes
-        @return: received packets
+         Receives packets from the message broker.
+         Runs until receives packet or timeout passes
+         @param imei: Device identifier
+         @return: received packets
         """
-        device_exchange = Exchange(
-            'maprox.mon.device',
-            'topic',
-            durable = True
-        )
-
         conn = self.getConnection(imei)
         routing_key = conf.environment + '.mon.device.command.' + str(imei)
         command_queue = Queue(
             routing_key,
-            exchange = device_exchange,
+            exchange = self._exchanges['mon.device'],
             routing_key = routing_key)
 
         with conn.Consumer([command_queue],
@@ -202,23 +203,19 @@ class MessageBroker:
                 pass
 
         command = self.getCommand(imei)
-        commandBody = None
-        if command and ('body' in command):
-            commandBody = command['body']
-        return commandBody
+        content = None
+        if command and ('content' in command):
+            content = command['content']
+        return content
 
     def onCommand(self, body, message):
         """
-          Callback on AMQP message receiving
+         Callback on AMQP message receiving
+         @param body: dict Message body
+         @param message: AMQP message object
         """
         log.debug("Got AMQP message %s" % body)
-        command = body
-        if type(body) == str:
-            command = anyjson.deserialize(body)
-        self._commands[command["uid"]] = {
-            "message": message,
-            "body": body
-        }
+        self.storeCommand(body, message)
 
 # --------------------------------------------------------------------
 
@@ -227,7 +224,6 @@ class MessageBrokerThread:
      Message broker thread for receiving AMQP commands
     """
 
-    _exchanges = None
     _protocolHandlerClass = None
     _protocolAlias = None
     _thread = None
@@ -242,20 +238,10 @@ class MessageBrokerThread:
         log.debug('%s::__init__()', self.__class__)
         self._protocolHandlerClass = protocolHandlerClass
         self._protocolAlias = protocolAlias
-        self.initExchanges()
         # starting amqp thread
         self._thread = Thread(target = self.threadHandler)
         self._thread.start()
 
-    def initExchanges(self):
-        """
-         Exchanges initialization
-         @return:
-        """
-        self._exchanges = {
-            'mon.device': Exchange(
-                'mon.device', 'topic', durable = True)
-        }
 
     def threadHandler(self):
         """
@@ -267,7 +253,7 @@ class MessageBrokerThread:
                 self._protocolAlias
             commandQueue = Queue(
                 commandRoutingKey,
-                exchange = self._exchanges['mon.device'],
+                exchange = broker._exchanges['mon.device'],
                 routing_key = commandRoutingKey
             )
             try:
@@ -290,13 +276,8 @@ class MessageBrokerThread:
         import kernel.pipe as pipe
         log.debug('%s: Received AMQP command = %s', self.__class__, body)
 
-        command = body
-        if type(body) == str:
-            command = anyjson.deserialize(body)
-
+        command = broker.storeCommand(body, message)
         handler = self._protocolHandlerClass(pipe.Manager(), False)
-        handler.processProtocolCommand(command)
-
-        message.ack()
+        handler.processCommand(command)
 
 broker = MessageBroker()

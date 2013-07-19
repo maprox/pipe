@@ -238,16 +238,6 @@ class GalileoHandler(AbstractHandler):
         """
         return pack('<BH', 2, crc)
 
-    def processCommandExecute(self, task, data):
-        """
-         Execute command for the device
-         @param task: id task
-         @param data: data dict()
-        """
-        log.info('Observer is sending a command: %s' % data)
-        self.sendCommand(data['command'])
-        self.processCloseTask(task, None)
-
     def getInitiationData(self, config):
         """
          Returns initialization data for SMS wich will be sent to device

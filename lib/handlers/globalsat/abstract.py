@@ -505,7 +505,7 @@ class GlobalsatHandler(AbstractHandler):
             commandText = "LH"
         return commandText
 
-    def processAmqpCommand(self, command):
+    def processCommand(self, command):
         """
          Processing AMQP command
          @param command: command
@@ -521,8 +521,7 @@ class GlobalsatHandler(AbstractHandler):
         commandText = self.getCommandTextByName(commandName, commandParams)
 
         if not commandText:
-            broker.sendAmqpError(self.uid, command,
-                "Command is not supported")
+            broker.sendAmqpError(self.uid, "Command is not supported")
             log.error("No command with name %s" % commandName)
             return
 
@@ -563,17 +562,6 @@ class GlobalsatHandler(AbstractHandler):
             current_db.startReadingSettings(task)
             self.sendCommand('N1(OO=02),L1(ALL)')
         self.processCloseTask(task, None)
-
-    def processCommandExecute(self, task, data):
-        """
-         Execute command for the device
-         @param task: id task
-         @param data: data dict()
-        """
-        log.info('Observer is sending a command:')
-        log.info(data)
-        self.sendCommand(data['command'])
-        self.processCloseTask(task)
 
     def processCommandSetOption(self, task, data):
         """

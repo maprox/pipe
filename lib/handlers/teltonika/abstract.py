@@ -24,12 +24,9 @@ class TeltonikaHandler(AbstractHandler):
     """
      Base handler for Teltonika FMXXXXX protocol
     """
-    _packetsFactory = packets.PacketFactory
+    __headPacketRawData = None # private buffer for headPacket data
 
-    # private buffer for headPacket data
-    __headPacketRawData = None
-
-    hostNameNotSupported = True
+    #hostNameNotSupported = True
     """ False if protocol doesn't support dns hostname (only ip-address) """
 
     def initialization(self):
@@ -153,16 +150,6 @@ class TeltonikaHandler(AbstractHandler):
             return b'\x01'
         else:
             return pack('>L', len(packet.AvlDataArray.items))
-
-    def processCommandExecute(self, task, data):
-        """
-         Execute command for the device
-         @param task: id task
-         @param data: data dict()
-        """
-        log.info('Observer is sending a command:')
-        log.info(data)
-        self.sendCommand(data['command'])
 
     @classmethod
     def packString(cls, value):

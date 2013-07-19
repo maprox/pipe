@@ -16,6 +16,7 @@ from kernel.dbmanager import db
 from lib.storage import storage
 from urllib.request import urlopen
 from lib.broker import broker
+from lib.commands import *
 from kernel.utils import *
 import lib.broker
 import http.client
@@ -24,12 +25,10 @@ class AbstractHandler(object):
     """
      Abstract class for all implemented protocols
     """
-    _buffer = None # buffer of the current dispatch loop (for storage save)
     _packetsFactory = None # packets factory link
     _commandsFactory = None # commands factory link
 
-    hostNameNotSupported = False
-    """ False if protocol doesn't support dns hostname (only ip-address) """
+    _buffer = None # buffer of the current dispatch loop (for storage save)
 
     uid = False
     """ Uid of currently connected device """
@@ -97,7 +96,7 @@ class AbstractHandler(object):
 
         if not self.needProcessCommands(): return self
 
-        self.processAmqpCommands()
+        self.processCommands()
 
         # try is now silently excepting all the errors
         # to avoid connection errors during testing
@@ -121,24 +120,100 @@ class AbstractHandler(object):
             log.error(E)
         return self
 
-    def processAmqpCommands(self):
+    def processCommands(self):
         """
          Processing AMQP commands for current device
         """
         try:
+            if not self._commandsFactory:
+                raise Exception("_commandsFactory is not defined!")
             commands = broker.getCommands(self.uid)
             if commands:
                 log.debug("Received commands are: %s" % commands)
-                self.processAmqpCommand(commands)
+                self.processCommand(commands)
         except Exception as E:
             log.error(E)
 
-    def processAmqpCommand(self, command):
+    def processCommand(self, command):
         """
          Processing AMQP command
          @param command: command
         """
-        pass
+        if not command:
+            log.error("Empty command description!")
+            return
+
+        log.debug("Processing AMQP command: %s " % command)
+        try:
+            if not self._commandsFactory:
+                raise Exception("_commandsFactory is not defined!")
+            commandName = command["command"]
+            commandInstance = self._commandsFactory.getInstance(command)
+            if commandInstance:
+                log.debug("Command class is %s: " % commandInstance.__class__)
+                self.sendCommand(commandInstance, command)
+            else:
+                broker.sendAmqpError(self.uid, "Command is not supported")
+                log.error("No command with name %s" % commandName)
+        except Exception as E:
+            log.error("Send command error is %s" % E)
+
+    def sendCommand(self, command, initialParameters = None):
+        """
+         Sends command to the handler
+         @param command: AbstractCommand instance
+         @param initialParameters: dict Initial command parameters
+        """
+        if not initialParameters:
+            raise Exception("Empty initial parameters!")
+
+        config = {} if "config" not in initialParameters \
+            else initialParameters["config"]
+        transport = initialParameters["transport"]
+
+        commandResult = {
+            "guid": initialParameters['guid'],
+            "status": lib.broker.COMMAND_STATUS_SUCCESS,
+            "data": "Command was successfully received and processed"
+        }
+
+        commandData = command.getData(transport)
+        if not isinstance(commandData, list):
+            commandData = [{"message": commandData}]
+
+        for item in commandData:
+            if not isinstance(item, dict):
+                item = {"message": item}
+            buffer = item["message"]
+            if transport == "tcp":
+                self.send(buffer)
+            elif transport == "sms":
+                data = {
+                    'type': transport,
+                    'message': buffer,
+                    'send_to': config['address'],
+                    'callback': config['callback'],
+                    'remaining': 1
+                }
+                if 'id_object' in config:
+                    data['id_object'] = config['id_object']
+                if 'id_firm' in config:
+                    data['id_firm'] = config['id_firm']
+                if 'from' in config:
+                    data['params'] = {}
+                    data['params']['from'] = config['from']
+                log.debug('Sending AMQP message to [work.process]...')
+                broker.send([data],
+                    routing_key = 'n.work.work.process',
+                    exchangeName = 'n.work')
+
+        if transport == "sms":
+            # immediate sending of command update message
+            log.debug('Sending AMQP message to [command.update]...')
+            broker.send([commandResult],
+                routing_key = "mon.device.command.update",
+                exchangeName = 'mon.device')
+
 
     def processRequest(self, data):
         """
@@ -231,6 +306,8 @@ class AbstractHandler(object):
         if thread:
             sock = thread.request
             sock.send(data)
+        else:
+            log.error("Handler thread is not found!")
         return self
 
     def store(self, packets):
@@ -264,7 +341,7 @@ class AbstractHandler(object):
          @param data: dict() data from gps-tracker
         """
         raise NotImplementedError(
-          "Not implemented Handler::translate() method")
+            "Not implemented Handler::translate() method")
 
     def translateConfig(self, data):
         """
@@ -272,7 +349,7 @@ class AbstractHandler(object):
          @param data: {string[]} data from gps-tracker
         """
         raise NotImplementedError(
-          "Not implemented Handler::translateConfig() method")
+            "Not implemented Handler::translateConfig() method")
 
     def sendImages(self, images):
         """
@@ -282,14 +359,14 @@ class AbstractHandler(object):
         if not self.uid:
             log.error('Cant send an image - self.uid is not defined!')
             return
-        imageslist = []
+        imagesList = []
         for image in images:
             image['content'] = base64.b64encode(image['content']).decode()
-            imageslist.append(image)
+            imagesList.append(image)
         observerPacket = {
           'uid': self.uid,
           'time': datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f'),
-          'images': imageslist
+          'images': imagesList
         }
         result = self.store(observerPacket)
         if (result.isSuccess()):
@@ -332,17 +409,6 @@ class AbstractHandler(object):
         """
         return None
 
-    def processCommandFormat(self, task, rawConfig):
-        """
-         Processing command to form config string
-         @param task: id task
-         @param rawConfig: request configuration
-        """
-        config = self.getInitiationConfig(rawConfig)
-        buffer = self.getInitiationData(config)
-        if buffer is not None:
-            self.processCloseTask(task, buffer)
-
     def processCommandProcessSms(self, task, data):
         """
          Processing of input sms-message
@@ -382,15 +448,6 @@ class AbstractHandler(object):
             return section.get(key, defaultValue)
         return defaultValue
 
-    def processCommandExecute(self, task, data):
-        """
-         Execute command for the device
-         @param task: id task
-         @param data: data dict()
-        """
-        log.info('processCommandExecute not implemented!')
-        return self.processCloseTask(task, None)
-
     def processCommandReadSettings(self, task, data):
         """
          Sending command to read all of device configuration
@@ -418,63 +475,3 @@ class AbstractHandler(object):
         # start message broker thread for receiving sms commands
         from lib.broker import MessageBrokerThread
         MessageBrokerThread(cls, protocol)
-
-    def processProtocolCommand(self, command):
-        """
-         Handling command to the protocol
-         @param command: dict
-         @return:
-        """
-        commandStatus = {
-            "guid": command['guid'],
-            "status": lib.broker.COMMAND_STATUS_SUCCESS,
-            "data": "Command was successfully received and processed"
-        }
-
-        log.debug('Processing protocol command...')
-        if self._commandsFactory:
-            try:
-                cmd = self._commandsFactory.getInstance(command)
-                if cmd and isinstance(cmd, Command):
-                    pass
-            except Exception as E:
-                log.error("processProtocolCommand error: %s", E)
-
-        if command['command'] == 'configure':
-            config = command['config']
-            params = command['params']
-            initiationConfig = self.getInitiationConfig(params)
-            initiationBuffer = self.getInitiationData(initiationConfig)
-            if initiationBuffer is None:
-                commandStatus['status'] = lib.broker.COMMAND_STATUS_ERROR
-                commandStatus['data'] = 'Empty configuration buffer'
-            else:
-                log.debug('Configuration data is prepared.')
-                if isinstance(initiationBuffer, str):
-                    initiationBuffer = [{'message': initiationBuffer}]
-                for item in initiationBuffer:
-                    data = {
-                        'type': command['transport'],
-                        'send_to': config['address'],
-                        'message': item['message'],
-                        'callback': 'Sms_Configure',
-                        'remaining': 1
-                    }
-                    if 'id_object' in config:
-                        data['id_object'] = config['id_object']
-                    if 'id_firm' in config:
-                        data['id_firm'] = config['id_firm']
-                    if 'from' in config:
-                        data['params'] = {}
-                        data['params']['from'] = config['from']
-                    log.debug('Sending AMQP message to [work.process]...')
-                    broker.send([data],
-                        routing_key = 'n.work.work.process',
-                        exchangeName = 'n.work')
-
-        log.debug('Sending AMQP message to [command.update]...')
-        routingKeyCommandUpdate = "mon.device.command.update"
-        broker.send([commandStatus],
-            routing_key = routingKeyCommandUpdate)
-
-        return False

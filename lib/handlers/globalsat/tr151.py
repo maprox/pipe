@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Globalsat TR-151
-@copyright 2009-2012, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
 import re
@@ -10,12 +10,8 @@ import json
 from datetime import datetime
 
 from kernel.logger import log
-from kernel.config import conf
-from kernel.dbmanager import db
 from lib.handler import AbstractHandler
 from lib.geo import Geo
-from urllib.parse import urlencode
-from urllib.request import urlopen
 
 
 class Handler(AbstractHandler):

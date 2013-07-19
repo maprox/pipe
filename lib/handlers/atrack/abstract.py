@@ -18,8 +18,6 @@ class AtrackHandler(AbstractHandler):
     """
      Base handler for ATrack protocol
     """
-    _packetsFactory = packets.PacketFactory
-
     def initialization(self):
         """
          Initialization of the handler

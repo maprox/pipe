@@ -5,6 +5,10 @@
 @copyright 2013, Maprox LLC
 '''
 
+from lib.commands import *
+
+# ---------------------------------------------------------------------------
+
 class AbstractFactory:
     """
      Abstract factory
@@ -26,6 +30,8 @@ class AbstractFactory:
         """
         return None
 
+# ---------------------------------------------------------------------------
+
 class AbstractPacketFactory(AbstractFactory):
     """
      Abstract packet factory
@@ -45,8 +51,26 @@ class AbstractPacketFactory(AbstractFactory):
             if not data or len(data) == 0: break
         return packets
 
+# ---------------------------------------------------------------------------
+
 class AbstractCommandFactory(AbstractFactory):
     """
      Abstract command factory
     """
-    pass
+    module = None
+
+    def getInstance(self, data):
+        """
+          Returns a command instance by supplied data
+          @param data: dict command description
+          @return: AbstractCommand
+        """
+        if not data or not self.module:
+            return None
+
+        commandClassName = getCommandClassByAlias(data["command"], self.module)
+        if commandClassName:
+            params = {} if not "params" in data else data["params"]
+            return commandClassName(params)
+        else:
+            return None

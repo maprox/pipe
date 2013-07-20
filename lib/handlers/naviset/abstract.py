@@ -171,22 +171,6 @@ class NavisetHandler(AbstractHandler):
         """
         return b'\x01' + pack('<H', packet.checksum)
 
-    def getInitiationData(self, config):
-        """
-         Returns initialization data for SMS wich will be sent to device
-         @param config: config dict
-         @return: array of dict or dict
-        """
-        command0 = 'COM3 1234,' + config['host'] + ',' + str(config['port'])
-        command1 = 'COM13 1234,1,'+ config['gprs']['apn'] \
-            + ',' + config['gprs']['username'] \
-            + ',' + config['gprs']['password'] + '#'
-        return [{
-            "message": command0
-        }, {
-            "message": command1
-        }]
-
 # ===========================================================================
 # TESTS
 # ===========================================================================

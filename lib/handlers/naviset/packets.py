@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Naviset packets
 @copyright 2013, Maprox LLC
-'''
+"""
 
 import time
 import socket

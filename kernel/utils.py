@@ -5,6 +5,8 @@
 @copyright 2013, Maprox LLC
 '''
 
+from struct import pack
+
 # ---------------------------------------------------------------------------
 
 def dictCheckItem(data, name, value):
@@ -31,3 +33,15 @@ def dictSetItemIfNotSet(data, name, value):
     """
     if name not in data: data[name] = value
 
+def packString(value):
+    """
+     Packs a string into bytes variable as [L][VALUE], where [L] is a
+     one-byte length of the string and [VALUE] is encoded string
+     @param value: input str
+     @return: output bytes
+    """
+    strLen = len(value)
+    result = pack('>B', strLen)
+    if strLen > 0:
+        result += value.encode()
+    return result

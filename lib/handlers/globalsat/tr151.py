@@ -13,7 +13,6 @@ from kernel.logger import log
 from lib.handler import AbstractHandler
 from lib.geo import Geo
 
-
 class Handler(AbstractHandler):
     """ Globalsat. TR-151 """
 
@@ -273,23 +272,3 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet['altitude'], 120)
         self.assertEqual(packet['azimuth'], 24)
         self.assertEqual(packet['longitude'], 50.19060666666667)
-
-
-    def test_packetData(self):
-        import kernel.pipe as pipe
-        h = Handler(pipe.Manager(), None)
-        config = h.getInitiationConfig({
-            "identifier": "0123456789012345",
-            "host": "trx.maprox.net",
-            "port": 21200
-        })
-        data = h.getInitiationData(config)
-        self.assertEqual(data,
-            '?7,0123456789012345,7,21200,,,,,,trx.maprox.net!')
-        message = h.getTaskData(321312, data)
-        self.assertEqual(message, {
-            "id_action": 321312,
-            "data": json.dumps([{
-                 "message": data
-             }])
-        })

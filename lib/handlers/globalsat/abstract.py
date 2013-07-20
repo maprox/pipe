@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Globalsat base class for other Globalsat protocols
-@copyright 2009-2012, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
 import re
@@ -12,12 +12,11 @@ from datetime import datetime
 from kernel.logger import log
 from kernel.config import conf
 from kernel.dbmanager import db
-from urllib.parse import urlencode
-from urllib.request import urlopen
 from lib.handler import AbstractHandler
 from lib.geo import Geo
 
-from lib.broker import broker
+from lib.handlers.globalsat.commands import CommandFactory
+from lib.handlers.globalsat.packets import *
 
 class GlobalsatHandler(AbstractHandler):
     """
@@ -25,7 +24,6 @@ class GlobalsatHandler(AbstractHandler):
     """
 
     reportFormat = "SPRXYAB27GHKLMmnaefghio*U!"
-    commandStart = "GSS,{0},3,0"
 
     re_patterns = {
       'line': '(?P<line>(?P<head>GS\w){fields})\*(?P<checksum>\w+)!',
@@ -91,8 +89,6 @@ class GlobalsatHandler(AbstractHandler):
     re_percents = re.compile('(\d+)%')
     re_number = re.compile('(\d+)')
 
-    default_options = {}
-
     def __init__(self, store, thread):
         """ Constructor """
         AbstractHandler.__init__(self, store, thread)
@@ -100,56 +96,14 @@ class GlobalsatHandler(AbstractHandler):
         # Options for Globalsat
         self.__getReportFormat()
         self.__compileRegularExpressions()
-        self.default_options.update({
-          # SOS Report count
-          # 0 = None, 1 = SMS, 2 = TCP, 3 = SMS and TCP, 4 = UDP
-          'H0': '3',
-          # SOS Max number of SMS report for each phone number
-          'H1': '1',
-          # SOS Report interval
-          'H2': '30',
-          # SOS Max number of GPRS report (0=continues until
-          # dismissed via GSC,[IMEI],Na*QQ!)
-          'H3': '1',
-          # Don't wait acknowledgement from server, dont't send one
-          'A0': '0',
-          'A1': '0',
-          # Turn off voice monitoring
-          'V0': '0',
-          # Report settings through TCP
-          'OO': '02'
-        })
 
-    @classmethod
-    def truncateChecksum(cls, value):
+    def initialization(self):
         """
-         Truncates checksum part from value string
-         @param value: value string
-         @return: truncated string without checksum part
+         Initialization of the handler
+         @return:
         """
-        return re.sub('\*(\w{1,4})!', '', value)
-
-    @classmethod
-    def getChecksum(cls, data):
-        """
-         Returns the data checksum
-         @param data: data string
-         @return: hex string checksum
-        """
-        csum = 0
-        for c in data:
-            csum ^= ord(c)
-        hex_csum = "%02X" % csum
-        return hex_csum
-
-    @classmethod
-    def addChecksum(cls, data, fmt = "{d}*{c}!"):
-        """
-         Adds checksum to a data string
-         @param data: data string
-         @return: data, containing checksum part
-        """
-        return str.format(fmt, d = data, c = cls.getChecksum(data))
+        self._commandsFactory = CommandFactory()
+        return super(GlobalsatHandler, self).initialization()
 
     def __getReportFormat(self):
         """
@@ -164,7 +118,7 @@ class GlobalsatHandler(AbstractHandler):
             section = conf['settings']
             self.reportFormat = section.get("defaultReportFormat", 
                 self.reportFormat)
-        self.reportFormat = self.truncateChecksum(self.reportFormat)
+        self.reportFormat = truncateChecksum(self.reportFormat)
 
     def __compileRegularExpressions(self):
         """
@@ -395,8 +349,8 @@ class GlobalsatHandler(AbstractHandler):
             log.debug("Raw match found.")
             data_device = m.groupdict()
             cs1 = str.upper(data_device['checksum'])
-            cs2 = str.upper(self.getChecksum(data_device['line']))
-            if (cs1 == cs2):
+            cs2 = str.upper(getChecksum(data_device['line']))
+            if cs1 == cs2:
                 packetObserver = self.translate(data_device)
                 log.info(packetObserver)
                 self.uid = packetObserver['uid']
@@ -412,12 +366,12 @@ class GlobalsatHandler(AbstractHandler):
 
         return super(GlobalsatHandler, self).processData(initialData)
 
-    def sendCommand(self, commandText):
+    def sendInternalCommand(self, commandText):
         """
          Send command
         """
         command = 'GSC,' + self.uid + ',' + commandText
-        command = self.addChecksum(command)
+        command = addChecksum(command)
         log.debug('Command sent: ' + command)
         self.send(command.encode())
         return self
@@ -426,7 +380,7 @@ class GlobalsatHandler(AbstractHandler):
         """
          Send command to stop sos signal
         """
-        return self.sendCommand('Na')
+        return self.sendInternalCommand('Na')
 
     def processSettings(self, data):
         """
@@ -476,17 +430,6 @@ class GlobalsatHandler(AbstractHandler):
         else:
             log.error("Unknown data format for %s", mu.group('uid'))
 
-    def getInitiationData(self, config):
-        """
-         Returns initialization data for SMS wich will be sent to device
-         @param config: config dict
-         @return: array of dict or dict
-        """
-        string = self.commandStart.format(config['identifier'])
-        string += self.parseOptions(self.default_options, config)
-        string = self.addChecksum(string)
-        return string
-
     def getCommandTextByName(self, alias, params):
         """
           Returns command text according to command alias and params
@@ -505,51 +448,6 @@ class GlobalsatHandler(AbstractHandler):
             commandText = "LH"
         return commandText
 
-    def processCommand(self, command):
-        """
-         Processing AMQP command
-         @param command: command
-        """
-        if not command:
-            log.error("Empty command!")
-            return
-
-        log.debug("Processing AMQP command: %s " % command)
-
-        commandName = command["command"]
-        commandParams = command["params"]
-        commandText = self.getCommandTextByName(commandName, commandParams)
-
-        if not commandText:
-            broker.sendAmqpError(self.uid, "Command is not supported")
-            log.error("No command with name %s" % commandName)
-            return
-
-        self.sendCommand(commandText)
-
-        log.debug("Succesfully sent globalsat command: %s", commandName)
-        broker.sendAmqpAnswer(self.uid,
-            "Command was successfully received and processed")
-
-    def parseOptions(self, options, config):
-        """
-         Converts options to string
-         @param options: options
-         @param config: request data
-         @return: string
-        """
-        ret = ',O3=' + str(self.reportFormat + '*U!')
-        for key in options:
-            ret += ',' + key + '=' + options[key]
-
-        ret += ',D1=' + str(config['gprs']['apn'] or '')
-        ret += ',D2=' + str(config['gprs']['username'] or '')
-        ret += ',D3=' + str(config['gprs']['password'] or '')
-        ret += ',E0=' + str(config['host'] or '')
-        ret += ',E1=' + str(config['port'] or '')
-
-        return ret
-
     def processCommandReadSettings(self, task, data):
         """
          Sending command to read all of device configuration
@@ -560,7 +458,7 @@ class GlobalsatHandler(AbstractHandler):
         if not current_db.isReadingSettings() \
           and not current_db.isSettingsReady():
             current_db.startReadingSettings(task)
-            self.sendCommand('N1(OO=02),L1(ALL)')
+            self.sendInternalCommand('N1(OO=02),L1(ALL)')
         self.processCloseTask(task, None)
 
     def processCommandSetOption(self, task, data):
@@ -576,7 +474,7 @@ class GlobalsatHandler(AbstractHandler):
             if type(data) is dict:
                 data = [data]
             command = command + self.addCommandSetOptions(data)
-            command = self.addChecksum(command)
+            command = addChecksum(command)
             log.debug('Command sent: ' + command)
             self.send(command.encode())
             self.processCommandReadSettings(task, None)
@@ -624,23 +522,3 @@ class TestCase(unittest.TestCase):
 
     def setUp(self):
         pass
-
-    def test_packetData(self):
-        import kernel.pipe as pipe
-        h = GlobalsatHandler(pipe.Manager(), None)
-        config = h.getInitiationConfig({
-            "identifier": "0123456789012345",
-            "host": "trx.maprox.net",
-            "port": 21200
-        })
-        data = h.getInitiationData(config)
-        self.assertEqual(data, 'GSS,0123456789012345,3,0,' + \
-            'O3=SPRXYAB27GHKLMmnaefghio*U!,OO=02,V0=0,H2=30,H3=1,H0=3,H1=1,' + \
-            'A1=0,A0=0,D1=,D2=,D3=,E0=trx.maprox.net,E1=21200*08!')
-        message = h.getTaskData(321312, data)
-        self.assertEqual(message, {
-            "id_action": 321312,
-            "data": json.dumps([{
-                "message": data
-            }])
-        })

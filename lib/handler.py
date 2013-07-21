@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Abstract class for all implemented protocols
 @copyright 2009-2013, Maprox LLC
-'''
+"""
 
 from datetime import datetime
 import re
@@ -16,8 +16,6 @@ from kernel.dbmanager import db
 from lib.storage import storage
 from urllib.request import urlopen
 from lib.broker import broker
-from lib.commands import *
-from kernel.utils import *
 import lib.broker
 import http.client
 
@@ -120,6 +118,14 @@ class AbstractHandler(object):
             log.error(E)
         return self
 
+    def processProtocolPacket(self, protocolPacket):
+        """
+         Process protocol packet.
+         @type protocolPacket: packets.Packet
+         @param protocolPacket: Protocol packet
+        """
+        pass
+
     def processCommands(self):
         """
          Processing AMQP commands for current device
@@ -142,6 +148,9 @@ class AbstractHandler(object):
         if not command:
             log.error("Empty command description!")
             return
+
+        if (not self.uid) and ('uid' in command):
+            self.uid = command['uid']
 
         log.debug("Processing AMQP command: %s " % command)
         try:
@@ -171,12 +180,6 @@ class AbstractHandler(object):
             else initialParameters["config"]
         transport = initialParameters["transport"]
 
-        commandResult = {
-            "guid": initialParameters['guid'],
-            "status": lib.broker.COMMAND_STATUS_SUCCESS,
-            "data": "Command was successfully received and processed"
-        }
-
         commandData = command.getData(transport)
         if not isinstance(commandData, list):
             commandData = [{"message": commandData}]
@@ -192,9 +195,10 @@ class AbstractHandler(object):
                     'type': transport,
                     'message': buffer,
                     'send_to': config['address'],
-                    'callback': config['callback'],
                     'remaining': 1
                 }
+                if 'callback' in config:
+                    data['callback'] = config['callback']
                 if 'id_object' in config:
                     data['id_object'] = config['id_object']
                 if 'id_firm' in config:
@@ -209,11 +213,8 @@ class AbstractHandler(object):
 
         if transport == "sms":
             # immediate sending of command update message
-            log.debug('Sending AMQP message to [command.update]...')
-            broker.send([commandResult],
-                routing_key = "mon.device.command.update",
-                exchangeName = 'mon.device')
-
+            broker.sendAmqpAnswer(self.uid,
+                "Command was successfully received and processed")
 
     def processRequest(self, data):
         """
@@ -253,7 +254,7 @@ class AbstractHandler(object):
         """
          Close task
          @param task: Task identifier
-         @param result: Result data to send. [Optional]
+         @param data: Result data to send. [Optional]
         """
         message = self.getTaskData(task, data)
         params = urlencode(message)
@@ -274,7 +275,6 @@ class AbstractHandler(object):
     def recv(self):
         """
          Receiving data from socket
-         @param the_socket: Instance of a socket object
          @return: String representation of data
         """
 
@@ -317,7 +317,7 @@ class AbstractHandler(object):
          @return: Instance of lib.falcon.answer.FalconAnswer
         """
         result = self.getStore().send(packets)
-        if (result.isSuccess()):
+        if result.isSuccess():
             log.debug('%s::store() ... OK', self.__class__)
         else:
             errorsList = result.getErrorsList()
@@ -328,7 +328,7 @@ class AbstractHandler(object):
                 if 'params' in e:
                     params = e['params']
                     if len(params) > 1:
-                        savePackets != (params[1] == 404)
+                        savePackets = (params[1] != 404)
             if savePackets:
                 # send data to storage on error to save packets
                 storage.save(self.uid if self.uid else 'unknown',
@@ -369,45 +369,13 @@ class AbstractHandler(object):
           'images': imagesList
         }
         result = self.store(observerPacket)
-        if (result.isSuccess()):
+        if result.isSuccess():
             log.info('%s::sendImages(): Images have been sent.',
               self.__class__)
         else:
             # ? Error messages should be converted into readable format
             log.error('%s::sendImages():\n %s',
               self.__class__, result.getErrorsList())
-
-    def getInitiationConfig(self, rawConfig):
-        """
-         Returns prepared initiation data object
-         @param rawConfig: input json string or dict
-         @return: dict (json) object
-        """
-        data = rawConfig
-        if isinstance(data, str): data = json.loads(data)
-        dictSetItemIfNotSet(data, 'identifier', '')
-        # host and port part of input
-        dictSetItemIfNotSet(data, 'port', str(conf.port))
-        dictSetItemIfNotSet(data, 'host', conf.hostIp \
-            if self.hostNameNotSupported else conf.hostName)
-        # device part of input
-        dictSetItemIfNotSet(data, 'device', {})
-        dictSetItemIfNotSet(data['device'], 'login', '')
-        dictSetItemIfNotSet(data['device'], 'password', '')
-        # gprs part of input
-        dictSetItemIfNotSet(data, 'gprs', {})
-        dictSetItemIfNotSet(data['gprs'], 'apn', '')
-        dictSetItemIfNotSet(data['gprs'], 'username', '')
-        dictSetItemIfNotSet(data['gprs'], 'password', '')
-        return data
-
-    def getInitiationData(self, config):
-        """
-         Returns initialization data for SMS wich will be sent to device
-         @param config: config dict
-         @return: dict
-        """
-        return None
 
     def processCommandProcessSms(self, task, data):
         """

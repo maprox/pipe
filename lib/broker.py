@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Working with RabbitMQ
 @copyright 2013, Maprox LLC
-'''
+"""
 
 from threading import Thread
 from kernel.config import conf
@@ -172,11 +172,10 @@ class MessageBroker:
         """
         self.amqpCommandUpdate(imei, COMMAND_STATUS_SUCCESS, data)
 
-    def sendAmqpError(self, imei, command, error):
+    def sendAmqpError(self, imei, error):
         """
          Response on amqp comand
          @param imei: str Device identifier
-         @param command: dict Command initial params
          @param error: str Command error string
         """
         self.amqpCommandUpdate(imei, COMMAND_STATUS_ERROR, error)
@@ -195,8 +194,7 @@ class MessageBroker:
             exchange = self._exchanges['mon.device'],
             routing_key = routing_key)
 
-        with conn.Consumer([command_queue],
-                callbacks = [self.onCommand]) as consumer:
+        with conn.Consumer([command_queue], callbacks = [self.onCommand]):
             try:
                 conn.drain_events(timeout=1)
             except:
@@ -232,7 +230,7 @@ class MessageBrokerThread:
         """
          Creates broker thread for listening AMQP commands sent to
          the specified protocol (usually for sms transport)
-         @param handlerClass: protocol handler class
+         @param protocolHandlerClass: protocol handler class
          @param protocolAlias: protocol alias
         """
         log.debug('%s::__init__()', self.__class__)
@@ -259,7 +257,7 @@ class MessageBrokerThread:
             try:
                 with Connection(conf.amqpConnection) as conn:
                     with conn.Consumer([commandQueue],
-                        callbacks = [self.onCommand]) as consumer:
+                            callbacks = [self.onCommand]):
                         log.debug('%s: Successfully connected to %s',
                             self.__class__, conf.amqpConnection)
                         while True:

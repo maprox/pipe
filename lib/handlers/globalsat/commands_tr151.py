@@ -7,12 +7,11 @@
 
 from lib.commands import *
 from lib.factory import AbstractCommandFactory
-import lib.handlers.globalsat.packets as packets
-import lib.handlers.globalsat.commands as commands
 
 # ---------------------------------------------------------------------------
 
-class GloblasatTR151CommandConfigure(commands.GloblasatCommandConfigure):
+class GloblasatTR151CommandConfigure(AbstractCommandConfigure):
+    alias = 'configure'
 
     def getSmsData(self, config):
         """

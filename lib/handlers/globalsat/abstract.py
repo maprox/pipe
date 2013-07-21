@@ -89,36 +89,16 @@ class GlobalsatHandler(AbstractHandler):
     re_percents = re.compile('(\d+)%')
     re_number = re.compile('(\d+)')
 
-    def __init__(self, store, thread):
-        """ Constructor """
-        AbstractHandler.__init__(self, store, thread)
-
-        # Options for Globalsat
-        self.__getReportFormat()
-        self.__compileRegularExpressions()
-
     def initialization(self):
         """
          Initialization of the handler
          @return:
         """
         self._commandsFactory = CommandFactory()
+        self.reportFormat = truncateChecksum(
+            conf.get('settings', "reportFormat"))
+        self.__compileRegularExpressions()
         return super(GlobalsatHandler, self).initialization()
-
-    def __getReportFormat(self):
-        """
-         Gets the format for report message.
-         I suggest that in future here should be code, which would ask
-         database for settings of the connecting device (by uid)
-         and, if there is no settings, ask device (by socket connection)
-         for it's configuration parameters.
-         By now we will read settings from server config file.
-        """
-        if conf.has_section('settings'):
-            section = conf['settings']
-            self.reportFormat = section.get("defaultReportFormat", 
-                self.reportFormat)
-        self.reportFormat = truncateChecksum(self.reportFormat)
 
     def __compileRegularExpressions(self):
         """

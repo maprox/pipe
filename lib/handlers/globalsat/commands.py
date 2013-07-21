@@ -11,15 +11,7 @@ import lib.handlers.globalsat.packets as packets
 
 # ---------------------------------------------------------------------------
 
-class GlobalsatCommand(AbstractCommand):
-    """
-     Teltonka command packet
-    """
-    pass
-
-# ---------------------------------------------------------------------------
-
-class GloblasatCommandConfigure(GlobalsatCommand, AbstractCommandConfigure):
+class GloblasatCommandConfigure(AbstractCommandConfigure):
     alias = 'configure'
 
     hostNameNotSupported = False
@@ -32,9 +24,12 @@ class GloblasatCommandConfigure(GlobalsatCommand, AbstractCommandConfigure):
          @param config: request data
          @return: string
         """
+        initialConfig = conf.get('settings', 'initialConfig')
+        if initialConfig:
+            initialConfig = ',' + initialConfig
         ret = "GSS,{0},3,0".format(config['identifier'])
         ret += ',O3=' + conf.get('settings', 'reportFormat')
-        ret += conf.get('settings', 'initialConfig')
+        ret += initialConfig
         ret += ',D1=' + str(config['gprs']['apn'] or '')
         ret += ',D2=' + str(config['gprs']['username'] or '')
         ret += ',D3=' + str(config['gprs']['password'] or '')
@@ -86,7 +81,7 @@ class TestCase(unittest.TestCase):
         })
         self.assertEqual(cmd.getData('sms'), [{
             'message': 'GSS,0123456789012345,3,0,' + \
-                'O3=' + conf.get('settings', 'reportFormat') +\
+                'O3=' + conf.get('settings', 'reportFormat') + ',' +\
                 conf.get('settings', 'initialConfig') + \
-                ',D1=,D2=,D3=,E0=trx.maprox.net,E1=21202*26!'
+                ',D1=,D2=,D3=,E0=trx.maprox.net,E1=21202*0A!'
         }])

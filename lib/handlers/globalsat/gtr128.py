@@ -99,6 +99,7 @@ class TestCase(unittest.TestCase):
 
     def setUp(self):
         import kernel.pipe as pipe
+        conf.read('conf/handlers/globalsat.gtr128.conf')
         self.handler = Handler(pipe.Manager(), None)
 
     def test_inputData(self):

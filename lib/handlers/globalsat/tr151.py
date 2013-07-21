@@ -11,6 +11,7 @@ from datetime import datetime
 
 from kernel.logger import log
 from lib.handler import AbstractHandler
+from lib.handlers.globalsat.commands_tr151 import CommandFactory
 from lib.geo import Geo
 
 class Handler(AbstractHandler):
@@ -53,11 +54,12 @@ class Handler(AbstractHandler):
         'sms_format1': None
     }
 
-    def __init__(self, store, thread):
+    def initialization(self):
         """
-         Constructor
+         Initialization of the handler
+         @return:
         """
-        AbstractHandler.__init__(self, store, thread)
+        self._commandsFactory = CommandFactory()
         self.__compileRegularExpressions()
 
     def __getRegularExpression(self, expression, patterns):
@@ -205,22 +207,6 @@ class Handler(AbstractHandler):
                     sensor['sos'] = 1
         self.setPacketSensors(packet, sensor)
         return packet
-
-    def getInitiationData(self, config):
-        """
-         Returns initialization data for SMS wich will be sent to device
-         @param config: config dict
-         @return: array of dict or dict
-        """
-        return '?7,'\
-           + config['identifier'] + ',7,'\
-           + str(config['port']) + ','\
-           + config['gprs']['apn'] + ','\
-           + config['gprs']['username'] + ','\
-           + config['gprs']['password'] + ','\
-           + '' + ','\
-           + '' + ','\
-           + config['host'] + '!'
 
     def processCommandProcessSms(self, task, data):
         """

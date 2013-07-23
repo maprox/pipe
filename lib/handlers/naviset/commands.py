@@ -217,7 +217,7 @@ MAP_ENGINE_OPENSTREETMAP = 0
 MAP_ENGINE_GOOGLE = 0
 
 class NavisetCommandGetPosition(NavisetCommand):
-    alias = 'get_position'
+    alias = 'get_current_position'
 
     # private params
     __mapEngine = MAP_ENGINE_OPENSTREETMAP

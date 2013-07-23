@@ -1023,7 +1023,7 @@ class NavisetCommandConfigureOutputs(NavisetCommand):
         if transport == "sms":
             return [{
                 "message": "COM7 " + password + ',' +\
-                     str(self.outputNumber) + ',' + str(self.outputMode)
+                     str(self.outputNumber + 1) + ',' + str(self.outputMode)
             }]
         else:
             return super(NavisetCommandConfigureOutputs,

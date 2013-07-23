@@ -88,7 +88,6 @@ class NavisetCommandConfigure(NavisetCommand, AbstractCommandConfigure):
 
 # ---------------------------------------------------------------------------
 
-
 class NavisetCommandGetStatus(NavisetCommand):
     alias = 'get_status'
     _number = 0
@@ -939,8 +938,7 @@ class NavisetCommandConfigureOutputs(NavisetCommand):
         """
 
         self.outputMode = int(dictCheckItem(params,
-                                            'outputMode', OUTPUT_TURN_OFF)
-        )
+            'outputMode', OUTPUT_TURN_OFF))
         self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
         self.impulseLength = int(dictCheckItem(params, 'impulseLength', 0))
         self.pauseLength = int(dictCheckItem(params, 'pauseLength', 0))
@@ -1015,6 +1013,22 @@ class NavisetCommandConfigureOutputs(NavisetCommand):
         data += pack('<B', self.__repeatNumber)
         return data
 
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        password = '1234'
+        if transport == "sms":
+            return [{
+                "message": "COM7 " + password + ',' +\
+                     str(self.outputNumber) + ',' + str(self.outputMode)
+            }]
+        else:
+            return super(NavisetCommandConfigureOutputs,
+                self).getData(transport)
+
 class CommandDeactivateDigitalOutput(NavisetCommandConfigureOutputs):
     """
     Activates digital output by number, other parameters are not required
@@ -1027,7 +1041,6 @@ class CommandDeactivateDigitalOutput(NavisetCommandConfigureOutputs):
         @param params:
         @return:
         """
-
         self.outputMode = OUTPUT_TURN_OFF
         self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
         self.impulseLength = 0
@@ -1046,13 +1059,11 @@ class CommandActivateDigitalOutput(NavisetCommandConfigureOutputs):
         @param params:
         @return:
         """
-
         self.outputMode = OUTPUT_TURN_ON
         self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
         self.impulseLength = 0
         self.pauseLength = 0
         self.repeatNumber = 0
-
 
 SECURITY_MODE_IS_OFF = 0
 SECURITY_MODE_IS_ON = 1
@@ -1095,11 +1106,28 @@ class NavisetCommandSwitchSecurityMode(NavisetCommand):
         data += pack('<B', int(self.__securityMode))
         return data
 
-class NavisetCommandTemporarySecurityParameters(NavisetCommand):
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        password = '1234'
+        if transport == "sms":
+            if self.securityMode == 0:
+                return [{"message": "COM10 " + password}]
+            else:
+                return [{"message": "COM11 " + password}]
+        else:
+            return super(NavisetCommandSwitchSecurityMode,
+                         self).getData(transport)
+
+
+class NavisetCommandArmTimeParameters(NavisetCommand):
     """
-     Command for setting temporary security parameters
+     Command for setting arm time parameters
     """
-    alias = 'set_temporary_security_parameters'
+    alias = 'set_arm_time_parameters'
     _number = 15
 
     # private params
@@ -1160,6 +1188,23 @@ class NavisetCommandTemporarySecurityParameters(NavisetCommand):
         data += pack('<B', self.__exitTime)
         data += pack('<B', self.__memoryTime)
         return data
+
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        password = '1234'
+        if transport == "sms":
+            return [{
+                "message": "COM4 " + password + "," + str(self.enterTime) + \
+                    "," + str(self.exitTime) + "," + str(self.memoryTime)
+            }]
+        else:
+            return super(NavisetCommandArmTimeParameters,
+                self).getData(transport)
+
 
 class NavisetCommandVoiceConnectionParameters(NavisetCommand):
     """
@@ -1480,12 +1525,26 @@ class NavisetCommandSwitchToNewSim(NavisetCommand):
         data += pack('<B', int(self.__simNumber))
         return data
 
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        password = '1234'
+        if transport == "sms":
+            return [{
+                "message": "COM12 " + password + ',' + self.simNumber
+            }]
+        else:
+            return super(NavisetCommandSwitchToNewSim, self).getData(transport)
+
 
 class NavisetCommandSwitchToConfigurationServer(NavisetCommand):
     """
-     Change device GPRS params
+     Make device connect to specified configuration server
     """
-    alias = 'switch_to_new_configuration_server'
+    alias = 'connect_to_configuration_server'
     _number = 24
 
     # private params
@@ -1532,6 +1591,21 @@ class NavisetCommandSwitchToConfigurationServer(NavisetCommand):
         data += pack('<H', self.__port)
         return data
 
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        password = '1234'
+        if transport == "sms":
+            return [{
+                "message": "COM5 " + password + ',' + self.ip + ',' + self.port
+            }]
+        else:
+            return super(NavisetCommandSwitchToConfigurationServer,
+                self).getData(transport)
+
 # ---------------------------------------------------------------------------
 
 
@@ -1576,6 +1650,22 @@ class NavisetCommandAllowDisallowSimAutoswitching(NavisetCommand):
         data = b''
         data += pack('<B', int(self.__simAutoswitchingIsAllowed))
         return data
+
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        password = '1234'
+        if transport == "sms":
+            return [{
+                "message": "COM8 " + password + ',' +\
+                   str(self.simAutoswitchingIsAllowed)
+            }]
+        else:
+            return super(NavisetCommandAllowDisallowSimAutoswitching,
+                self).getData(transport)
 
 # ---------------------------------------------------------------------------
 
@@ -1788,8 +1878,9 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.idle, 11)
         self.assertEqual(cmd.courseDeviation, 18)
         self.assertEqual(cmd.checksum, 8476)
-        self.assertEqual(cmd.rawData, b"\x02\x0b\xb0\x19\x07'\x16\xef3"\
-                                      b"\x10jl\x11\xc9\x0fYk\x1a\x0b3\x12\x1c!")
+        self.assertEqual(cmd.rawData,
+            b"\x02\x0b\xb0\x19\x07'\x16\xef3" +
+            b"\x10jl\x11\xc9\x0fYk\x1a\x0b3\x12\x1c!")
 
         #change some data
 
@@ -1831,8 +1922,9 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.jump, 14)
         self.assertEqual(cmd.courseDeviation, 57)
         self.assertEqual(cmd.checksum, 50544)
-        self.assertEqual(cmd.rawData, b'\x02\x0b`\xd4\tb\x00!&7Ja\x0b'\
-                                      b'\x17\x1fk\xcc\x03G\x0e9p\xc5')
+        self.assertEqual(cmd.rawData,
+            b'\x02\x0b`\xd4\tb\x00!&7Ja\x0b' +
+            b'\x17\x1fk\xcc\x03G\x0e9p\xc5')
 
     def test_commandConfigureInputs(self):
         cmd = NavisetCommandConfigureInputs({
@@ -1918,11 +2010,11 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.rawData, b'\x02\x0e\x00\xd4`')
 
     def test_commandTemporarySecurityParameters(self):
-        cmd = NavisetCommandTemporarySecurityParameters({
+        cmd = NavisetCommandArmTimeParameters({
             "enterTime": 23,
             "exitTime": 52,
             "memoryTime": 13,
-            })
+        })
 
         self.assertEqual(cmd.number, 15)
 

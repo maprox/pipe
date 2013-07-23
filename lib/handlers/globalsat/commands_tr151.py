@@ -10,7 +10,7 @@ from lib.factory import AbstractCommandFactory
 
 # ---------------------------------------------------------------------------
 
-class GloblasatTR151CommandConfigure(AbstractCommandConfigure):
+class CommandConfigure(AbstractCommandConfigure):
     alias = 'configure'
 
     def getSmsData(self, config):
@@ -40,9 +40,27 @@ class GloblasatTR151CommandConfigure(AbstractCommandConfigure):
         """
         if transport == "sms":
             return self.getSmsData(self._initiationConfig)
-        else:
-            return super(GloblasatTR151CommandConfigure,
-                self).getData(transport)
+        return super(CommandConfigure, self).getData(transport)
+
+# ---------------------------------------------------------------------------
+
+class CommandIncommingSms(AbstractCommand):
+    alias = 'incoming_sms'
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        from kernel.pipe import Manager
+        from lib.handlers.globalsat.tr151 import Handler
+
+        # a small cheating, cause we don't set params
+        # but we process data buffer received by sms
+        h = Handler(Manager(), None)
+        buffer = params['messageText'].encode()
+        h.processDataBuffer(buffer, 'sms_format1')
 
 # ---------------------------------------------------------------------------
 

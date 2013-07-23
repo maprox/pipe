@@ -246,7 +246,7 @@ class MessageBrokerThread:
          Thread handler
         """
         while True:
-            log.debug('%s: Init the AMQP connection...', self.__class__)
+            log.debug('Init the AMQP connection...')
             commandRoutingKey = conf.environment + '.mon.device.command.' + \
                 self._protocolAlias
             commandQueue = Queue(
@@ -258,12 +258,14 @@ class MessageBrokerThread:
                 with Connection(conf.amqpConnection) as conn:
                     with conn.Consumer([commandQueue],
                             callbacks = [self.onCommand]):
-                        log.debug('%s: Successfully connected to %s',
-                            self.__class__, conf.amqpConnection)
+                        log.debug('Successfully connected to %s',
+                            conf.amqpConnection)
                         while True:
                             conn.drain_events()
             except Exception as E:
-                log.error('%s: AMQP Error - %s', self.__class__, E)
+                log.error('AMQP Error - %s', E)
+                import time
+                time.sleep(60) # sleep for 60 seconds after exception
 
     def onCommand(self, body, message):
         """
@@ -272,7 +274,7 @@ class MessageBrokerThread:
          @param message: message instance
         """
         import kernel.pipe as pipe
-        log.debug('%s: Received AMQP command = %s', self.__class__, body)
+        log.debug('Received AMQP command = %s', body)
 
         command = broker.storeCommand(body, message)
         handler = self._protocolHandlerClass(pipe.Manager(), False)

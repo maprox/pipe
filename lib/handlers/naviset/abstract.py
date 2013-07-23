@@ -1,20 +1,17 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Naviset base class for other Naviset firmware
 @copyright 2012-2013, Maprox LLC
-'''
+"""
 
-
-import json
 from datetime import datetime
 from struct import pack
-
-import time
 
 from kernel.logger import log
 from lib.handler import AbstractHandler
 import lib.handlers.naviset.packets as packets
+import lib.handlers.naviset.commands as commands
 
 from lib.broker import broker
 
@@ -24,17 +21,9 @@ class NavisetHandler(AbstractHandler):
     """
      Base handler for Naviset protocol
     """
-    _packetsFactory = packets.PacketFactory
-
-    # private buffer for headPacket data
-    __headPacketRawData = None
-
-    __imageResolution = packets.IMAGE_RESOLUTION_640x480
+    __headPacketRawData = None # private buffer for headPacket data
     __imageReceivingConfig = None
     __packNum = 0
-
-    hostNameNotSupported = True
-    """ False if protocol doesn't support dns hostname (only ip-address) """
 
     def initialization(self):
         """
@@ -42,6 +31,7 @@ class NavisetHandler(AbstractHandler):
          @return:
         """
         self._packetsFactory = packets.PacketFactory()
+        self._commandsFactory = commands.CommandFactory()
         return super(NavisetHandler, self).initialization()
 
     def processProtocolPacket(self, protocolPacket):
@@ -79,17 +69,6 @@ class NavisetHandler(AbstractHandler):
         self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
 
-    def sendCommand(self, command):
-        """
-         Sends command to the tracker
-         @param command: Command class
-        """
-        if isinstance(command, packets.Command):
-            log.info('Sending command "%s"...', command.number)
-            self.send(command.rawData)
-        else:
-            log.error('Incorrect command object')
-
     def receiveImage(self, packet):
         """
          Receives an image from tracker.
@@ -108,7 +87,7 @@ class NavisetHandler(AbstractHandler):
         #if diff.seconds > 60 * 5: # 5 minutes
         #    self.__imageReceivingConfig = None
         #    self.sendCommand(packets.CommandGetImage({
-        #        "type": self.__imageResolution
+        #        "type": commands.IMAGE_RESOLUTION_640x480
         #    }))
 
         if not isinstance(packet, packets.PacketAnswerCommandGetImage):
@@ -149,8 +128,8 @@ class NavisetHandler(AbstractHandler):
         # if connection breaks down
         config['lastChunkReceivedTime'] = datetime.now()
         # send confirmation
-        self.sendCommand(packets.CommandGetImage({
-            "type": packets.IMAGE_PACKET_CONFIRM_OK
+        self.sendCommand(commands.NavisetCommandGetImage({
+            "type": commands.IMAGE_PACKET_CONFIRM_OK
         }))
 
     def translate(self, protocolPacket):
@@ -192,94 +171,6 @@ class NavisetHandler(AbstractHandler):
         """
         return b'\x01' + pack('<H', packet.checksum)
 
-    def processCommandExecute(self, task, data):
-        """
-         Execute command for the device
-         @param task: id task
-         @param data: data dict()
-        """
-        log.info('Observer is sending a command:')
-        log.info(data)
-        self.sendCommand(data['command'])
-
-    def getInitiationData(self, config):
-        """
-         Returns initialization data for SMS wich will be sent to device
-         @param config: config dict
-         @return: array of dict or dict
-        """
-        command0 = 'COM3 1234,' + config['host'] + ',' + str(config['port'])
-        command1 = 'COM13 1234,1,'+ config['gprs']['apn'] \
-            + ',' + config['gprs']['username'] \
-            + ',' + config['gprs']['password'] + '#'
-        return [{
-            "message": command0
-        }, {
-            "message": command1
-        }]
-
-    def processAmqpCommand(self, command):
-        """
-         Processing AMQP command
-         @param command: command
-        """
-        if not command:
-            log.error("Empty command!")
-            return
-
-        log.debug("Processing AMQP command: %s " % command)
-        import lib.handlers.naviset.packets as packetsModule
-
-        amqp_name_mapper = {
-            "get_status": "CommandGetStatus",
-            "get_gsm_module_imei": "CommandGetImei",
-            "change_device_number": "CommandChangeDeviceNumber",
-            "change_device_password": "CommandChangeDevicePassword",
-            "set_gprs_parameters": "CommandSetGprsParams",
-            "get_registered_ibuttons": "CommandGetRegisteredIButtons",
-            "add_remove_keynumber": "CommandAddRemoveKeyNumber",
-            "get_phone_numbers": "CommandGetPhones",
-            "add_remove_phone_number": "CommandAddRemovePhoneNumber",
-            "set_protocol_type_structure": "CommandProtocolTypeStructure",
-            "get_tracker_parameters": "CommandGetTrackParams",
-            "set_filtration_drawing_parameters": 
-            "CommandFiltrationDrawingParameters",
-            "configure_inputs": "CommandConfigureInputs",
-            "configure_outputs": "CommandConfigureOutputs",
-            "switch_security_mode": "CommandSwitchSecurityMode",
-            "set_temporary_security_parameters": 
-            "CommandTemporarySecurityParameters",
-            "remove_track_from_buffer": "CommandRemoveTrackFromBuffer",
-            "set_voice_connection_parameters": 
-            "CommandVoiceConnectionParameters",
-            "restart_tracker": "CommandRestart",
-            "upgrade_software": "CommandSoftwareUpgrade",
-            "get_image": "CommandGetImage",
-            "get_configuration": "CommandGetConfiguration",
-            "write_configuration": "CommandWriteConfiguration",
-            "switch_to_new_sim": "CommandSwitchToNewSim",
-            "switch_to_new_configuration_server": 
-            "CommandSwitchToConfigurationServer",
-            "toggle_sim_autoswitching":
-                "CommandAllowDisallowSimAutoswitching",
-            "activate_digital_output": "CommandActivateDigitalOutput",
-            "deactivate_digital_output": "CommandDeactivateDigitalOutput"
-        }
-
-        try:
-            commandName = command["command"]
-            if commandName in amqp_name_mapper:
-                className = amqp_name_mapper[commandName]
-                CommandClass = packetsModule.__dict__[className]
-                log.debug("Command class is %s: " % CommandClass)
-                self.sendCommand(CommandClass(command["params"]))
-            else:
-                broker.sendAmqpError(self.uid, command,
-                    "Command is not supported")
-                log.error("No command with name %s" % commandName)
-        except Exception as E:
-            log.error("Send command error is %s" % E)
-
 # ===========================================================================
 # TESTS
 # ===========================================================================
@@ -291,29 +182,6 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         import kernel.pipe as pipe
         self.handler = NavisetHandler(pipe.TestManager(), None)
-
-    def test_packetData(self):
-        h = self.handler
-        config = h.getInitiationConfig({
-            "identifier": "0123456789012345",
-            "host": "trx.maprox.net",
-            "port": 21200
-        })
-        self.assertEqual(config['device'], {
-            'login': '',
-            'password': ''
-        })
-        #data = h.getInitiationData(config)
-        #self.assertEqual(data, [{
-        #    'message': 'COM3 1234,' + '' + ',21200'
-        #}, {
-        #    'message': 'COM13 1234,1,,,#'
-        #}])
-        #message = h.getTaskData(321312, data)
-        #self.assertEqual(message, {
-        #    "id_action": 321312,
-        #    "data": json.dumps(data)
-        #})
 
     def test_processData(self):
         h = self.handler
@@ -385,7 +253,6 @@ class TestCase(unittest.TestCase):
 
         h.processData(data)
         packets = h.getStore().get_stored_packets()
-
 
         self.assertEqual(len(packets), 12)
 

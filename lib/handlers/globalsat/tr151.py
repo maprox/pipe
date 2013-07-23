@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Globalsat TR-151
-@copyright 2009-2012, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
 import re
@@ -10,13 +10,9 @@ import json
 from datetime import datetime
 
 from kernel.logger import log
-from kernel.config import conf
-from kernel.dbmanager import db
 from lib.handler import AbstractHandler
+from lib.handlers.globalsat.commands_tr151 import CommandFactory
 from lib.geo import Geo
-from urllib.parse import urlencode
-from urllib.request import urlopen
-
 
 class Handler(AbstractHandler):
     """ Globalsat. TR-151 """
@@ -58,11 +54,12 @@ class Handler(AbstractHandler):
         'sms_format1': None
     }
 
-    def __init__(self, store, thread):
+    def initialization(self):
         """
-         Constructor
+         Initialization of the handler
+         @return:
         """
-        AbstractHandler.__init__(self, store, thread)
+        self._commandsFactory = CommandFactory()
         self.__compileRegularExpressions()
 
     def __getRegularExpression(self, expression, patterns):
@@ -211,22 +208,6 @@ class Handler(AbstractHandler):
         self.setPacketSensors(packet, sensor)
         return packet
 
-    def getInitiationData(self, config):
-        """
-         Returns initialization data for SMS wich will be sent to device
-         @param config: config dict
-         @return: array of dict or dict
-        """
-        return '?7,'\
-           + config['identifier'] + ',7,'\
-           + str(config['port']) + ','\
-           + config['gprs']['apn'] + ','\
-           + config['gprs']['username'] + ','\
-           + config['gprs']['password'] + ','\
-           + '' + ','\
-           + '' + ','\
-           + config['host'] + '!'
-
     def processCommandProcessSms(self, task, data):
         """
          Processing of input sms-message
@@ -277,23 +258,3 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet['altitude'], 120)
         self.assertEqual(packet['azimuth'], 24)
         self.assertEqual(packet['longitude'], 50.19060666666667)
-
-
-    def test_packetData(self):
-        import kernel.pipe as pipe
-        h = Handler(pipe.Manager(), None)
-        config = h.getInitiationConfig({
-            "identifier": "0123456789012345",
-            "host": "trx.maprox.net",
-            "port": 21200
-        })
-        data = h.getInitiationData(config)
-        self.assertEqual(data,
-            '?7,0123456789012345,7,21200,,,,,,trx.maprox.net!')
-        message = h.getTaskData(321312, data)
-        self.assertEqual(message, {
-            "id_action": 321312,
-            "data": json.dumps([{
-                 "message": data
-             }])
-        })

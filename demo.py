@@ -1,81 +1,33 @@
 # -*- coding: utf8 -*-
 '''
 @project   Maprox <http://www.maprox.net>
-@info      Demo car rest client
-@copyright 2009-2012, Maprox LLC
+@info      Demo cars client
+@copyright 2009-2013, Maprox LLC
 '''
 
-import re
-import socket
-import codecs
 import time
 import threading
-import logging
-import logging.handlers
 import json
 import os
 import glob
 import csv
-import http.client
-import urllib.parse
-import sys
-if sys.version_info < (3, 0):
-    from ConfigParser import ConfigParser
-else:
-    from configparser import ConfigParser
 
-from commandline import options
 from random import *
+from datetime import datetime
+from kernel.logger import log
+from lib.broker import broker
 
-# logger setup
-formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-hdlr = logging.handlers.RotatingFileHandler(os.getcwd() + '/send.log', 'a', \
-	5 * 1024 * 1024, 5)
-hdlr.setFormatter(formatter)
-logger = logging.getLogger('democlient')
-logger.addHandler(hdlr)
-logger.setLevel(logging.DEBUG)
-logger.debug('START!')
-
-# config
-conf = ConfigParser()
-try:
-    conf.read(options.pipeconf);
-    # pipe settings
-    conf.pipeRestUrl = conf.get("pipe", "urlrest")
-    urlParts = re.search('//(.+?)(/.+)', conf.pipeRestUrl)
-    conf.restHost = urlParts.group(1)
-    conf.restPath = urlParts.group(2)
-    conf.host = conf.get("tracker", "host")
-except Exception as E:
-    logger.critical("Error reading " + options.pipeconf + ": " + E.message)
-    exit(1)
-
-# Max sleep time
-if options.dir != 'navitech':
-    maxSleep = 600
-else:
-    maxSleep = 60
-    
-# Max parking time
+fmtDate = "%Y-%m-%d %H:%M:%S"
+maxSleep = 600
 maxParkingTime = 600
-
-# Min parking speed
 minParkingSpeed = 1
 
 def sendData(data):
     """
-     #Sends data by rest
-     #@param data: data string
+     Sends packets to the RabbitMQ
+     @param data: dict
     """
-    params = urllib.parse.urlencode(data)
-    headers = {
-      "Content-type": "application/x-www-form-urlencoded", 
-      "Accept": "text/plain"
-    }
-    conn = http.client.HTTPConnection(conf.restHost, 80)  
-    conn.request("POST", conf.restPath, params, headers)
-    response = conn.getresponse()
+    broker.send([data])
 
 def movecar(packet):
     """
@@ -83,20 +35,14 @@ def movecar(packet):
      @param packet: dict
      @return: string
     """
-
-    from datetime import datetime
-
     while (True):
         try:
             for track in packet['track_files']:
-                logger.debug('OPEN: ' + track)
+                log.debug('OPEN: ' + track)
                 # Read data from CSV file
-                # Prev packet time
-                prevTime = 0
-                # Last sleep time
-                lastSleep = 0
-                # Parking start time
-                parkingStartTime = 0
+                prevTime = 0 # Prev packet time
+                lastSleep = 0 # Last sleep time
+                parkingStartTime = 0 # Parking start time
                 # Column headers
                 reader = csv.DictReader(
                   open(track, newline='', encoding='utf-8'),
@@ -104,11 +50,14 @@ def movecar(packet):
                   delimiter=';'
                 )
                 for row in reader:
-                    dt = datetime.strptime(row['time'], "%Y-%m-%d %H:%M:%S")
+                    #log.debug(row)
+                    packetTime = row['time']
+                    #log.debug('time = %s', packetTime)
+                    dt = datetime.strptime(packetTime, fmtDate)
                     curTime = time.mktime(dt.timetuple())
 
-                    #logger.debug('Cur time ' + str(curTime))
-                    #logger.debug('Prev time ' + str(prevTime))
+                    #log.debug('Cur time ' + str(curTime))
+                    #log.debug('Prev time ' + str(prevTime))
 
                     # If first packet, send it now
                     if (prevTime == 0):
@@ -131,27 +80,29 @@ def movecar(packet):
                     # Save prev time
                     prevTime = curTime
 
-                    #logger.debug('speed ' + row['speed'] + ' state ' + row['state'])
+                    #log.debug('speed ' + row['speed'] + ' state ' + row['state'])
 
                     # Check if parking begin
-                    if (float(row['speed']) <= minParkingSpeed or int(row['state']) == 4):
+                    if (float(row['speed']) <= minParkingSpeed or \
+                            int(row['state']) == 4):
                         # Save parking start time
                         if (parkingStartTime == 0):
                             parkingStartTime = curTime
-                            #logger.debug('Set parking start time to cur')
+                            #log.debug('Set parking start time to cur')
 
                         if ((curTime - parkingStartTime) + sleep >= maxParkingTime):
                             #sleep = 0;
-                            #logger.debug('>>>Set sleep to 0 (continue)')
+                            #log.debug('>>>Set sleep to 0 (continue)')
                             continue
 
-                        #logger.debug('normal sleep')
+                        #log.debug('normal sleep')
                     # Check if moving begin
-                    if (float(row['speed']) > minParkingSpeed and int(row['state']) != 4):
-                        #logger.debug('Reset parking start time')
-                        parkingStartTime = 0;
+                    if (float(row['speed']) > minParkingSpeed \
+                            and int(row['state']) != 4):
+                        #log.debug('Reset parking start time')
+                        parkingStartTime = 0
 
-                    #logger.debug('Sleep for ' + str(sleep))
+                    #log.debug('Sleep for ' + str(sleep))
                     # sleep
                     time.sleep(sleep)
 
@@ -182,12 +133,17 @@ def movecar(packet):
 
                     # Data
                     data = {
-                        'device_key': packet['device_key'],
                         'uid': packet['uid'],
-                        'time': datetime.utcnow(),
-                        'odometer': row['sensor_odometer']
-                          if 'sensor_odometer' in row else None,
-                        'sensors': json.dumps(sensors)
+                        'time': datetime.utcnow().strftime(fmtDate),
+                        'sensors': sensors,
+                        # all of the fields above must be in sensors
+                        'latitude': row['latitude'],
+                        'longitude': row['longitude'],
+                        'altitude': row['altitude'],
+                        'speed': row['speed'],
+                        'azimuth': row['azimuth'],
+                        'satellitescount': row['satellitescount'],
+                        'hdop': row['hdop']
                     }
 
                     # Send data by post request
@@ -197,22 +153,37 @@ def movecar(packet):
                 interval = randint(120, 140)
                 time.sleep(interval)
         except Exception as E:
-            logger.exception(E)
+            log.exception(E)
+
+from configparser import ConfigParser
+from optparse import OptionParser
+options = OptionParser()
+options.add_option(
+    "-d",
+    "--dir",
+    dest="dir",
+    help="Demo tracks directory",
+    metavar="TracksDirectory",
+    default="demo/tracks"
+)
+(options, args) = options.parse_args()
 
 data = []
-
 os.chdir(options.dir)
 for files in glob.glob("*.conf"):
-	carconf = ConfigParser()
-	try:
-		carconf.read(files);
-		data.append({
-			'device_key': carconf.get("car", "key"),
-			'uid': carconf.get("car", "uid"),
-			'track_files': [files.replace('.conf', '.csv')]
-		})
-	except Exception as E:
-		logger.warn("Error preparing " + options.dir + "/" + files)
+    carconf = ConfigParser()
+    try:
+        carconf.read(files)
+        data.append({
+            'uid': carconf.get("car", "uid"),
+            'track_files': [files.replace('.conf', '.csv')]
+        })
+    except Exception as E:
+        log.warn("Error preparing " + options.dir + "/" + files)
 
 for i, t in enumerate(data):
-    threading.Thread(target=movecar, name="t" + str(i), args=[t]).start()
+    threading.Thread(
+        target = movecar,
+        name = "t" + str(i),
+        args = [t]
+    ).start()

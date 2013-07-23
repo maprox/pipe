@@ -11,6 +11,7 @@ from datetime import datetime
 from kernel.logger import log
 from kernel.config import conf
 from lib.handlers.globalsat.abstract import GlobalsatHandler
+from lib.handlers.globalsat.packets import *
 
 class Handler(GlobalsatHandler):
     """ Globalsat. GTR-128/GTR-129 """
@@ -98,6 +99,7 @@ class TestCase(unittest.TestCase):
 
     def setUp(self):
         import kernel.pipe as pipe
+        conf.read('conf/handlers/globalsat.gtr128.conf')
         self.handler = Handler(pipe.Manager(), None)
 
     def test_inputData(self):
@@ -132,7 +134,7 @@ class TestCase(unittest.TestCase):
         packet = h.translate(data_device)
         self.assertEqual(packet['uid'], "012896006644246")
         cs1 = str.upper(data_device['checksum'])
-        cs2 = str.upper(h.getChecksum(data_device['line']))
+        cs2 = str.upper(getChecksum(data_device['line']))
         self.assertNotEqual(cs1, cs2)
 
 

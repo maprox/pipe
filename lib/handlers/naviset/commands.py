@@ -1600,7 +1600,8 @@ class NavisetCommandSwitchToConfigurationServer(NavisetCommand):
         password = '1234'
         if transport == "sms":
             return [{
-                "message": "COM5 " + password + ',' + self.ip + ',' + self.port
+                "message": "COM5 " + password + ',' + \
+                    self.ip + ',' + str(self.port)
             }]
         else:
             return super(NavisetCommandSwitchToConfigurationServer,

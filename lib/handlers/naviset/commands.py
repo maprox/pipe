@@ -211,6 +211,52 @@ class NavisetCommandChangeDeviceNumber(NavisetCommand):
         data += pack('<H', self.__deviceNumber)
         return data
 
+# ---------------------------------------------------------------------------
+
+MAP_ENGINE_OPENSTREETMAP = 0
+MAP_ENGINE_GOOGLE = 0
+
+class NavisetCommandGetPosition(NavisetCommand):
+    alias = 'get_position'
+
+    # private params
+    __mapEngine = MAP_ENGINE_OPENSTREETMAP
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.mapEngine = params['mapEngine'] or MAP_ENGINE_OPENSTREETMAP
+
+    @property
+    def mapEngine(self):
+        if self._rebuild: self._build()
+        return self.__mapEngine
+
+    @mapEngine.setter
+    def mapEngine(self, value):
+        if 0 <= value <= 1:
+            self.__mapEngine = value
+            self._rebuild = True
+
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        password = '1234'
+        if transport == "sms":
+            return [{
+                "message": "COM6 " + password + ',' + str(self.mapEngine)
+            }]
+        else:
+            return super(NavisetCommandGetPosition, self).getData(transport)
+
+# ---------------------------------------------------------------------------
+
 class NavisetCommandChangeDevicePassword(NavisetCommand):
     """
     Change device password

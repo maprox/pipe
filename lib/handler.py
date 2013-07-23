@@ -413,9 +413,10 @@ class AbstractHandler(object):
                 data = {
                     'type': transport,
                     'message': buffer,
-                    'send_to': config['address'],
                     'remaining': 1
                 }
+                if 'address' in config:
+                    data['send_to'] = config['address']
                 if 'callback' in config:
                     data['callback'] = config['callback']
                 if 'id_object' in config:

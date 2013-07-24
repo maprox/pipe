@@ -5,11 +5,8 @@
 @copyright 2013, Maprox LLC
 """
 
-import time
-import socket
 from datetime import datetime
 from struct import unpack, pack
-from kernel.utils import *
 import lib.bits as bits
 import lib.crc16 as crc16
 from lib.packets import *   
@@ -489,9 +486,6 @@ class PacketAnswerCommandSwitchToConfigurationServer(PacketAnswer):
 class PacketAnswerCommandAllowDisallowSimAutoswitching(PacketAnswer): 
     _number = 25
 
-
-
-
 class PacketAnswerCommonAnswerUnknownIdentifier(PacketAnswer):
     """
     Common answer, sent when command identifier is unknown
@@ -610,15 +604,13 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
     def get_parameters_string(self):
         s = ''
         for i in range(0, 5):
-            s = s + ("phone%d=%s: incoming call %d incoming sms %d; " % 
-                     (i+1, 
-                      self.__phones[i], 
-                      self.__call_sms_calls[i], 
-                      self.__call_sms_smss[i]
-                      )
-            )
+            s = s + ("phone%d=%s: incoming call %d incoming sms %d; " % (
+                i + 1,
+                self.__phones[i],
+                self.__call_sms_calls[i],
+                self.__call_sms_smss[i]
+            ))
         return s
-
 
     @property
     def phones(self):
@@ -636,9 +628,11 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
         return self.__call_sms_smss
 
     def get_dict(self):
-        params_dict = {"phones": self.phones, 
+        params_dict = {
+            "phones": self.phones,
             "call_params": self.__call_sms_calls, 
-            "sms_params": self.__call_sms_smss}
+            "sms_params": self.__call_sms_smss
+        }
         return params_dict
 
     def _parseBody(self):
@@ -646,11 +640,18 @@ class PacketAnswerCommandGetPhones(PacketAnswer):
         buffer = self.body
         self._number = unpack('<B', buffer[:1])[0]
 
-        for i in range(0, 5):
-            self.__phones[i] = (buffer.decode("ascii")[i*11:(i+1)*11 - 1])
-            call_sms = unpack("<B", buffer[(i+1)*11-1:(i+1)*11])[0]
-            self.__call_sms_calls[i] = call_sms >> 4
-            self.__call_sms_smss[i] = call_sms & 15
+        index = 0
+        head = 1
+        while head < len(buffer):
+            try:
+                self.__phones[index] = buffer[head:head + 10].decode("ascii")
+            except:
+                self.__phones[index] = b'0000000000'
+            call_sms = unpack("<B", buffer[head + 10:head + 11])[0]
+            self.__call_sms_calls[index] = call_sms >> 4
+            self.__call_sms_smss[index] = call_sms & 15
+            head += 11
+            index += 1
 
 class PacketAnswerCommandGetTrackParams(PacketAnswer):
     """
@@ -890,8 +891,7 @@ class PacketAnswerCommandSwitchSecurityMode(PacketAnswer):
         super(PacketAnswerCommandSwitchSecurityMode, self)._parseBody()
         buffer = self.body
         self._number = unpack('<B', buffer[:1])[0]
-
-        self.__serviceMessage200 = unpack('<H', buffer[1:3])[0]   
+        self.__serviceMessage200 = unpack('<H', buffer[1:3])[0]
 
 class PacketAnswerCommandGetImage(PacketAnswer):
     """
@@ -1245,7 +1245,20 @@ class TestCase(unittest.TestCase):
         packets = self.factory.getPacketsFromBuffer(data)
         packet = packets[0]
         self.assertEqual(packet._number, 7)
-        self.assertEqual(packet.phones[3], '\x00\x00\x00\x00\x00'\
+        self.assertEqual(packet.phones[3], '\x00\x00\x00\x00\x00' +\
             '\x00\x00\x00\x00\x00')
         self.assertEqual(packet.call_sms_calls[4], 0)
         self.assertEqual(packet.call_sms_smss[2], 0)
+
+    def test_commandGetPhones2(self):
+        data = b'8\x80\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00' + \
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xd2\x02\x96' +\
+            b'I\x00\x00\x00\x00!+Q\x00\x00\x00\x00\x00\x00\x00\x00\x00' +\
+            b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00R*'
+        packets = self.factory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertEqual(packet._number, 7)
+        self.assertEqual(packet.phones[3], '\x00\x00\x00\x00\x00' + \
+            '\x00\x00\x00\x00\x00')
+        self.assertEqual(packet.call_sms_calls[4], 0)
+        self.assertEqual(packet.call_sms_smss[2], 1)

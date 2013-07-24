@@ -5,6 +5,7 @@
 @copyright 2013, Maprox LLC
 """
 
+import socket
 from lib.commands import *
 from lib.factory import AbstractCommandFactory
 from lib.handlers.naviset.packets import *
@@ -36,8 +37,8 @@ class NavisetCommand(AbstractCommand, NavisetBase):
         headerCode = 0x02
         if self._header != headerCode:
             raise Exception('Incorrect command packet! ' +\
-                            str(self._header) + ' (given) != ' +\
-                            str(headerCode) + ' (must be)')
+                str(self._header) + ' (given) != ' +\
+                str(headerCode) + ' (must be)')
 
     def _buildHead(self):
         data = b''
@@ -2235,3 +2236,14 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.getData('sms'), [{
             'message': 'COM0 1234'
         }])
+
+    def test_commandsNavisetCommandGetPhones(self):
+        cmd = self.factory.getInstance({
+            'command': 'get_phone_numbers',
+            "transport": "tcp",
+            "params": [],
+            "uid": "868204003057949",
+            "guid": "46dfba3b-82da-4a3a-a415-41d60617fa8f",
+            "user": -1
+        })
+        self.assertEqual(cmd.getData('tcp'), b'\x02\x07A\x12')

@@ -30,9 +30,9 @@ class NavisetHandler(AbstractHandler):
          Initialization of the handler
          @return:
         """
+        super(NavisetHandler, self).initialization()
         self._packetsFactory = packets.PacketFactory()
         self._commandsFactory = commands.CommandFactory()
-        return super(NavisetHandler, self).initialization()
 
     def processProtocolPacket(self, protocolPacket):
         """

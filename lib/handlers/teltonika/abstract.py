@@ -32,9 +32,9 @@ class TeltonikaHandler(AbstractHandler):
          Initialization of the handler
          @return:
         """
+        super(TeltonikaHandler, self).initialization()
         self._packetsFactory = packets.PacketFactory()
         self._commandsFactory = commands.CommandFactory()
-        return super(TeltonikaHandler, self).initialization()
 
     def processProtocolPacket(self, protocolPacket):
         """

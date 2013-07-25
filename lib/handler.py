@@ -40,8 +40,6 @@ class AbstractHandler(object):
         self.__store = store
         self.__thread = clientThread
         self.initialization()
-        log.debug('%s::__init__(handlerId = %s)',
-            self.__class__, self.handlerId)
 
     def __del__(self):
         """
@@ -55,6 +53,7 @@ class AbstractHandler(object):
          Initialization of the handler
          @return:
         """
+        log.debug('[%s] initialization', self.handlerId)
         broker.handlerInitialize(self)
 
     def finalization(self):
@@ -63,6 +62,7 @@ class AbstractHandler(object):
          Free allocated resources.
          @return:
         """
+        log.debug('[%s] finalization', self.handlerId)
         broker.handlerFinalize(self)
 
     @property

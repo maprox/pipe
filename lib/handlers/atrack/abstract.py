@@ -23,13 +23,13 @@ class AtrackHandler(AbstractHandler):
          Initialization of the handler
          @return:
         """
+        super(AtrackHandler, self).initialization()
         config = {}
         if conf.has_section('settings'):
             section = conf['settings']
             for key in section.keys():
                 config[key] = section[key]
         self._packetsFactory = packets.PacketFactory(config)
-        return super(AtrackHandler, self).initialization()
 
     def processProtocolPacket(self, protocolPacket):
         """

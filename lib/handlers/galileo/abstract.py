@@ -31,8 +31,8 @@ class GalileoHandler(AbstractHandler):
          Initialization of the handler
          @return:
         """
+        super(GalileoHandler, self).initialization()
         self._packetsFactory = packets.PacketFactory()
-        return super(GalileoHandler, self).initialization()
 
     def needCommandProcessing(self):
         """

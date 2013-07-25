@@ -94,11 +94,11 @@ class GlobalsatHandler(AbstractHandler):
          Initialization of the handler
          @return:
         """
+        super(GlobalsatHandler, self).initialization()
         self._commandsFactory = CommandFactory()
         self.reportFormat = truncateChecksum(
             conf.get('settings', "reportFormat"))
         self.__compileRegularExpressions()
-        return super(GlobalsatHandler, self).initialization()
 
     def __compileRegularExpressions(self):
         """

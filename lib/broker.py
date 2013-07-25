@@ -54,10 +54,9 @@ class MessageBroker:
          Returns an AMQP connection handler
          @param handler: AbstractHandler
         """
-        if not handler.handlerId in self._connections:
-            self._connections[handler.handlerId] = Connection(
-                conf.amqpConnection)
-        return self._connections[handler.handlerId]
+        if not handler.uid in self._connections:
+            self._connections[handler.uid] = Connection(conf.amqpConnection)
+        return self._connections[handler.uid]
 
     def releaseHandlerConnection(self, handler):
         """
@@ -65,14 +64,14 @@ class MessageBroker:
          @param handler: AbstractHandler
         """
         try:
-            if handler.handlerId in self._connections:
-                conn = self._connections[handler.handlerId]
+            if handler.uid in self._connections:
+                conn = self._connections[handler.uid]
                 conn.release()
         except:
             pass
 
-        if handler.handlerId in self._connections:
-            del self._connections[handler.handlerId]
+        if handler.uid in self._connections:
+            del self._connections[handler.uid]
 
         if handler.uid in self._commands:
             del self._commands[handler.uid]

@@ -313,8 +313,8 @@ class MessageBrokerThread:
         import kernel.pipe as pipe
         log.debug('Received AMQP command = %s', body)
 
+        command = broker.storeCommand(body, message)
         handler = self._protocolHandlerClass(pipe.Manager(), False)
-        command = broker.storeCommand(handler, body, message)
         handler.processCommand(command)
 
 # --------------------------------------------------------------------
@@ -376,8 +376,8 @@ class MessageBrokerCommandThread:
         import kernel.pipe as pipe
         log.debug('Received AMQP command = %s', body)
 
+        command = broker.storeCommand(body, message)
         handler = self._protocolHandlerClass(pipe.Manager(), False)
-        command = broker.storeCommand(handler, body, message)
         handler.processCommand(command)
 
 broker = MessageBroker()

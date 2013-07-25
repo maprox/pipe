@@ -214,6 +214,9 @@ class MessageBroker:
         content = None
         if command and ('content' in command):
             content = command['content']
+        else:
+            # release connection if there is no commands received
+            self.releaseHandlerConnection(handler)
         return content
 
     def onCommand(self, body, message):

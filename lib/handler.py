@@ -7,6 +7,7 @@
 
 from datetime import datetime
 import re
+import os
 import json
 import base64
 from urllib.parse import urlencode
@@ -35,6 +36,7 @@ class AbstractHandler(object):
          @param clientThread: Instance of kernel.server.ClientThread
         """
         log.debug('%s::__init__()', self.__class__)
+        self.__handlerId = os.urandom(32)
         self.__store = store
         self.__thread = clientThread
         self.initialization()
@@ -60,6 +62,10 @@ class AbstractHandler(object):
          @return:
         """
         broker.handlerFinalize(self)
+
+    @property
+    def handlerId(self):
+        return self.__handlerId
 
     @property
     def uid(self):
@@ -373,7 +379,7 @@ class AbstractHandler(object):
         try:
             if not self._commandsFactory:
                 raise Exception("_commandsFactory is not defined!")
-            commands = broker.getCommands(self.uid)
+            commands = broker.getCommands(self)
             if commands:
                 log.debug("Received commands are: %s" % commands)
                 self.processCommand(commands)
@@ -402,7 +408,7 @@ class AbstractHandler(object):
                 log.debug("Command class is %s: " % commandInstance.__class__)
                 self.sendCommand(commandInstance, command)
             else:
-                broker.sendAmqpError(self.uid, "Command is not supported")
+                broker.sendAmqpError(self, "Command is not supported")
                 log.error("No command with name %s" % commandName)
         except Exception as E:
             log.error("Send command error is %s" % E)
@@ -455,7 +461,7 @@ class AbstractHandler(object):
 
         if transport == "sms":
             # immediate sending of command update message
-            broker.sendAmqpAnswer(self.uid,
+            broker.sendAmqpAnswer(self,
                 "Command was successfully received and processed")
 
     def initAmqpCommandThread(self):

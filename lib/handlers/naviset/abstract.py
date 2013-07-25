@@ -51,7 +51,7 @@ class NavisetHandler(AbstractHandler):
 
         if isinstance(protocolPacket, packets.PacketAnswer):
             log.info("Storing command answer packet")
-            broker.sendAmqpAnswer(self.uid, protocolPacket)
+            broker.sendAmqpAnswer(self, protocolPacket)
             return
 
         if not isinstance(protocolPacket, packets.PacketData):

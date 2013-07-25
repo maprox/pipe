@@ -389,8 +389,8 @@ class AbstractHandler(object):
                 raise Exception("_commandsFactory is not defined!")
             commands = broker.getCommands(self)
             if commands:
-                log.debug("[%s] Received commands are: %s" % commands,
-                    self.handlerId)
+                log.debug("[%s] Received commands are: %s",
+                    self.handlerId, commands)
                 self.processCommand(commands)
         except Exception as E:
             log.error('[%s] %s', self.handlerId, E)

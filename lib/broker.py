@@ -215,11 +215,32 @@ class MessageBroker:
         log.debug("Got AMQP message %s" % body)
         self.storeCommand(body, message)
 
+    def handlerInitialize(self, handler):
+        """
+         Initialization of handler
+         @param handler: AbstractHandler
+         @return:
+        """
+
+    def handlerUpdate(self, handler):
+        """
+         Update of handler
+         @param handler: AbstractHandler
+         @return:
+        """
+
+    def handlerFinalize(self, handler):
+        """
+         Finalization of handler
+         @param handler: AbstractHandler
+         @return:
+        """
+
 # --------------------------------------------------------------------
 
 class MessageBrokerThread:
     """
-     Message broker thread for receiving AMQP commands
+     Message broker thread for receiving AMQP commands for a protocol
     """
 
     _protocolHandlerClass = None
@@ -260,6 +281,69 @@ class MessageBrokerThread:
                             callbacks = [self.onCommand]):
                         log.debug('Successfully connected to %s',
                             conf.amqpConnection)
+                        while True:
+                            conn.drain_events()
+            except Exception as E:
+                log.error('AMQP Error - %s', E)
+                import time
+                time.sleep(60) # sleep for 60 seconds after exception
+
+    def onCommand(self, body, message):
+        """
+         Executes when command is received from queue
+         @param body: amqp message body
+         @param message: message instance
+        """
+        import kernel.pipe as pipe
+        log.debug('Received AMQP command = %s', body)
+
+        command = broker.storeCommand(body, message)
+        handler = self._protocolHandlerClass(pipe.Manager(), False)
+        handler.processCommand(command)
+
+# --------------------------------------------------------------------
+
+class MessageBrokerCommandThread:
+    """
+     Message broker thread for receiving AMQP commands for particular device
+    """
+
+    _protocolHandler = None
+    _thread = None
+
+    def __init__(self, protocolHandler):
+        """
+         Creates broker thread for listening AMQP commands sent to
+         the specific device (usually for sms transport)
+         @param protocolHandlerClass: protocol handler class
+         @param protocolAlias: protocol alias
+        """
+        log.debug('%s::__init__()', self.__class__)
+        self._protocolHandler = protocolHandler
+        # starting amqp thread
+        self._thread = Thread(target = self.threadHandler)
+        self._thread.start()
+
+
+    def threadHandler(self):
+        """
+         Thread handler
+        """
+        while True:
+            log.debug('Init the AMQP connection...')
+            commandRoutingKey = conf.environment + '.mon.device.command.' +\
+                                self._protocolAlias
+            commandQueue = Queue(
+                commandRoutingKey,
+                exchange = broker._exchanges['mon.device'],
+                routing_key = commandRoutingKey
+            )
+            try:
+                with Connection(conf.amqpConnection) as conn:
+                    with conn.Consumer([commandQueue],
+                                       callbacks = [self.onCommand]):
+                        log.debug('Successfully connected to %s',
+                                  conf.amqpConnection)
                         while True:
                             conn.drain_events()
             except Exception as E:

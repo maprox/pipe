@@ -13,7 +13,8 @@ from socketserver import BaseRequestHandler
 
 from kernel.logger import log
 from kernel.config import conf
-from kernel.dispatcher import disp
+import kernel.pipe as pipe
+from lib.handlers.list import HandlerClass
 
 # ===========================================================================
 class ClientThread(BaseRequestHandler):
@@ -22,18 +23,25 @@ class ClientThread(BaseRequestHandler):
      An object of this class is created for each connection to the server.
      We override the "handle" method and communicate with the client in it.
     """
+    __handler = None
 
     def setup(self):
         pass
 
     def handle(self):
         try:
-            disp.dispatch(self)
+            if HandlerClass:
+                log.debug('Protocol handler: %s', HandlerClass.__doc__)
+                self.__handler = HandlerClass(pipe.Manager(), self)
+                self.__handler.dispatch()
+            else:
+                log.error('No protocol handlers found!')
         except Exception as E:
             log.error("Dispatch error: %s", traceback.format_exc())
 
     def finish(self):
-        pass
+        if self.__handler:
+            del self.__handler
 
 # ===========================================================================
 class ThreadingServer(ThreadingMixIn, TCPServer):

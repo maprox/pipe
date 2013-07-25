@@ -25,7 +25,6 @@ class NavisetBase(BasePacket):
     def calculateChecksum(self):
         """
          Calculates CRC (CRC-16 Modbus)
-         @param buffer: binary string
          @return: True if buffer crc equals to supplied crc value, else False
         """
         data = (self._head or b'') + (self._body or b'')
@@ -74,7 +73,6 @@ class PacketNumbered(NavisetPacket):
     def _parseBody(self):
         """
          Parses body of the packet
-         @param body: Body bytes
          @protected
         """
         super(PacketNumbered, self)._parseBody()
@@ -280,6 +278,23 @@ class PacketDataItem:
             if data is None or len(data) == 0: break
         return items
 
+    @classmethod
+    def parseProtocolStatus(cls, status):
+        """
+         Parses protocol status
+         @param status: Device status value
+         @return:
+        """
+        data = {}
+        data['bad_ext_voltage'] = int(bits.bitTest(status, 0))
+        data['moving'] = int(bits.bitTest(status, 1))
+        data['armed'] = int(bits.bitTest(status, 2))
+        data['gsm_sim_card_1_enabled'] = int(bits.bitTest(status, 3))
+        data['gsm_sim_card_2_enabled'] = int(bits.bitTest(status, 4))
+        data['gsm_no_gprs_connection'] = int(bits.bitTest(status, 5))
+        data['sat_antenna_connected'] = 1 - int(bits.bitTest(status, 6))
+        return data
+
     def parseAdditionalData(self):
         """
          Parses additional data of the packet
@@ -295,14 +310,9 @@ class PacketDataItem:
             offset += size
             if key == 0:
                 status = unpack('<B', data)[0]
-                sensors['bad_ext_voltage'] = int(bits.bitTest(status, 0))
-                sensors['moving'] = int(bits.bitTest(status, 1))
-                sensors['armed'] = int(bits.bitTest(status, 2))
-                sensors['gsm_sim_card_1_enabled'] = int(bits.bitTest(status, 3))
-                sensors['gsm_sim_card_2_enabled'] = int(bits.bitTest(status, 4))
-                sensors['gsm_no_gprs_connection'] = int(bits.bitTest(status, 5))
-                sensors['sat_antenna_connected'] =\
-                    1 - int(bits.bitTest(status, 6))
+                parsedStatus = self.parseProtocolStatus(status)
+                for key in parsedStatus:
+                    sensors[key] = parsedStatus[key]
             elif key == 1:
                 vExt, vInt = unpack('<HH', data)
                 sensors['ext_battery_voltage'] = vExt
@@ -366,7 +376,7 @@ class PacketDataItem:
         """
         buffer = self.__rawData
         length = self.length
-        if buffer == None: return
+        if buffer is None: return
         if len(buffer) < length: return
 
         self.__number = unpack("<H", buffer[:2])[0]
@@ -421,7 +431,7 @@ class PacketAnswer(NavisetPacket):
     """
 
     # private properties
-    _number = 0
+    _number = None
 
     @property
     def command(self):
@@ -522,6 +532,141 @@ class PacketAnswerCommonAnswerCommandProcessingError(PacketAnswer):
     def get_parameters_string(self):
         s = "Error during command processing"
         return s
+
+# ---------------------------------------------------------------------------
+
+class PacketAnswerGetStatus(PacketAnswer):
+    """
+      Answer on CommandGetStatus
+    """
+    _number = 0
+
+    # private properties
+    __deviceNumber = 0
+    __protocolVersion = 0
+    __protocolType = 0
+    __status = 0
+    __voltage = 0
+    __temperature = 0
+    __gsmSignalStrength = 0
+
+    @property
+    def deviceNumber(self):
+        if self._rebuild: self._build()
+        return self.__deviceNumber
+
+    @deviceNumber.setter
+    def deviceNumber(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__deviceNumber = value
+            self._rebuild = True
+
+    @property
+    def protocolVersion(self):
+        if self._rebuild: self._build()
+        return self.__protocolVersion
+
+    @protocolVersion.setter
+    def protocolVersion(self, value):
+        if (0 <= value <= 0xFF):
+            self.__protocolVersion = value
+            self._rebuild = True
+
+    @property
+    def protocolType(self):
+        if self._rebuild: self._build()
+        return self.__protocolType
+
+    @protocolType.setter
+    def protocolType(self, value):
+        if (0 <= value <= 0xFF):
+            self.__protocolType = value
+            self._rebuild = True
+
+    @property
+    def status(self):
+        if self._rebuild: self._build()
+        return self.__status
+
+    @status.setter
+    def status(self, value):
+        if (0 <= value <= 0xFF):
+            self.__status = value
+            self._rebuild = True
+
+    @property
+    def voltage(self):
+        if self._rebuild: self._build()
+        return self.__voltage
+
+    @voltage.setter
+    def voltage(self, value):
+        if (0 <= value <= 0xFFFF):
+            self.__voltage = value
+            self._rebuild = True
+
+    @property
+    def temperature(self):
+        if self._rebuild: self._build()
+        return self.__temperature
+
+    @temperature.setter
+    def temperature(self, value):
+        self.__temperature = value
+        self._rebuild = True
+
+    @property
+    def gsmSignalStrength(self):
+        if self._rebuild: self._build()
+        return self.__gsmSignalStrength
+
+    @gsmSignalStrength.setter
+    def gsmSignalStrength(self, value):
+        if (0 <= value <= 0xFF):
+            self.__gsmSignalStrength = value
+            self._rebuild = True
+
+    def get_dict(self):
+        params_dict = {
+            "deviceNumber": self.deviceNumber,
+            "protocolVersion": self.protocolVersion,
+            "protocolType": self.protocolType,
+            "status": self.status,
+            "voltage": self.voltage,
+            "temperature": self.temperature,
+            "gsmSignalStrength": self.gsmSignalStrength
+        }
+        return params_dict
+
+    def get_parameters_string(self):
+        s = ''
+        params = self.get_dict()
+        for key in params:
+            if s: s += ', '
+            s += key + '=' + str(params[key])
+        return s
+
+    def _parseBody(self):
+        """
+         Parses body of the packet
+         @param body: Body bytes
+         @protected
+        """
+        super(PacketAnswerGetStatus, self)._parseBody()
+        buffer = self.body
+        self._number = unpack('<B', buffer[:1])[0]
+        self.__deviceNumber = unpack('<H', buffer[1:3])[0]
+        self.__protocolVersion = unpack('<B', buffer[3:4])[0]
+        self.__protocolType = unpack('<B', buffer[4:5])[0]
+
+        status = unpack('<B', buffer[5:6])[0]
+        self.__status = PacketDataItem.parseProtocolStatus(status)
+
+        self.__voltage = unpack('<H', buffer[6:8])[0]
+        self.__temperature = unpack('<b', buffer[8:9])[0]
+        self.__gsmSignalStrength = unpack('<B', buffer[9:10])[0]
+
+# ---------------------------------------------------------------------------
 
 class PacketAnswerCommandGetImei(PacketAnswer):
     """
@@ -1262,3 +1407,25 @@ class TestCase(unittest.TestCase):
             '\x00\x00\x00\x00\x00')
         self.assertEqual(packet.call_sms_calls[4], 0)
         self.assertEqual(packet.call_sms_smss[2], 1)
+
+    def test_commandGetStatus(self):
+        data = b'\n\x80\x00\x01\x00\x0f\x01\x8c\xdf*%\r\xf6\x0f'
+        packets = self.factory.getPacketsFromBuffer(data)
+        packet = packets[0]
+        self.assertIsInstance(packet, PacketAnswerGetStatus)
+        self.assertEqual(packet._number, 0)
+        self.assertEqual(packet.deviceNumber, 1)
+        self.assertEqual(packet.protocolVersion, 15)
+        self.assertEqual(packet.protocolType, 1)
+        self.assertEqual(packet.status, {
+            'armed': 1,
+            'bad_ext_voltage': 0,
+            'gsm_no_gprs_connection': 0,
+            'gsm_sim_card_1_enabled': 1,
+            'gsm_sim_card_2_enabled': 0,
+            'moving': 0,
+            'sat_antenna_connected': 1
+        })
+        self.assertEqual(packet.voltage, 10975)
+        self.assertEqual(packet.temperature, 37)
+        self.assertEqual(packet.gsmSignalStrength, 13)

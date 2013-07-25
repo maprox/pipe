@@ -26,9 +26,7 @@ class AbstractHandler(object):
     _commandsFactory = None # commands factory link
 
     _buffer = None # buffer of the current dispatch loop (for storage save)
-
-    uid = False
-    """ Uid of currently connected device """
+    _uid = None # identifier of currently connected device
 
     def __init__(self, store, clientThread):
         """
@@ -41,12 +39,36 @@ class AbstractHandler(object):
         self.__thread = clientThread
         self.initialization()
 
+    def __del__(self):
+        """
+         Destructor of Listener
+         @return:
+        """
+        self.finalization()
+
     def initialization(self):
         """
          Initialization of the handler
          @return:
         """
-        pass
+        broker.handlerInitialize(self)
+
+    def finalization(self):
+        """
+         Finalization of the handler.
+         Free allocated resources.
+         @return:
+        """
+        broker.handlerFinalize(self)
+
+    @property
+    def uid(self):
+        return self._uid
+
+    @uid.setter
+    def uid(self, value):
+        self._uid = value
+        broker.handlerUpdate(self)
 
     def getStore(self):
         """ Returns store object """
@@ -435,6 +457,18 @@ class AbstractHandler(object):
             # immediate sending of command update message
             broker.sendAmqpAnswer(self.uid,
                 "Command was successfully received and processed")
+
+    def initAmqpCommandThread(self):
+        """
+         AMQP thread initialization
+        """
+        if not self.uid:
+            log.error('initAmqpCommandThread(): self.uid is empty!')
+            return
+        # start message broker thread for receiving tcp commands
+        from lib.broker import MessageBrokerCommandThread
+        log.debug('%s::initAmqpCommandThread()', self.__class__)
+        MessageBrokerCommandThread(self)
 
     @classmethod
     def initAmqpThread(cls, protocol):

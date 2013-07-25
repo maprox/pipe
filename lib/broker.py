@@ -82,42 +82,44 @@ class MessageBroker:
         exchange = self._exchanges['mon.device']
         if (exchangeName is not None) and (exchangeName in self._exchanges):
             exchange = self._exchanges[exchangeName]
+
+        log.debug('BROKER: Connect to %s' % conf.amqpConnection)
         connection = BrokerConnection(conf.amqpConnection)
-        with connections[connection].acquire(block=True) as conn:
-            with conn.Producer(serializer = 'json') as producer:
-                log.debug('BROKER: Connected to %s' % conf.amqpConnection)
-                queuesConfig = {}
-                for packet in packets:
-                    uid = None if 'uid' not in packet else packet['uid']
 
-                    if not uid in queuesConfig:
-                        routingKey = routing_key
-                        if not routing_key:
-                            routingKey = self.getRoutingKey(uid)
+        queuesConfig = {}
+        for packet in packets:
+            uid = None if 'uid' not in packet else packet['uid']
 
-                        routingKey = conf.environment + '.' + routingKey
-                        queuesConfig[uid] = {
-                            'routingKey': routingKey,
-                            'queue': Queue(
-                                routingKey,
-                                exchange = exchange,
-                                routing_key = routingKey
-                            )
-                        }
+            if not uid in queuesConfig:
+                routingKey = routing_key
+                if not routing_key:
+                    routingKey = self.getRoutingKey(uid)
 
-                    config = queuesConfig[uid]
-                    producer.publish(
-                        packet,
+                routingKey = conf.environment + '.' + routingKey
+                queuesConfig[uid] = {
+                    'routingKey': routingKey,
+                    'queue': Queue(
+                        routingKey,
                         exchange = exchange,
-                        routing_key = config['routingKey'],
-                        declare = [config['queue']]
+                        routing_key = routingKey
                     )
-                    if uid:
-                        log.debug('Packet for "%s" is sent via message broker'
-                            % uid)
-                    else:
-                        log.debug('Message is sent via message broker')
-        log.debug('BROKER: Disconnected')
+                }
+
+            config = queuesConfig[uid]
+            with producers[connection].acquire(block=True) as producer:
+                producer.publish(
+                    packet,
+                    exchange = exchange,
+                    routing_key = config['routingKey'],
+                    declare = [config['queue']]
+                )
+            if uid:
+                log.debug('Packet for "%s" is sent via message broker'
+                    % uid)
+            else:
+                log.debug('Message is sent via message broker')
+
+        log.debug('BROKER: Disconnect')
 
     def amqpCommandUpdate(self, handler, status, data):
         """
@@ -179,7 +181,8 @@ class MessageBroker:
         with connections[connection].acquire(block=True) as conn:
             routing_key = conf.environment + '.mon.device.command.' +\
                 str(handler.uid)
-            log.debug('[%s] Check commands queue', handler.handlerId)
+            log.debug('[%s] Check commands queue %s',
+                handler.handlerId, routing_key)
             command_queue = Queue(
                 routing_key,
                 exchange = self._exchanges['mon.device'],

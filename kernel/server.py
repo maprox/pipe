@@ -40,7 +40,9 @@ class ClientThread(BaseRequestHandler):
             log.error("Dispatch error: %s", traceback.format_exc())
 
     def finish(self):
+        log.debug('ClientThread finish')
         if self.__handler:
+            log.debug('Delete handler: %s', self.__handler.__class__)
             del self.__handler
 
 # ===========================================================================

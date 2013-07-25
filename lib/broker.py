@@ -49,34 +49,6 @@ class MessageBroker:
         routingKey = 'mon.device.packet.create.worker%s' % workerNum
         return routingKey
 
-    def getConnection(self, handler):
-        """
-         Returns an AMQP connection handler
-         @param handler: AbstractHandler
-        """
-        if not handler.uid in self._connections:
-            self._connections[handler.uid] = Connection(conf.amqpConnection)
-        return self._connections[handler.uid]
-
-    def releaseHandlerConnection(self, handler):
-        """
-         Releases resources for specified handler
-         @param handler: AbstractHandler
-        """
-        log.debug('[%s] Release handler connection', handler.handlerId)
-        try:
-            if handler.uid in self._connections:
-                conn = self._connections[handler.uid]
-                conn.release()
-        except:
-            pass
-
-        if handler.uid in self._connections:
-            del self._connections[handler.uid]
-
-        if handler.uid in self._commands:
-            del self._commands[handler.uid]
-
     def storeCommand(self, command, message):
         """
          Stores command as current
@@ -86,10 +58,7 @@ class MessageBroker:
         """
         if isinstance(command, str):
             command = json.loads(command)
-        self._commands[command["uid"]] = {
-            "message": message,
-            "content": command
-        }
+        self._commands[command["uid"]] = command
         return command
 
     def getCommand(self, handler):
@@ -154,7 +123,7 @@ class MessageBroker:
             return
 
         log.debug("[%s] Processing AMQP command answer", handler.handlerId)
-        guid = command['content']['guid']
+        guid = command['guid']
 
         data_string = data
         if not isinstance(data, str):
@@ -169,9 +138,8 @@ class MessageBroker:
         log.debug("[%s] Sending answer: %s", handler.handlerId, answer_update)
         self.send([answer_update], routing_key = "mon.device.command.update")
 
-        command['message'].ack()
-
-        self.releaseHandlerConnection(handler)
+        if handler.uid in self._commands:
+            del self._commands[handler.uid]
 
     def sendAmqpAnswer(self, handler, data):
         """
@@ -196,27 +164,23 @@ class MessageBroker:
          @param handler: AbstractHandler
          @return: received packets
         """
-        conn = self.getConnection(handler)
-        routing_key = conf.environment + '.mon.device.command.' +\
-            str(handler.uid)
-        command_queue = Queue(
-            routing_key,
-            exchange = self._exchanges['mon.device'],
-            routing_key = routing_key)
-
-        with conn.Consumer([command_queue], callbacks = [self.onCommand]):
-            try:
-                conn.drain_events(timeout=1)
-            except:
-                pass
-
-        command = self.getCommand(handler)
         content = None
-        if command and ('content' in command):
-            content = command['content']
-        else:
-            # release connection if there is no commands received
-            self.releaseHandlerConnection(handler)
+        with Connection(conf.amqpConnection) as conn:
+            routing_key = conf.environment + '.mon.device.command.' +\
+                str(handler.uid)
+            command_queue = Queue(
+                routing_key,
+                exchange = self._exchanges['mon.device'],
+                routing_key = routing_key)
+
+            with conn.Consumer([command_queue], callbacks = [self.onCommand]):
+                try:
+                    conn.drain_events(timeout=1)
+                    command = self.getCommand(handler)
+                    if command:
+                        content = command
+                except:
+                    pass
         return content
 
     def onCommand(self, body, message):
@@ -227,6 +191,7 @@ class MessageBroker:
         """
         log.debug("Got AMQP message %s" % body)
         self.storeCommand(body, message)
+        message.ack()
 
     def handlerInitialize(self, handler):
         """
@@ -248,7 +213,6 @@ class MessageBroker:
          @param handler: AbstractHandler
          @return:
         """
-        self.releaseHandlerConnection(handler)
 
 # --------------------------------------------------------------------
 

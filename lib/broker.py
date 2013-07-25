@@ -8,7 +8,10 @@
 from threading import Thread
 from kernel.config import conf
 from kernel.logger import log
-from kombu import Connection, Exchange, Queue
+
+from kombu import BrokerConnection, Exchange, Queue
+from kombu.pools import connections, producers
+
 import json
 
 COMMAND_STATUS_CREATED = 1
@@ -79,7 +82,8 @@ class MessageBroker:
         exchange = self._exchanges['mon.device']
         if (exchangeName is not None) and (exchangeName in self._exchanges):
             exchange = self._exchanges[exchangeName]
-        with Connection(conf.amqpConnection) as conn:
+        connection = BrokerConnection(conf.amqpConnection)
+        with connections[connection].acquire(block=True) as conn:
             with conn.Producer(serializer = 'json') as producer:
                 log.debug('BROKER: Connected to %s' % conf.amqpConnection)
                 queuesConfig = {}

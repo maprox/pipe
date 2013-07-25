@@ -52,7 +52,8 @@ class NavisetHandler(AbstractHandler):
             self.isHeadPacket = False
 
         if isinstance(protocolPacket, packets.PacketAnswer):
-            log.info("[%s] Storing command answer packet", self.handlerId)
+            log.info("[%s] Storing command answer packet: %s",
+                self.handlerId, protocolPacket.__class__)
             broker.sendAmqpAnswer(self, protocolPacket)
             return
 

@@ -45,12 +45,12 @@ class NavisetHandler(AbstractHandler):
         self.receiveImage(protocolPacket)
 
         if isinstance(protocolPacket, packets.PacketHead):
-            log.info('HeadPack is stored.')
+            log.info('[%s] HeadPack is stored.', self.handlerId)
             self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
 
         if isinstance(protocolPacket, packets.PacketAnswer):
-            log.info("Storing command answer packet")
+            log.info("[%s] Storing command answer packet", self.handlerId)
             broker.sendAmqpAnswer(self, protocolPacket)
             return
 
@@ -62,7 +62,8 @@ class NavisetHandler(AbstractHandler):
 
         observerPackets = self.translate(protocolPacket)
         if len(observerPackets) == 0:
-            log.info('Location packet not found. Exiting...')
+            log.info('[%s] Location packet not found. Exiting...',
+                self.handlerId)
             return
 
         log.info(observerPackets)
@@ -160,7 +161,8 @@ class NavisetHandler(AbstractHandler):
          @param packet: a L{packets.Packet} subclass
         """
         buf = self.getAckPacket(packet)
-        log.info("Send acknowledgement, checksum = %d" % packet.checksum)
+        log.info("[%s] Send acknowledgement, checksum = %d",
+            self.handlerId, packet.checksum)
         return self.send(buf)
 
     @classmethod

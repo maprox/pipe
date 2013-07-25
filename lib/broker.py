@@ -63,6 +63,7 @@ class MessageBroker:
          Releases resources for specified handler
          @param handler: AbstractHandler
         """
+        log.debug('[%s] Release handler connection', handler.handlerId)
         try:
             if handler.uid in self._connections:
                 conn = self._connections[handler.uid]
@@ -79,7 +80,6 @@ class MessageBroker:
     def storeCommand(self, command, message):
         """
          Stores command as current
-         @param handler: AbstractHandler
          @param command: Command object as dict or string
          @param message: AMQP message instance
          @return dict Command dict object
@@ -149,10 +149,11 @@ class MessageBroker:
         """
         command = self.getCommand(handler)
         if not command:
-            log.debug("Error: no command found for %s!" % handler.uid)
+            log.debug("[%s] Error: no command found for %s!",
+                handler.handlerId, handler.uid)
             return
 
-        log.debug("Processing AMQP command answer")
+        log.debug("[%s] Processing AMQP command answer", handler.handlerId)
         guid = command['content']['guid']
 
         data_string = data
@@ -165,7 +166,7 @@ class MessageBroker:
             "data": data_string
         }
 
-        log.debug("Sending answer: %s" % answer_update)
+        log.debug("[%s] Sending answer: %s", handler.handlerId, answer_update)
         self.send([answer_update], routing_key = "mon.device.command.update")
 
         command['message'].ack()
@@ -322,61 +323,6 @@ class MessageBrokerCommandThread:
     """
      Message broker thread for receiving AMQP commands for particular device
     """
-
-    _protocolHandler = None
-    _thread = None
-
-    def __init__(self, protocolHandler):
-        """
-         Creates broker thread for listening AMQP commands sent to
-         the specific device (usually for sms transport)
-         @param protocolHandlerClass: protocol handler class
-         @param protocolAlias: protocol alias
-        """
-        log.debug('%s::__init__()', self.__class__)
-        self._protocolHandler = protocolHandler
-        # starting amqp thread
-        self._thread = Thread(target = self.threadHandler)
-        self._thread.start()
-
-
-    def threadHandler(self):
-        """
-         Thread handler
-        """
-        while True:
-            log.debug('Init the AMQP connection...')
-            commandRoutingKey = conf.environment + '.mon.device.command.' +\
-                                self._protocolAlias
-            commandQueue = Queue(
-                commandRoutingKey,
-                exchange = broker._exchanges['mon.device'],
-                routing_key = commandRoutingKey
-            )
-            try:
-                with Connection(conf.amqpConnection) as conn:
-                    with conn.Consumer([commandQueue],
-                                       callbacks = [self.onCommand]):
-                        log.debug('Successfully connected to %s',
-                                  conf.amqpConnection)
-                        while True:
-                            conn.drain_events()
-            except Exception as E:
-                log.error('AMQP Error - %s', E)
-                import time
-                time.sleep(60) # sleep for 60 seconds after exception
-
-    def onCommand(self, body, message):
-        """
-         Executes when command is received from queue
-         @param body: amqp message body
-         @param message: message instance
-        """
-        import kernel.pipe as pipe
-        log.debug('Received AMQP command = %s', body)
-
-        command = broker.storeCommand(body, message)
-        handler = self._protocolHandlerClass(pipe.Manager(), False)
-        handler.processCommand(command)
+    pass
 
 broker = MessageBroker()

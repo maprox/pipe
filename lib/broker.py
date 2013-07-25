@@ -114,8 +114,10 @@ class MessageBroker:
                     declare = [config['queue']]
                 )
             if uid:
-                log.debug('Packet for "%s" is sent via message broker'
-                    % uid)
+                msg = 'Packet for "%s" is sent. ' % uid
+                if 'time' in packet:
+                    msg += 'packet[\'time\'] = ' + packet['time']
+                log.debug(msg)
             else:
                 log.debug('Message is sent via message broker')
 
@@ -193,7 +195,11 @@ class MessageBroker:
                     conn.drain_events(timeout=1)
                     command = self.getCommand(handler)
                     if command:
+                        log.debug('[%s] We got command: %s',
+                            handler.handlerId, command)
                         content = command
+                    else:
+                        log.debug('[%s] No commands found', handler.handlerId)
                 except:
                     pass
         return content

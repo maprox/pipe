@@ -8,6 +8,7 @@
 from datetime import datetime
 import re
 import os
+import binascii
 import json
 import base64
 from urllib.parse import urlencode
@@ -35,11 +36,12 @@ class AbstractHandler(object):
          @param store: kernel.pipe.Manager instance
          @param clientThread: Instance of kernel.server.ClientThread
         """
-        log.debug('%s::__init__()', self.__class__)
-        self.__handlerId = os.urandom(32)
+        self.__handlerId = binascii.hexlify(os.urandom(4)).decode()
         self.__store = store
         self.__thread = clientThread
         self.initialization()
+        log.debug('%s::__init__(handlerId = %s)',
+            self.__class__, self.handlerId)
 
     def __del__(self):
         """
@@ -89,12 +91,12 @@ class AbstractHandler(object):
           Data processing method (after validation) from the device:
           clientThread thread of the socket;
         """
-        log.debug('%s::dispatch()', self.__class__)
+        log.debug('[%s] dispatch()', self.handlerId)
         buffer = self.recv()
         while len(buffer) > 0:
             self.processData(buffer)
             buffer = self.recv()
-        log.debug('%s::dispatch() - EXIT (empty buffer?)', self.__class__)
+        log.debug('[%s] dispatch() - EXIT (empty buffer?)', self.handlerId)
 
     def needProcessCommands(self):
         """
@@ -117,7 +119,7 @@ class AbstractHandler(object):
                 for protocolPacket in protocolPackets:
                     self.processProtocolPacket(protocolPacket)
             except Exception as E:
-                log.error("processData error: %s", E)
+                log.error("[%s] processData error: %s", self.handlerId, E)
 
         if not self.needProcessCommands(): return self
 
@@ -135,14 +137,16 @@ class AbstractHandler(object):
                 config = self.translateConfig(current_db.getSettings())
                 send['config'] = json.dumps(config, separators=(',',':'))
                 send['id_action'] = current_db.getSettingsTaskId()
-                log.debug('Sending config: ' + 
-                    conf.pipeSetUrl + urlencode(send))
+                log.debug('[%s] Sending config: ' +
+                    conf.pipeSetUrl + urlencode(send),
+                    self.handlerId)
                 connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
                 answer = connection.read()
-                log.debug('Config answered: ' + answer.decode())
+                log.debug('[%s] Config answered: ' + answer.decode(),
+                    self.handlerId)
                 current_db.deleteSettings()
         except Exception as E:
-            log.error(E)
+            log.error('[%s] %s', self.handlerId, E)
         return self
 
     def processProtocolPacket(self, protocolPacket):
@@ -162,7 +166,7 @@ class AbstractHandler(object):
             function_name = 'processCommand' \
               + command['action'][0].upper() \
               + command['action'][1:]
-            log.debug('Command is: ' + function_name)
+            log.debug('[%s] Command is: ' + function_name, self.handlerId)
             function = getattr(self, function_name)
             if 'value' in command:
                 function(command['id'], command['value'])
@@ -195,7 +199,8 @@ class AbstractHandler(object):
         """
         message = self.getTaskData(task, data)
         params = urlencode(message)
-        log.debug('Close task: ' + conf.pipeFinishUrl + params)
+        log.debug('[%s] Close task: ' + conf.pipeFinishUrl + params,
+            self.handlerId)
 
         urlParts = re.search('//(.+?)(/.+)', conf.pipeFinishUrl)
         restHost = urlParts.group(1)
@@ -222,15 +227,15 @@ class AbstractHandler(object):
             try:
                 data = sock.recv(conf.socketPacketLength)
             except Exception as E:
-                log.debug(E)
+                log.debug('[%s] %s', self.handlerId, E)
                 break
-            log.debug('Data chunk = %s', data)
+            log.debug('[%s] Data chunk = %s', self.handlerId, data)
             if not data: break
             total_data.append(data)
             # I don't know why [if not data: break] is not working,
             # so let's do break here
             if len(data) < conf.socketPacketLength: break
-        log.debug('Total data = %s', total_data)
+        log.debug('[%s] Total data = %s', self.handlerId, total_data)
 
         return b''.join(total_data)
 
@@ -244,7 +249,7 @@ class AbstractHandler(object):
             sock = thread.request
             sock.send(data)
         else:
-            log.error("Handler thread is not found!")
+            log.error("[%s] Handler thread is not found!", self.handlerId)
         return self
 
     def store(self, packets):
@@ -255,10 +260,10 @@ class AbstractHandler(object):
         """
         result = self.getStore().send(packets)
         if result.isSuccess():
-            log.debug('%s::store() ... OK', self.__class__)
+            log.debug('[%s] store() ... OK', self.handlerId)
         else:
             errorsList = result.getErrorsList()
-            log.error('%s::store():\n %s', self.__class__, errorsList)
+            log.error('[%s] store():\n %s', self.handlerId, errorsList)
             savePackets = True
             if len(errorsList) > 0:
                 e = errorsList[0]
@@ -294,7 +299,8 @@ class AbstractHandler(object):
          @param images: dict() of binary data like {'camera1': b'....'}
         """
         if not self.uid:
-            log.error('Cant send an image - self.uid is not defined!')
+            log.error('[%s] Cant send an image - self.uid is not defined!',
+                self.handlerId)
             return
         imagesList = []
         for image in images:
@@ -307,12 +313,12 @@ class AbstractHandler(object):
         }
         result = self.store(observerPacket)
         if result.isSuccess():
-            log.info('%s::sendImages(): Images have been sent.',
-              self.__class__)
+            log.info('[%s] sendImages(): Images have been sent.',
+              self.handlerId)
         else:
             # ? Error messages should be converted into readable format
-            log.error('%s::sendImages():\n %s',
-              self.__class__, result.getErrorsList())
+            log.error('[%s] sendImages():\n %s',
+              self.handlerId, result.getErrorsList())
 
     def processCommandProcessSms(self, task, data):
         """
@@ -359,7 +365,8 @@ class AbstractHandler(object):
          @param task: id task
          @param data: data string
         """
-        log.error('processCommandReadSettings NOT IMPLEMENTED')
+        log.error('[%s] processCommandReadSettings NOT IMPLEMENTED',
+            self.handlerId)
         return self.processCloseTask(task, None)
 
     def processCommandSetOption(self, task, data):
@@ -368,7 +375,8 @@ class AbstractHandler(object):
          @param task: id task
          @param data: data dict()
         """
-        log.error('processCommandSetOption NOT IMPLEMENTED')
+        log.error('[%s] processCommandSetOption NOT IMPLEMENTED',
+            self.handlerId)
         return self.processCloseTask(task, None)
 
 
@@ -381,10 +389,11 @@ class AbstractHandler(object):
                 raise Exception("_commandsFactory is not defined!")
             commands = broker.getCommands(self)
             if commands:
-                log.debug("Received commands are: %s" % commands)
+                log.debug("[%s] Received commands are: %s" % commands,
+                    self.handlerId)
                 self.processCommand(commands)
         except Exception as E:
-            log.error(E)
+            log.error('[%s] %s', self.handlerId, E)
 
     def processCommand(self, command):
         """
@@ -392,26 +401,29 @@ class AbstractHandler(object):
          @param command: command
         """
         if not command:
-            log.error("Empty command description!")
+            log.error("[%s] Empty command description!", self.handlerId)
             return
 
         if (not self.uid) and ('uid' in command):
             self.uid = command['uid']
 
-        log.debug("Processing AMQP command: %s " % command)
+        log.debug("[%s] Processing AMQP command: %s " % command,
+            self.handlerId)
         try:
             if not self._commandsFactory:
                 raise Exception("_commandsFactory is not defined!")
             commandName = command["command"]
             commandInstance = self._commandsFactory.getInstance(command)
             if commandInstance:
-                log.debug("Command class is %s: " % commandInstance.__class__)
+                log.debug("[%s] Command class is %s",
+                    self.handlerId, commandInstance.__class__)
                 self.sendCommand(commandInstance, command)
             else:
                 broker.sendAmqpError(self, "Command is not supported")
-                log.error("No command with name %s" % commandName)
+                log.error("[%s] No command with name %s",
+                    self.handlerId, commandName)
         except Exception as E:
-            log.error("Send command error is %s" % E)
+            log.error("[%s] Send command error is %s", self.handlerId, E)
 
     def sendCommand(self, command, initialParameters = None):
         """
@@ -437,6 +449,8 @@ class AbstractHandler(object):
             buffer = item["message"]
             if transport == "tcp":
                 self.send(buffer)
+                log.debug('[%s] Command data is sent: %s',
+                    self.handlerId, buffer)
             elif transport == "sms":
                 data = {
                     'type': transport,
@@ -454,7 +468,8 @@ class AbstractHandler(object):
                 if 'from' in config:
                     data['params'] = {}
                     data['params']['from'] = config['from']
-                log.debug('Sending AMQP message to [work.process]...')
+                log.debug('[%s] Sending AMQP message to [work.process]...',
+                    self.handlerId)
                 broker.send([data],
                     routing_key = 'n.work.work.process',
                     exchangeName = 'n.work')
@@ -464,17 +479,17 @@ class AbstractHandler(object):
             broker.sendAmqpAnswer(self,
                 "Command was successfully received and processed")
 
-    def initAmqpCommandThread(self):
-        """
-         AMQP thread initialization
-        """
-        if not self.uid:
-            log.error('initAmqpCommandThread(): self.uid is empty!')
-            return
-        # start message broker thread for receiving tcp commands
-        from lib.broker import MessageBrokerCommandThread
-        log.debug('%s::initAmqpCommandThread()', self.__class__)
-        MessageBrokerCommandThread(self)
+    #def initAmqpCommandThread(self):
+    #    """
+    #     AMQP thread initialization
+    #    """
+    #    if not self.uid:
+    #        log.error('initAmqpCommandThread(): self.uid is empty!')
+    #        return
+    #    # start message broker thread for receiving tcp commands
+    #    from lib.broker import MessageBrokerCommandThread
+    #    log.debug('%s::initAmqpCommandThread()', self.__class__)
+    #    MessageBrokerCommandThread(self)
 
     @classmethod
     def initAmqpThread(cls, protocol):

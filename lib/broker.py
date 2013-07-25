@@ -106,13 +106,15 @@ class MessageBroker:
                 }
 
             config = queuesConfig[uid]
-            with producers[connection].acquire(block=True) as producer:
-                producer.publish(
-                    packet,
-                    exchange = exchange,
-                    routing_key = config['routingKey'],
-                    declare = [config['queue']]
-                )
+            with connections[connection].acquire(block=True) as conn:
+                log.debug("Got connection: %r" % (conn.as_uri(), ))
+                with producers[conn].acquire(block=True) as producer:
+                    producer.publish(
+                        packet,
+                        exchange = exchange,
+                        routing_key = config['routingKey'],
+                        declare = [config['queue']]
+                    )
             if uid:
                 msg = 'Packet for "%s" is sent. ' % uid
                 if 'time' in packet:

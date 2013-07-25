@@ -407,8 +407,7 @@ class AbstractHandler(object):
         if (not self.uid) and ('uid' in command):
             self.uid = command['uid']
 
-        log.debug("[%s] Processing AMQP command: %s " % command,
-            self.handlerId)
+        log.debug("[%s] Processing AMQP command: %s ", self.handlerId, command)
         try:
             if not self._commandsFactory:
                 raise Exception("_commandsFactory is not defined!")

@@ -68,7 +68,7 @@ class TestManager(Manager):
 
     def __init__(self):
         self.stored_packets = []
-        super(TestManager, self).__init__
+        super(TestManager, self).__init__()
 
     def send(self, obj):
         result = lib.falcon.FalconAnswer()

@@ -45,6 +45,8 @@ class NavisetHandler(AbstractHandler):
         self.receiveImage(protocolPacket)
 
         self.isHeadPacket = False
+        log.info('[%s] processProtocolPacket... isHead = %s',
+            self.handlerId, self.isHeadPacket)
         if isinstance(protocolPacket, packets.PacketHead):
             log.info('[%s] HeadPack is stored.', self.handlerId)
             self.__headPacketRawData = protocolPacket.rawData
@@ -78,6 +80,8 @@ class NavisetHandler(AbstractHandler):
          Returns false if we can not process commands
          @return: boolean
         """
+        log.debug('[%s] needProcessCommands??? %s %s',
+            self.handlerId, self.uid, self.isHeadPacket)
         return self.uid and not self.isHeadPacket
 
     def receiveImage(self, packet):

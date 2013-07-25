@@ -82,25 +82,31 @@ class MessageBroker:
         with Connection(conf.amqpConnection) as conn:
             with conn.Producer(serializer = 'json') as producer:
                 log.debug('BROKER: Connected to %s' % conf.amqpConnection)
+                queuesConfig = {}
                 for packet in packets:
                     uid = None if 'uid' not in packet else packet['uid']
 
-                    rkey = routing_key
-                    if not routing_key:
-                        rkey = self.getRoutingKey(uid)
+                    if not uid in queuesConfig:
+                        routingKey = routing_key
+                        if not routing_key:
+                            routingKey = self.getRoutingKey(uid)
 
-                    rkey = conf.environment + '.' + rkey
-                    packet_queue = Queue(
-                        rkey,
-                        exchange = exchange,
-                        routing_key = rkey
-                    )
+                        routingKey = conf.environment + '.' + routingKey
+                        queuesConfig[uid] = {
+                            'routingKey': routingKey,
+                            'queue': Queue(
+                                routingKey,
+                                exchange = exchange,
+                                routing_key = routingKey
+                            )
+                        }
 
+                    config = queuesConfig[uid]
                     producer.publish(
                         packet,
                         exchange = exchange,
-                        routing_key = rkey,
-                        declare = [packet_queue]
+                        routing_key = config['routingKey'],
+                        declare = [config['queue']]
                     )
                     if uid:
                         log.debug('Packet for "%s" is sent via message broker'
@@ -168,6 +174,7 @@ class MessageBroker:
         with Connection(conf.amqpConnection) as conn:
             routing_key = conf.environment + '.mon.device.command.' +\
                 str(handler.uid)
+            log.debug('[%s] Check commands queue', handler.handlerId)
             command_queue = Queue(
                 routing_key,
                 exchange = self._exchanges['mon.device'],

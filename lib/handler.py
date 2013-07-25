@@ -121,7 +121,10 @@ class AbstractHandler(object):
             except Exception as E:
                 log.error("[%s] processData error: %s", self.handlerId, E)
 
-        if not self.needProcessCommands(): return self
+        log.debug('[%s] Checking handler commands', self.handlerId)
+        if not self.needProcessCommands():
+            return self
+        log.debug('[%s] Ok we can process commands!', self.handlerId)
 
         self.processCommands()
 

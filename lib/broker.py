@@ -175,7 +175,8 @@ class MessageBroker:
          @return: received packets
         """
         content = None
-        with Connection(conf.amqpConnection) as conn:
+        connection = BrokerConnection(conf.amqpConnection)
+        with connections[connection].acquire(block=True) as conn:
             routing_key = conf.environment + '.mon.device.command.' +\
                 str(handler.uid)
             log.debug('[%s] Check commands queue', handler.handlerId)
@@ -265,7 +266,8 @@ class MessageBrokerThread:
                 routing_key = commandRoutingKey
             )
             try:
-                with Connection(conf.amqpConnection) as conn:
+                connection = BrokerConnection(conf.amqpConnection)
+                with connections[connection].acquire(block=True) as conn:
                     log.debug('Support for heartbeat: %s',
                         str(conn.supports_heartbeats))
                     with conn.Consumer([commandQueue],

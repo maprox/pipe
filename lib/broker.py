@@ -109,11 +109,13 @@ class MessageBroker:
             with connections[connection].acquire(block=True) as conn:
                 log.debug("Got connection: %r" % (conn.as_uri(), ))
                 with producers[conn].acquire(block=True) as producer:
+                    conn.ensure_connection()
                     producer.publish(
                         packet,
                         exchange = exchange,
                         routing_key = config['routingKey'],
-                        declare = [config['queue']]
+                        declare = [config['queue']],
+                        retry = True
                     )
             if uid:
                 msg = 'Packet for "%s" is sent. ' % uid
@@ -194,6 +196,7 @@ class MessageBroker:
 
             with conn.Consumer([command_queue], callbacks = [self.onCommand]):
                 try:
+                    conn.ensure_connection()
                     conn.drain_events(timeout=1)
                     command = self.getCommand(handler)
                     if command:
@@ -202,8 +205,8 @@ class MessageBroker:
                         content = command
                     else:
                         log.debug('[%s] No commands found', handler.handlerId)
-                except:
-                    pass
+                except Exception as E:
+                    log.debug('[%s] %s', handler.handlerId, E)
         return content
 
     def onCommand(self, body, message):
@@ -286,6 +289,7 @@ class MessageBrokerThread:
                         log.debug('Successfully connected to %s',
                             conf.amqpConnection)
                         while True:
+                            conn.ensure_connection()
                             conn.drain_events()
             except Exception as E:
                 log.error('AMQP Error - %s', E)

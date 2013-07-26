@@ -10,9 +10,9 @@ from kernel.config import conf
 from kernel.logger import log
 
 from kombu import BrokerConnection, Exchange, Queue
-from kombu.pools import connections, producers
 
 import json
+import time
 
 COMMAND_STATUS_CREATED = 1
 COMMAND_STATUS_SUCCESS = 2
@@ -24,7 +24,6 @@ class MessageBroker:
     """
 
     _exchanges = None
-    _connections = None
     _commands = None
 
     def __init__(self):
@@ -32,7 +31,6 @@ class MessageBroker:
          Constructor. Creates local storage to be used by protocol handlers
         """
         log.debug('%s::__init__()', self.__class__)
-        self._connections = {}
         self._commands = {}
         self._exchanges = {
             'mon.device': Exchange('mon.device', 'topic', durable = True),
@@ -63,49 +61,53 @@ class MessageBroker:
         if (exchangeName is not None) and (exchangeName in self._exchanges):
             exchange = self._exchanges[exchangeName]
 
-        log.debug('BROKER: Connect to %s' % conf.amqpConnection)
-        connection = BrokerConnection(conf.amqpConnection)
+        with BrokerConnection(conf.amqpConnection) as conn:
+            try:
+                log.debug('BROKER: Connect to %s' % conf.amqpConnection)
+                conn.connect()
+                connChannel = conn.channel()
+                queuesConfig = {}
+                for packet in packets:
+                    uid = None if 'uid' not in packet else packet['uid']
 
-        queuesConfig = {}
-        for packet in packets:
-            uid = None if 'uid' not in packet else packet['uid']
+                    if not uid in queuesConfig:
+                        routingKey = routing_key
+                        if not routing_key:
+                            routingKey = self.getRoutingKey(uid)
 
-            if not uid in queuesConfig:
-                routingKey = routing_key
-                if not routing_key:
-                    routingKey = self.getRoutingKey(uid)
+                        routingKey = conf.environment + '.' + routingKey
+                        queuesConfig[uid] = {
+                            'routingKey': routingKey,
+                            'queue': Queue(
+                                routingKey,
+                                exchange = exchange,
+                                routing_key = routingKey
+                            )
+                        }
 
-                routingKey = conf.environment + '.' + routingKey
-                queuesConfig[uid] = {
-                    'routingKey': routingKey,
-                    'queue': Queue(
-                        routingKey,
-                        exchange = exchange,
-                        routing_key = routingKey
-                    )
-                }
-
-            config = queuesConfig[uid]
-            with connections[connection].acquire(block=True) as conn:
-                log.debug("Got connection: %r" % (conn.as_uri(), ))
-                with producers[conn].acquire(block=True) as producer:
-                    conn.ensure_connection()
-                    producer.publish(
-                        packet,
-                        exchange = exchange,
-                        routing_key = config['routingKey'],
-                        declare = [config['queue']],
-                        retry = True
-                    )
-            if uid:
-                msg = 'Packet for "%s" is sent. ' % uid
-                if 'time' in packet:
-                    msg += 'packet[\'time\'] = ' + packet['time']
-                log.debug(msg)
-            else:
-                log.debug('Message is sent via message broker')
-
-        log.debug('BROKER: Disconnect')
+                    config = queuesConfig[uid]
+                    with conn.Producer(channel = connChannel) as producer:
+                        conn.ensure_connection()
+                        producer.publish(
+                            packet,
+                            exchange = exchange,
+                            routing_key = config['routingKey'],
+                            declare = [config['queue']],
+                            retry = True
+                        )
+                    if uid:
+                        msg = 'Packet for "%s" is sent. ' % uid
+                        if 'time' in packet:
+                            msg += 'packet[\'time\'] = ' + packet['time']
+                        log.debug(msg)
+                    else:
+                        log.debug('Message is sent via message broker')
+                conn.release()
+            except Exception as E:
+                if conn and conn.connected:
+                    conn.release()
+                log.error('Error during packet send: %s', E)
+            log.debug('BROKER: Disconnected')
 
     def amqpCommandUpdate(self, handler, status, data):
         """
@@ -162,17 +164,19 @@ class MessageBroker:
         """
         content = None
         with BrokerConnection(conf.amqpConnection) as conn:
-            routing_key = conf.environment + '.mon.device.command.' +\
-                str(handler.uid)
-            log.debug('[%s] Check commands queue %s',
-                handler.handlerId, routing_key)
-            command_queue = Queue(
-                routing_key,
-                exchange = self._exchanges['mon.device'],
-                routing_key = routing_key)
+            try:
+                routing_key = conf.environment + '.mon.device.command.' + \
+                    str(handler.uid)
+                log.debug('[%s] Check commands queue %s',
+                    handler.handlerId, routing_key)
+                command_queue = Queue(
+                    routing_key,
+                    exchange = self._exchanges['mon.device'],
+                    routing_key = routing_key)
 
-            with conn.Consumer([command_queue], callbacks = [self.onCommand]):
-                try:
+                conn.connect()
+                with conn.Consumer([command_queue],
+                    callbacks = [self.onCommand]):
                     conn.ensure_connection()
                     conn.drain_events(timeout = 1)
                     command = self.getCommand(handler)
@@ -182,8 +186,11 @@ class MessageBroker:
                         content = command
                     else:
                         log.debug('[%s] No commands found', handler.handlerId)
-                except Exception as E:
-                    log.debug('[%s] %s', handler.handlerId, E)
+                conn.release()
+            except Exception as E:
+                if conn and conn.connected:
+                    conn.release()
+                log.debug('[%s] %s', handler.handlerId, E)
         return content
 
     def onCommand(self, body, message):
@@ -224,7 +231,7 @@ class MessageBroker:
     def clearCommand(self, command):
         """
          Removes command from local storage
-         @param handler: AbstractHandler
+         @param command: Command dict
         """
         uid = command['uid']
         guid = command['guid']
@@ -270,43 +277,42 @@ class MessageBrokerThread:
          @param protocolHandlerClass: protocol handler class
          @param protocolAlias: protocol alias
         """
-        log.debug('%s::__init__()', self.__class__)
+        log.debug('%s::__init__(%s)', self.__class__, protocolAlias)
         self._protocolHandlerClass = protocolHandlerClass
         self._protocolAlias = protocolAlias
         # starting amqp thread
         self._thread = Thread(target = self.threadHandler)
         self._thread.start()
 
-
     def threadHandler(self):
         """
          Thread handler
         """
+        commandRoutingKey = conf.environment + '.mon.device.command.' + \
+            self._protocolAlias
+        commandQueue = Queue(
+            commandRoutingKey,
+            exchange = broker._exchanges['mon.device'],
+            routing_key = commandRoutingKey
+        )
         while True:
-            log.debug('Init the AMQP connection...')
-            commandRoutingKey = conf.environment + '.mon.device.command.' + \
-                self._protocolAlias
-            commandQueue = Queue(
-                commandRoutingKey,
-                exchange = broker._exchanges['mon.device'],
-                routing_key = commandRoutingKey
-            )
-            try:
-                connection = BrokerConnection(conf.amqpConnection)
-                with connections[connection].acquire(block=True) as conn:
-                    log.debug('Support for heartbeat: %s',
-                        str(conn.supports_heartbeats))
+            with BrokerConnection(conf.amqpConnection) as conn:
+                try:
+                    conn.connect()
+                    conn.ensure_connection()
+                    log.debug('[%s] Connected to %s',
+                        self._protocolAlias, conf.amqpConnection)
                     with conn.Consumer([commandQueue],
                             callbacks = [self.onCommand]):
-                        log.debug('Successfully connected to %s',
-                            conf.amqpConnection)
                         while True:
                             conn.ensure_connection()
                             conn.drain_events()
-            except Exception as E:
-                log.error('AMQP Error - %s', E)
-                import time
-                time.sleep(60) # sleep for 60 seconds after exception
+                    conn.release()
+                except Exception as E:
+                    if conn and conn.connected:
+                        conn.release()
+                    log.debug('[%s] %s', self._protocolAlias, E)
+                    time.sleep(60) # sleep for 60 seconds after exception
 
     def onCommand(self, body, message):
         """
@@ -315,7 +321,7 @@ class MessageBrokerThread:
          @param message: message instance
         """
         import kernel.pipe as pipe
-        log.debug('Received AMQP command = %s', body)
+        log.debug('[%s] Received command = %s', self._protocolAlias, body)
 
         command = broker.storeCommand(body, message)
         handler = self._protocolHandlerClass(pipe.Manager(), False)

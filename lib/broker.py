@@ -72,9 +72,11 @@ class MessageBroker:
          Returns an AMQP message from local buffer
          @param handler: AbstractHandler
         """
+        command = None
         if handler.uid not in self._commands:
-            return None
-        guid, command = self._commands[handler.uid].popitem()
+            return command
+        if self._commands[handler.uid]:
+            guid, command = self._commands[handler.uid].popitem()
         return command
 
     def clearCommand(self, command):

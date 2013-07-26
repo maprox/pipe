@@ -61,7 +61,10 @@ class MessageBroker:
         """
         if isinstance(command, str):
             command = json.loads(command)
-        self._commands[command["uid"]] = command
+        uid = command["uid"]
+        if uid not in self._commands:
+            self._commands[uid] = {}
+        self._commands[uid][command['guid']] = command
         return command
 
     def getCommand(self, handler):
@@ -69,8 +72,22 @@ class MessageBroker:
          Returns an AMQP message from local buffer
          @param handler: AbstractHandler
         """
-        if not handler.uid in self._commands: return None
-        return self._commands[handler.uid]
+        if handler.uid not in self._commands:
+            return None
+        guid, command = self._commands[handler.uid].popitem()
+        return command
+
+    def clearCommand(self, command):
+        """
+         Removes command from local storage
+         @param handler: AbstractHandler
+        """
+        uid = command['uid']
+        if uid not in self._commands:
+            return
+        guid = command['guid']
+        if guid in self._commands[uid]:
+            del self._commands[uid][guid]
 
     def send(self, packets, routing_key = None, exchangeName = None):
         """
@@ -155,9 +172,7 @@ class MessageBroker:
 
         log.debug("[%s] Sending answer: %s", handler.handlerId, answer_update)
         self.send([answer_update], routing_key = "mon.device.command.update")
-
-        if handler.uid in self._commands:
-            del self._commands[handler.uid]
+        self.clearCommand(command)
 
     def sendAmqpAnswer(self, handler, data):
         """
@@ -197,7 +212,7 @@ class MessageBroker:
             with conn.Consumer([command_queue], callbacks = [self.onCommand]):
                 try:
                     conn.ensure_connection()
-                    conn.drain_events(timeout=1)
+                    conn.drain_events(timeout = 1)
                     command = self.getCommand(handler)
                     if command:
                         log.debug('[%s] We got command: %s',

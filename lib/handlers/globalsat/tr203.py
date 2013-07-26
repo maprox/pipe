@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Globalsat TR-203
-@copyright 2009-2012, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
 import re
@@ -16,20 +16,6 @@ class Handler(GlobalsatHandler):
     """ Globalsat. TR-203 """
 
     reportFormat = "SPRAB27GHKLMNO*U!"
-
-    def __init__(self, store, thread):
-        """ Constructor """
-        GlobalsatHandler.__init__(self, store, thread)
-
-        # Options for Globalsat TR-203
-        self.default_options.update({
-          # 0~65535
-          # SMS  0 or 1  = 1 SOS alarm report;
-          #      2~65535 = 2~65535 SOS alarm report
-          # GPRS 0       = 1 SOS alarm report;
-          #      1~65535 = continue send SOS alarm report till receive stop command
-          'H1': '0'
-        })
 
     def translateConfigOptions(self, send, options):
         """

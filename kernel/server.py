@@ -74,7 +74,6 @@ class Server():
         """
         log.debug("Server::run()")
         self.server_thread = Thread(target = self.server.serve_forever)
-        #self.server_thread.daemon = True
-        self.server_thread.setDaemon(conf.setDaemon)
+        self.server_thread.setDaemon(False)
         self.server_thread.start()
         log.info("Server is started on port %s", self.port)

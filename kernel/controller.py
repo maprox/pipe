@@ -31,10 +31,7 @@ class Controller(object):
         log.debug('Configuration path: %s' % path)
         conf.read(path)
         conf.port = conf.getint("general", "port")
-        conf.socketTimeout = conf.getint("general", "socketTimeout")
         conf.socketPacketLength = conf.getint("general", "socketPacketLength")
-        conf.socketDataMaxLength = conf.getint("general", "socketDataMaxLength")
-        conf.setDaemon = conf.getboolean("general", "setDaemon")
         conf.pathStorage = conf.get("general", "pathStorage")
         conf.pathTrash = conf.get("general", "pathTrash")
 

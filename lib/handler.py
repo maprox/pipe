@@ -11,6 +11,7 @@ import os
 import binascii
 import json
 import base64
+import socket
 from urllib.parse import urlencode
 from kernel.logger import log
 from kernel.config import conf
@@ -224,16 +225,18 @@ class AbstractHandler(object):
         """
 
         sock = self.getThread().request
-        sock.settimeout(conf.socketTimeout)
+        sock.settimeout(60) # timeout eq. 5 seconds
         total_data = []
         while True:
             try:
                 data = sock.recv(conf.socketPacketLength)
+            except socket.timeout:
+                self.processEvents()
+                continue
             except Exception as E:
                 log.debug('[%s] %s', self.handlerId, E)
                 break
             log.debug('[%s] Data chunk = %s', self.handlerId, data)
-            if not data: break
             total_data.append(data)
             # I don't know why [if not data: break] is not working,
             # so let's do break here
@@ -254,6 +257,13 @@ class AbstractHandler(object):
         else:
             log.error("[%s] Handler thread is not found!", self.handlerId)
         return self
+
+    def processEvents(self):
+        """
+         Process some events while waiting for data from device
+         @return:
+        """
+        pass
 
     def store(self, packets):
         """

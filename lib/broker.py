@@ -52,45 +52,6 @@ class MessageBroker:
         routingKey = 'mon.device.packet.create.worker%s' % workerNum
         return routingKey
 
-    def storeCommand(self, command, message):
-        """
-         Stores command as current
-         @param command: Command object as dict or string
-         @param message: AMQP message instance
-         @return dict Command dict object
-        """
-        if isinstance(command, str):
-            command = json.loads(command)
-        uid = command["uid"]
-        if uid not in self._commands:
-            self._commands[uid] = {}
-        self._commands[uid][command['guid']] = command
-        return command
-
-    def getCommand(self, handler):
-        """
-         Returns an AMQP message from local buffer
-         @param handler: AbstractHandler
-        """
-        command = None
-        if handler.uid not in self._commands:
-            return command
-        if self._commands[handler.uid]:
-            guid, command = self._commands[handler.uid].popitem()
-        return command
-
-    def clearCommand(self, command):
-        """
-         Removes command from local storage
-         @param handler: AbstractHandler
-        """
-        uid = command['uid']
-        if uid not in self._commands:
-            return
-        guid = command['guid']
-        if guid in self._commands[uid]:
-            del self._commands[uid][guid]
-
     def send(self, packets, routing_key = None, exchangeName = None):
         """
          Sends packets to the message broker
@@ -235,6 +196,41 @@ class MessageBroker:
         log.debug("Got AMQP message %s" % body)
         self.storeCommand(body, message)
         message.ack()
+
+    def storeCommand(self, command, message):
+        """
+         Stores command as current
+         @param command: Command object as dict or string
+         @param message: AMQP message instance
+         @return dict Command dict object
+        """
+        if isinstance(command, str):
+            command = json.loads(command)
+        uid = command["uid"]
+        if uid not in self._commands:
+            self._commands[uid] = {}
+        self._commands[uid][command['guid']] = command
+        return command
+
+    def getCommand(self, handler):
+        """
+         Returns an AMQP message from local buffer
+         @param handler: AbstractHandler
+        """
+        command = None
+        if (handler.uid in self._commands) and self._commands[handler.uid]:
+            guid, command = self._commands[handler.uid].popitem()
+        return command
+
+    def clearCommand(self, command):
+        """
+         Removes command from local storage
+         @param handler: AbstractHandler
+        """
+        uid = command['uid']
+        guid = command['guid']
+        if (uid in self._commands) and (guid in self._commands[uid]):
+            del self._commands[uid][guid]
 
     def handlerInitialize(self, handler):
         """

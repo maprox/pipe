@@ -161,8 +161,7 @@ class MessageBroker:
          @return: received packets
         """
         content = None
-        connection = BrokerConnection(conf.amqpConnection)
-        with connections[connection].acquire(block=True) as conn:
+        with BrokerConnection(conf.amqpConnection) as conn:
             routing_key = conf.environment + '.mon.device.command.' +\
                 str(handler.uid)
             log.debug('[%s] Check commands queue %s',

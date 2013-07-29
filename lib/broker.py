@@ -326,6 +326,7 @@ class MessageBrokerThread:
         command = broker.storeCommand(body, message)
         handler = self._protocolHandlerClass(pipe.Manager(), False)
         handler.processCommand(command)
+        message.ack()
 
 # --------------------------------------------------------------------
 

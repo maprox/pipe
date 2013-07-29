@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Abstract class for packet factory
 @copyright 2013, Maprox LLC
-'''
+"""
 
 from lib.commands import *
 
@@ -18,7 +18,7 @@ class AbstractFactory:
     def __init__(self, config = None):
         """
          Constructor of Factory.
-         @param params: Factory parameters
+         @param config: Factory configuration
         """
         self.config = config or {}
 
@@ -71,6 +71,6 @@ class AbstractCommandFactory(AbstractFactory):
         commandClassName = getCommandClassByAlias(data["command"], self.module)
         if commandClassName:
             params = {} if not "params" in data else data["params"]
-            return commandClassName(params)
+            return commandClassName(params, data)
         else:
             return None

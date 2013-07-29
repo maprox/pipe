@@ -18,12 +18,16 @@ class AbstractCommand(object):
     alias = None
     """ Command alias """
 
-    def __init__(self, params = None):
+    _commandData = None
+    """ Command initial data """
+
+    def __init__(self, params = None, commandData = None):
         """
          Initialize command with specific params
          @param params: dict
          @return:
         """
+        self._commandData = commandData
         self.setParams(params)
 
     def setParams(self, params):

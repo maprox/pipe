@@ -70,7 +70,12 @@ class GlobalsatCommand(AbstractCommand):
          @param transport: str
          @return: list of dicts
         """
-        cmd = self.getCommandText()
+        cmdText = self.getCommandText()
+        uid = ''
+        if 'uid' in self._commandData:
+            uid = self._commandData['uid']
+        cmd = str.format("GSC,{uid},{cmd}", uid = uid, cmd = cmdText)
+        cmd = packets.addChecksum(cmd)
         if transport == "tcp":
             return cmd.encode()
         return cmd
@@ -208,13 +213,15 @@ class TestCase(unittest.TestCase):
                 'outputNumber': 2
             }
         })
-        self.assertEqual(cmd.getData('sms'), 'Lo(2,1)')
+        self.assertEqual(cmd.getData('sms'), 'GSC,,Lo(2,1)*5A!')
 
     def test_customMessage(self):
         cmd = self.factory.getInstance({
             'command': 'custom',
+            'uid': '0123456789012345',
             'params': {
                 'message': 'SOME CUSTOM COMMAND'
             }
         })
-        self.assertEqual(cmd.getData('tcp'), b'SOME CUSTOM COMMAND')
+        self.assertEqual(cmd.getData('tcp'),
+            b'GSC,0123456789012345,SOME CUSTOM COMMAND*17!')

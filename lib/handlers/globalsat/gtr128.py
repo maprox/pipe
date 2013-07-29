@@ -5,10 +5,6 @@
 @copyright 2009-2013, Maprox LLC
 """
 
-import re
-from datetime import datetime
-
-from kernel.logger import log
 from kernel.config import conf
 from lib.handlers.globalsat.abstract import GlobalsatHandler
 from lib.handlers.globalsat.packets import *
@@ -75,20 +71,6 @@ class Handler(GlobalsatHandler):
             elif item['option'] == 'send_by_angle':
                 command += ',S8=' + val
         return command
-
-    #def getCommandTextByName(self, alias, params):
-    #    """
-    #      Returns command text according to command alias and params
-    #      @param alias: command name
-    #      @param params: dict with command params
-    #      @return str or None
-    #    """
-    #    if alias == "activate_digital_output":
-    #        return "Lo(1,1)"
-    #    elif alias == "deactivate_digital_output":
-    #        return "Lo(1,0)"
-    #    return super(Handler, self).getCommandTextByName(alias, params)
-
 
 # ===========================================================================
 # TESTS

@@ -200,14 +200,13 @@ class MessageBroker:
          @param message: AMQP message object
         """
         log.debug("Got AMQP message %s" % body)
-        self.storeCommand(body, message)
+        self.storeCommand(body)
         message.ack()
 
-    def storeCommand(self, command, message):
+    def storeCommand(self, command):
         """
          Stores command as current
          @param command: Command object as dict or string
-         @param message: AMQP message instance
          @return dict Command dict object
         """
         if isinstance(command, str):
@@ -323,7 +322,7 @@ class MessageBrokerThread:
         import kernel.pipe as pipe
         log.debug('[%s] Received command = %s', self._protocolAlias, body)
 
-        command = broker.storeCommand(body, message)
+        command = broker.storeCommand(body)
         handler = self._protocolHandlerClass(pipe.Manager(), False)
         handler.processCommand(command)
         message.ack()

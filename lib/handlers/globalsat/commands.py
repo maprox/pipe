@@ -20,7 +20,6 @@ class GloblasatCommandConfigure(AbstractCommandConfigure):
     def getSmsData(self, config):
         """
          Converts options to string
-         @param options: options
          @param config: request data
          @return: string
         """
@@ -50,6 +49,101 @@ class GloblasatCommandConfigure(AbstractCommandConfigure):
             return self.getSmsData(self._initiationConfig)
         else:
             return super(GloblasatCommandConfigure, self).getData(transport)
+
+# ---------------------------------------------------------------------------
+
+class CommandActivateDigitalOutput(AbstractCommand):
+    """
+     Activates digital output by number
+    """
+    alias = 'activate_digital_output'
+
+    __outputNumber = 0
+
+    @property
+    def outputNumber(self):
+        return self.__outputNumber
+
+    @outputNumber.setter
+    def outputNumber(self, value):
+        if 0 <= value <= 15:
+            self.__outputNumber = value
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
+
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        return "Lo(%d,1)" % self.outputNumber
+
+# ---------------------------------------------------------------------------
+
+class CommandDeactivateDigitalOutput(CommandActivateDigitalOutput):
+    """
+     Deactivates digital output by number
+    """
+    alias = 'deactivate_digital_output'
+
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        return "Lo(%d,0)" % self.outputNumber
+
+# ---------------------------------------------------------------------------
+
+class CommandRestart(AbstractCommand):
+    alias = 'restart_tracker'
+
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        return "LH"
+
+# ---------------------------------------------------------------------------
+
+class CommandCustom(AbstractCommand):
+    alias = 'custom'
+
+    __message = None
+
+    @property
+    def message(self):
+        return self.__message
+
+    @message.setter
+    def message(self, value):
+        self.__message = value
+
+    def setParams(self, params):
+        """
+         Initialize command with params
+         @param params:
+         @return:
+        """
+        self.message = dictCheckItem(params, 'message', '')
+
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        return self.message
 
 # ---------------------------------------------------------------------------
 
@@ -85,3 +179,21 @@ class TestCase(unittest.TestCase):
                 conf.get('settings', 'initialConfig') + \
                 ',D1=,D2=,D3=,E0=trx.maprox.net,E1=21202*0A!'
         }])
+
+    def test_digitalOutputs(self):
+        cmd = self.factory.getInstance({
+            'command': 'activate_digital_output',
+            'params': {
+                'outputNumber': 2
+            }
+        })
+        self.assertEqual(cmd.getData('sms'), 'Lo(2,1)')
+
+    def test_customMessage(self):
+        cmd = self.factory.getInstance({
+            'command': 'custom',
+            'params': {
+                'message': 'SOME CUSTOM COMMAND'
+            }
+        })
+        self.assertEqual(cmd.getData('tcp'), 'SOME CUSTOM COMMAND')

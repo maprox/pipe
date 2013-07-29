@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Globalsat base class for other Globalsat protocols
 @copyright 2009-2013, Maprox LLC
-'''
+"""
 
 import re
 import json
@@ -409,24 +409,6 @@ class GlobalsatHandler(AbstractHandler):
             log.error("Unknown data format...")
         else:
             log.error("Unknown data format for %s", mu.group('uid'))
-
-    def getCommandTextByName(self, alias, params):
-        """
-          Returns command text according to command alias and params
-          @param alias: command name
-          @param params: dict with command params
-          @return str or None
-        """
-        commandText = None
-        if alias == "custom":
-            commandText = params['message']
-        if alias == "activate_digital_output":
-            commandText = "Lo(%d,1)" % params['outputNumber']
-        elif alias == "deactivate_digital_output":
-            commandText = "Lo(%d,0)" % params['outputNumber']
-        elif alias == "restart_tracker":
-            commandText = "LH"
-        return commandText
 
     def processCommandReadSettings(self, task, data):
         """

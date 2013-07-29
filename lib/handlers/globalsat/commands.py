@@ -52,7 +52,32 @@ class GloblasatCommandConfigure(AbstractCommandConfigure):
 
 # ---------------------------------------------------------------------------
 
-class CommandActivateDigitalOutput(AbstractCommand):
+class GlobalsatCommand(AbstractCommand):
+    """
+     Abstract globlasat command
+    """
+
+    def getCommandText(self):
+        """
+         Returns command text for globalsat command
+         @return: str
+        """
+        return ''
+
+    def getData(self, transport = "tcp"):
+        """
+         Returns command data array accordingly to the transport
+         @param transport: str
+         @return: list of dicts
+        """
+        cmd = self.getCommandText()
+        if transport == "tcp":
+            return cmd.encode()
+        return cmd
+
+# ---------------------------------------------------------------------------
+
+class CommandActivateDigitalOutput(GlobalsatCommand):
     """
      Activates digital output by number
     """
@@ -77,11 +102,10 @@ class CommandActivateDigitalOutput(AbstractCommand):
         """
         self.outputNumber = int(dictCheckItem(params, 'outputNumber', 0))
 
-    def getData(self, transport = "tcp"):
+    def getCommandText(self):
         """
          Returns command data array accordingly to the transport
-         @param transport: str
-         @return: list of dicts
+         @return: str
         """
         return "Lo(%d,1)" % self.outputNumber
 
@@ -93,30 +117,28 @@ class CommandDeactivateDigitalOutput(CommandActivateDigitalOutput):
     """
     alias = 'deactivate_digital_output'
 
-    def getData(self, transport = "tcp"):
+    def getCommandText(self):
         """
          Returns command data array accordingly to the transport
-         @param transport: str
-         @return: list of dicts
+         @return: str
         """
         return "Lo(%d,0)" % self.outputNumber
 
 # ---------------------------------------------------------------------------
 
-class CommandRestart(AbstractCommand):
+class CommandRestart(GlobalsatCommand):
     alias = 'restart_tracker'
 
-    def getData(self, transport = "tcp"):
+    def getCommandText(self):
         """
          Returns command data array accordingly to the transport
-         @param transport: str
-         @return: list of dicts
+         @return: str
         """
         return "LH"
 
 # ---------------------------------------------------------------------------
 
-class CommandCustom(AbstractCommand):
+class CommandCustom(GlobalsatCommand):
     alias = 'custom'
 
     __message = None
@@ -137,11 +159,10 @@ class CommandCustom(AbstractCommand):
         """
         self.message = dictCheckItem(params, 'message', '')
 
-    def getData(self, transport = "tcp"):
+    def getCommandText(self):
         """
          Returns command data array accordingly to the transport
-         @param transport: str
-         @return: list of dicts
+         @return: str
         """
         return self.message
 
@@ -196,4 +217,4 @@ class TestCase(unittest.TestCase):
                 'message': 'SOME CUSTOM COMMAND'
             }
         })
-        self.assertEqual(cmd.getData('tcp'), 'SOME CUSTOM COMMAND')
+        self.assertEqual(cmd.getData('tcp'), b'SOME CUSTOM COMMAND')

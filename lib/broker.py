@@ -5,6 +5,7 @@
 @copyright 2013, Maprox LLC
 """
 
+from dateutil.parser import parse
 from threading import Thread
 from kernel.config import conf
 from kernel.logger import log
@@ -68,8 +69,17 @@ class MessageBroker:
                 conn.connect()
                 connChannel = conn.channel()
                 queuesConfig = {}
+
+                # spike-nail START
+                timePrev = None
+                # spike-nail END
+
                 for packet in packets:
                     uid = None if 'uid' not in packet else packet['uid']
+
+                    timeCurr = None
+                    if 'time' in packet:
+                        timeCurr = packet['time']
 
                     if not uid in queuesConfig:
                         routingKey = routing_key
@@ -86,6 +96,19 @@ class MessageBroker:
                             )
                         }
 
+                    # spike-nail START
+                    if timePrev and timeCurr:
+                        t1 = parse(timeCurr)
+                        t2 = parse(timePrev)
+                        if t2 > t1:
+                            tt = t1
+                            t1 = t2
+                            t2 = tt
+                        if (t1 - t2).seconds < 10:
+                            log.debug('Skip packet with time = ' + timeCurr)
+                            continue # skip this packet if it's too close
+                    # spike-nail END
+
                     config = queuesConfig[uid]
                     with conn.Producer(channel = connChannel) as producer:
                         conn.ensure_connection()
@@ -99,7 +122,12 @@ class MessageBroker:
                     if uid:
                         msg = 'Packet for "%s" is sent. ' % uid
                         if 'time' in packet:
-                            msg += 'packet[\'time\'] = ' + packet['time']
+                            msg += 'packet[\'time\'] = ' + timeCurr
+
+                            # spike-nail START
+                            timePrev = packet['time']
+                            # spike-nail END
+
                         log.debug(msg)
                     else:
                         log.debug('Message is sent via message broker')

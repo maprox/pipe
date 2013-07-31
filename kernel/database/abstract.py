@@ -31,6 +31,9 @@ class DatabaseAbstract(object):
     def getCommands(self):
         """ Reads command from redis """
 
+        # commands are off
+        return []
+
         log.debug('Redis key is: ' + self._commandKey)
         commands = self._store.hget(self._commandKey, 'd')
 

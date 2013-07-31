@@ -13,6 +13,7 @@ from kombu import BrokerConnection, Exchange, Queue
 
 import json
 import time
+import hashlib
 
 COMMAND_STATUS_CREATED = 1
 COMMAND_STATUS_SUCCESS = 2
@@ -44,8 +45,8 @@ class MessageBroker:
         """
         workerNum = '0'
         if imei and len(imei) > 0:
-            workerNum = imei[-1:].upper()
-        if workerNum not in '0123456789':
+            workerNum = hashlib.md5(imei.encode()).hexdigest()[-1:].upper()
+        if workerNum not in '0123456789ABCDEF':
             workerNum = '0'
         routingKey = 'mon.device.packet.create.worker%s' % workerNum
         return routingKey

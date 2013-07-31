@@ -11,6 +11,7 @@ from struct import unpack, pack, calcsize
 from kernel.logger import log
 from lib.handler import AbstractHandler
 import lib.handlers.galileo.packets as packets
+import lib.handlers.galileo.commands as commands
 
 # ---------------------------------------------------------------------------
 
@@ -33,6 +34,7 @@ class GalileoHandler(AbstractHandler):
         """
         super(GalileoHandler, self).initialization()
         self._packetsFactory = packets.PacketFactory()
+        self._commandsFactory = commands.CommandFactory()
 
     def needCommandProcessing(self):
         """
@@ -48,7 +50,7 @@ class GalileoHandler(AbstractHandler):
         """
         #if (self.__packNum == 1) and (self.__imageReceivingConfig is None):
         #    self.__packNum += 1
-        #    self.sendCommand("Makephoto 1")
+        #    self.sendInternalCommand("Makephoto 1")
 
         observerPackets = self.translate(protocolPacket)
         self.sendAcknowledgement(protocolPacket)
@@ -84,7 +86,7 @@ class GalileoHandler(AbstractHandler):
         self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
 
-    def sendCommand(self, command):
+    def sendInternalCommand(self, command):
         """
          Sends command to the tracker
          @param command: Command string

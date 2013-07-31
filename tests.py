@@ -9,6 +9,7 @@ import unittest
 
 from lib.handlers.galileo.tags import TestCase as tc0
 from lib.handlers.galileo.packets import TestCase as tc1
+from lib.handlers.galileo.commands import TestCase as tc1b
 from lib.handlers.galileo.abstract import TestCase as tc2
 from lib.crc16 import TestCase as tc3
 from lib.handlers.naviset.packets import TestCase as tc4

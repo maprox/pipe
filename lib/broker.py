@@ -5,7 +5,7 @@
 @copyright 2013, Maprox LLC
 """
 
-from dateutil.parser import parse
+from datetime import datetime
 from threading import Thread
 from kernel.config import conf
 from kernel.logger import log
@@ -98,8 +98,9 @@ class MessageBroker:
 
                     # spike-nail START
                     if timePrev and timeCurr:
-                        t1 = parse(timeCurr)
-                        t2 = parse(timePrev)
+                        fmtDate = "%Y-%m-%dT%H:%M:%S.%f"
+                        t1 = datetime.strptime(timeCurr, fmtDate)
+                        t2 = datetime.strptime(timePrev, fmtDate)
                         if t2 > t1:
                             tt = t1
                             t1 = t2

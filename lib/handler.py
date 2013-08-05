@@ -128,29 +128,6 @@ class AbstractHandler(object):
         log.debug('[%s] Ok we can process commands!', self.handlerId)
 
         self.processCommands()
-
-        # try is now silently excepting all the errors
-        # to avoid connection errors during testing
-        try:
-            current_db = db.get(self.uid)
-            self.processRequest(current_db.getCommands())
-
-            current_db = db.get(self.uid)
-            if current_db.isSettingsReady():
-                send = {}
-                config = self.translateConfig(current_db.getSettings())
-                send['config'] = json.dumps(config, separators=(',',':'))
-                send['id_action'] = current_db.getSettingsTaskId()
-                log.debug('[%s] Sending config: ' +
-                    conf.pipeSetUrl + urlencode(send),
-                    self.handlerId)
-                connection = urlopen(conf.pipeSetUrl, urlencode(send).encode())
-                answer = connection.read()
-                log.debug('[%s] Config answered: ' + answer.decode(),
-                    self.handlerId)
-                current_db.deleteSettings()
-        except Exception as E:
-            log.error('[%s] %s', self.handlerId, E)
         return self
 
     def processProtocolPacket(self, protocolPacket):
@@ -160,63 +137,6 @@ class AbstractHandler(object):
          @param protocolPacket: Protocol packet
         """
         pass
-
-    def processRequest(self, data):
-        """
-         Processing of observer request from socket
-         @param data: request
-        """
-        for command in data:
-            function_name = 'processCommand' \
-              + command['action'][0].upper() \
-              + command['action'][1:]
-            log.debug('[%s] Command is: ' + function_name, self.handlerId)
-            function = getattr(self, function_name)
-            if 'value' in command:
-                function(command['id'], command['value'])
-            else:
-                function(command['id'], None)
-        return self
-
-    def getTaskData(self, task, data = None):
-        """
-         Return close task data
-         @param task: Task identifier
-         @param data: Result data to send. [Optional]
-         @return dict
-        """
-        message = { "id_action": task }
-        if data is not None:
-            content = data
-            if isinstance(data, str):
-                content = [{
-                    "message": data
-                }]
-            message['data'] = json.dumps(content)
-        return message
-
-    def processCloseTask(self, task, data = None):
-        """
-         Close task
-         @param task: Task identifier
-         @param data: Result data to send. [Optional]
-        """
-        message = self.getTaskData(task, data)
-        params = urlencode(message)
-        log.debug('[%s] Close task: ' + conf.pipeFinishUrl + params,
-            self.handlerId)
-
-        urlParts = re.search('//(.+?)(/.+)', conf.pipeFinishUrl)
-        restHost = urlParts.group(1)
-        restPath = urlParts.group(2)
-
-        conn = http.client.HTTPConnection(restHost, 80)
-        conn.request("POST", restPath, params, {
-            "Content-type": "application/x-www-form-urlencoded",
-            "Accept": "text/plain"
-        })
-        conn.getresponse()
-        return self
 
     def recv(self):
         """
@@ -333,15 +253,6 @@ class AbstractHandler(object):
             log.error('[%s] sendImages():\n %s',
               self.handlerId, result.getErrorsList())
 
-    def processCommandProcessSms(self, task, data):
-        """
-         Processing of input sms-message
-         @param task: id task
-         @param data: data string
-        """
-        self.processCloseTask(task)
-        return self
-
     def setPacketSensors(self, packet, sensor):
         """
          Makes a copy of some packet data into sensor
@@ -371,27 +282,6 @@ class AbstractHandler(object):
             section = conf['settings']
             return section.get(key, defaultValue)
         return defaultValue
-
-    def processCommandReadSettings(self, task, data):
-        """
-         Sending command to read all of device configuration
-         @param task: id task
-         @param data: data string
-        """
-        log.error('[%s] processCommandReadSettings NOT IMPLEMENTED',
-            self.handlerId)
-        return self.processCloseTask(task, None)
-
-    def processCommandSetOption(self, task, data):
-        """
-         Set device configuration
-         @param task: id task
-         @param data: data dict()
-        """
-        log.error('[%s] processCommandSetOption NOT IMPLEMENTED',
-            self.handlerId)
-        return self.processCloseTask(task, None)
-
 
     def processCommands(self):
         """

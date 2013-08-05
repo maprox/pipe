@@ -208,19 +208,6 @@ class Handler(AbstractHandler):
         self.setPacketSensors(packet, sensor)
         return packet
 
-    def processCommandProcessSms(self, task, data):
-        """
-         Processing of input sms-message
-         @param task: id task
-         @param data: data string
-        """
-        log.debug(data)
-        data = json.loads(data)
-        buffer = data['message'].encode()
-        self.processDataBuffer(buffer, 'sms_format1')
-        self.processCloseTask(task)
-        return self
-
 # ===========================================================================
 # TESTS
 # ===========================================================================

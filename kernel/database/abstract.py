@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Database handler class
-@copyright 2009-2012, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
 import json
@@ -27,30 +27,6 @@ class DatabaseAbstract(object):
         else:
             self._store = redis.StrictRedis(host=conf.redisHost,
                 port=conf.redisPort, db=0)
-
-    def getCommands(self):
-        """ Reads command from redis """
-
-        # commands are off
-        return []
-
-        log.debug('Redis key is: ' + self._commandKey)
-        commands = self._store.hget(self._commandKey, 'd')
-
-        if commands is None:
-            log.info('Requesting commands at ' \
-              + conf.pipeRequestUrl + self._requestParam)
-            connection = urlopen(conf.pipeRequestUrl + self._requestParam)
-            commands = self._store.hget(self._commandKey, 'd')
-
-        if commands is None:
-            log.error('Error reading actions for  ' + self.getLogName())
-            commands = '[]'
-        else:
-            commands = commands.decode("utf-8")
-
-        log.debug('Commands for ' + self.getLogName() + ' are: ' + commands)
-        return json.loads(commands)
 
     def getLogName(self):
         """ Returns name to write in logs """

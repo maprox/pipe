@@ -21,10 +21,6 @@ try:
     conf.read(options.pipeconf)
 
     # pipe settings
-    conf.pipeKey = conf.get("pipe", "key")
-    conf.pipeSetUrl = conf.get("pipe", "urlset")
-    conf.pipeFinishUrl = conf.get("pipe", "urlfinish")
-    conf.pipeRequestUrl = conf.get("pipe", "urlrequest")
     conf.redisHost = conf.get("redis", "host")
     conf.redisPort = int(conf.get("redis", "port"))
     conf.redisPassword = conf.get("redis", "password")

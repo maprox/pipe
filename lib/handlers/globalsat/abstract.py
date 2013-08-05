@@ -410,70 +410,70 @@ class GlobalsatHandler(AbstractHandler):
         else:
             log.error("Unknown data format for %s", mu.group('uid'))
 
-    def processCommandReadSettings(self, task, data):
-        """
-         Sending command to read all of device configuration
-         @param task: id task
-         @param data: data string
-        """
-        current_db = db.get(self.uid)
-        if not current_db.isReadingSettings() \
-          and not current_db.isSettingsReady():
-            current_db.startReadingSettings(task)
-            self.sendInternalCommand('N1(OO=02),L1(ALL)')
-        self.processCloseTask(task, None)
+    #def processCommandReadSettings(self, task, data):
+    #    """
+    #     Sending command to read all of device configuration
+    #     @param task: id task
+    #     @param data: data string
+    #    """
+    #    current_db = db.get(self.uid)
+    #    if not current_db.isReadingSettings() \
+    #      and not current_db.isSettingsReady():
+    #        current_db.startReadingSettings(task)
+    #        self.sendInternalCommand('N1(OO=02),L1(ALL)')
+    #    self.processCloseTask(task, None)
 
-    def processCommandSetOption(self, task, data):
-        """
-         Set device configuration
-         @param task: id task
-         @param data: data dict()
-        """
-        current_db = db.get(self.uid)
-        if not current_db.isReadingSettings():
-            command = 'GSS,' + self.uid + ',3,0'
-            data = json.loads(data)
-            if type(data) is dict:
-                data = [data]
-            command = command + self.addCommandSetOptions(data)
-            command = addChecksum(command)
-            log.debug('Command sent: ' + command)
-            self.send(command.encode())
-            self.processCommandReadSettings(task, None)
-            self.processCloseTask(task, None)
+    #def processCommandSetOption(self, task, data):
+    #    """
+    #     Set device configuration
+    #     @param task: id task
+    #     @param data: data dict()
+    #    """
+    #    current_db = db.get(self.uid)
+    #    if not current_db.isReadingSettings():
+    #        command = 'GSS,' + self.uid + ',3,0'
+    #        data = json.loads(data)
+    #        if type(data) is dict:
+    #            data = [data]
+    #        command = command + self.addCommandSetOptions(data)
+    #        command = addChecksum(command)
+    #        log.debug('Command sent: ' + command)
+    #        self.send(command.encode())
+    #        self.processCommandReadSettings(task, None)
+    #        self.processCloseTask(task, None)
 
-    def addCommandSetOptions(self, data):
-        """
-         Add device options
-         @param data: data dict()
-        """
-        command = ''
-        reportMediaNeeded = False
-        for item in data:
-            val = str(item['value'])
-            if item['option'] == 'sos_phone_1':
-                command += ',G0=' + val
-                reportMediaNeeded = True
-            elif item['option'] == 'sos_phone_2':
-                command += ',G1=' + val
-                reportMediaNeeded = True
-            elif item['option'] == 'sos_phone_3':
-                command += ',G2=' + val
-                reportMediaNeeded = True
-            elif item['option'] == 'sos_phone_4':
-                command += ',G3=' + val
-                reportMediaNeeded = True
-            elif item['option'] == 'sos_phone_5':
-                command += ',G4=' + val
-                reportMediaNeeded = True
-            elif item['option'] == 'sos_phone_6':
-                command += ',G5=' + val
-                reportMediaNeeded = True
+    #def addCommandSetOptions(self, data):
+    #    """
+    #     Add device options
+    #     @param data: data dict()
+    #    """
+    #    command = ''
+    #    reportMediaNeeded = False
+    #    for item in data:
+    #        val = str(item['value'])
+    #        if item['option'] == 'sos_phone_1':
+    #            command += ',G0=' + val
+    #            reportMediaNeeded = True
+    #        elif item['option'] == 'sos_phone_2':
+    #            command += ',G1=' + val
+    #            reportMediaNeeded = True
+    #        elif item['option'] == 'sos_phone_3':
+    #            command += ',G2=' + val
+    #            reportMediaNeeded = True
+    #        elif item['option'] == 'sos_phone_4':
+    #            command += ',G3=' + val
+    #            reportMediaNeeded = True
+    #        elif item['option'] == 'sos_phone_5':
+    #            command += ',G4=' + val
+    #            reportMediaNeeded = True
+    #        elif item['option'] == 'sos_phone_6':
+    #            command += ',G5=' + val
+    #            reportMediaNeeded = True
 
-        if reportMediaNeeded:
-            command += ',H0=03'
+    #    if reportMediaNeeded:
+    #        command += ',H0=03'
 
-        return command
+    #    return command
 
 # ===========================================================================
 # TESTS

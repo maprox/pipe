@@ -2,81 +2,17 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Controller
-@copyright 2009-2012, Maprox LLC
+@copyright 2009-2013, Maprox LLC
 '''
 
-from datetime import datetime
-import kernel.pipe as pipe
 from kernel.config import conf
 from kernel.logger import log
-from kernel.dbmanager import db
 
-# ===========================================================================
-class Controller(object):
-    '''
-     Pipe-server controller
-    '''
-
-    def __init__(self):
-        """
-         Controller constructor
-        """
-        log.debug('Controller::__init__')
-
-    def configRewrite(self, path):
-        """
-         Temp function for handler config rewrite
-         @param path: config path
-        """
-        log.debug('Configuration path: %s' % path)
-        conf.read(path)
-        conf.port = conf.getint("general", "port")
-        conf.socketPacketLength = conf.getint("general", "socketPacketLength")
-        conf.pathStorage = conf.get("general", "pathStorage")
-        conf.pathTrash = conf.get("general", "pathTrash")
-
-    def run(self):
-        """
-         Starting check of execution commands
-        """
-        log.debug('Controller::run()')
-        try:
-            commands = db.getController().getCommands()
-            store = pipe.Manager()
-            for command in commands:
-                # controller is temporarily disabled
-                handlerClassPath = 'lib.handlers.' + command['handler']
-                try:
-                    pkg = __import__(
-                        handlerClassPath, globals(), locals(), ['Handler']
-                    )
-                except Exception as E:
-                    log.error(E)
-                    continue
-                if hasattr(pkg, 'Handler'):
-                    # read config temporarily
-                    path = 'conf/handlers/' + command['handler'] + '.conf'
-                    self.configRewrite(path)
-
-                    HandlerClass = getattr(pkg, 'Handler')
-                    handler = HandlerClass(store, False)
-                    handler.uid = command['uid']
-                    function_name = 'processCommand' \
-                      + command['action'][0].upper() \
-                      + command['action'][1:]
-                    log.debug('Command is: ' + function_name)
-                    function = getattr(handler, function_name)
-                    if 'value' in command:
-                        function(command['id'], command['value'])
-                    else:
-                        function(command['id'], None)
-        except Exception as E:
-            log.critical(E)
-
-# ===========================================================================
 import imaplib
 import email
 import kernel.pipe
+
+# ===========================================================================
 
 class CameraChecker(object):
     '''

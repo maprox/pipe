@@ -104,7 +104,7 @@ def movecar(packet):
 
                     #log.debug('Sleep for ' + str(sleep))
                     # sleep
-                    time.sleep(sleep)
+                    #time.sleep(sleep)
 
                     # Sensors
                     sensors = {
@@ -187,3 +187,4 @@ for i, t in enumerate(data):
         name = "t" + str(i),
         args = [t]
     ).start()
+    break

@@ -39,11 +39,6 @@ class Manager(Store):
                 packets.append(obj)
             else:
                 return result
-            # Let's create url_data object
-            url_data = {'data' : json.dumps({
-              'key': conf.pipeKey,
-              'packets': packets
-            })}
             # Let's send packets to AMQP broker
             self.sendPacketsViaBroker(packets)
         except Exception as E:

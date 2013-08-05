@@ -133,10 +133,6 @@ function startProcess($trackers, $flag)
 	foreach ($trackers as $key => $config) {
 		$mask = getMask($key, $flag);
 		print("Starting [$key] protocol process... ");
-		//$cmd = "sudo -u pipe " . WORKING_DIR .
-		//	"pipe-start $key $mask $config[port] $config[pipeconf] " .
-		//	WORKING_DIR;
-		//print($cmd);
 		startInBackground("sudo -u pipe " . WORKING_DIR .
 			"pipe-start $key $mask $config[port] $config[pipeconf] " . WORKING_DIR);
 		print("[OK]\n");
@@ -247,20 +243,16 @@ print("Pipe-server Starter v2.0\n");
 // read input arguments
 $command = '';
 $params = arguments($argv);
-if (is_array($params['input']) && !empty($params['input'][0]))
-{
+if (is_array($params['input']) && !empty($params['input'][0])) {
 	$command = array_shift($params['input']);
 }
-if (!empty($params['f']))
-{
+if (!empty($params['f'])) {
 	$params['flag'] = $params['f'];
 }
-if (!empty($params['p']))
-{
+if (!empty($params['p'])) {
 	$params['port'] = $params['p'];
 }
-if (!empty($params['s']))
-{
+if (!empty($params['s'])) {
 	$params['stop'] = $params['s'];
 }
 

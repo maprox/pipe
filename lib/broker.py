@@ -14,7 +14,7 @@ from kombu import BrokerConnection, Exchange, Queue
 
 import json
 import time
-import hashlib
+#import hashlib
 
 COMMAND_STATUS_CREATED = 1
 COMMAND_STATUS_SUCCESS = 2
@@ -42,15 +42,16 @@ class MessageBroker:
     def getRoutingKey(self, imei):
         """
          Returns routing key name by device imei
-         @param imei: device ideintifier
+         @param imei: device identifier
         """
-        workerNum = '0'
-        if imei and len(imei) > 0:
-            workerNum = hashlib.md5(imei.encode()).hexdigest()[-1:].upper()
-        if workerNum not in '0123456789ABCDEF':
-            workerNum = '0'
-        routingKey = 'mon.device.packet.create.worker%s' % workerNum
-        return routingKey
+        return 'mon.device.packet.create.%s' % imei
+        #workerNum = '0'
+        #if imei and len(imei) > 0:
+        #    workerNum = hashlib.md5(imei.encode()).hexdigest()[-1:].upper()
+        #if workerNum not in '0123456789ABCDEF':
+        #    workerNum = '0'
+        #routingKey = 'mon.device.packet.create.worker%s' % workerNum
+        #return routingKey
 
     def send(self, packets, routing_key = None, exchangeName = None):
         """
@@ -63,8 +64,8 @@ class MessageBroker:
         if (exchangeName is not None) and (exchangeName in self._exchanges):
             exchange = self._exchanges[exchangeName]
 
-        with BrokerConnection(conf.amqpConnection) as conn:
-            try:
+        try:
+            with BrokerConnection(conf.amqpConnection) as conn:
                 log.debug('BROKER: Connect to %s' % conf.amqpConnection)
                 conn.connect()
                 connChannel = conn.channel()
@@ -133,11 +134,9 @@ class MessageBroker:
                     else:
                         log.debug('Message is sent via message broker')
                 conn.release()
-            except Exception as E:
-                if conn and conn.connected:
-                    conn.release()
-                log.error('Error during packet send: %s', E)
-            log.debug('BROKER: Disconnected')
+        except Exception as E:
+            log.error('Error during packet send: %s', E)
+        log.debug('BROKER: Disconnected')
 
     def amqpCommandUpdate(self, handler, status, data):
         """
@@ -193,8 +192,8 @@ class MessageBroker:
          @return: received packets
         """
         content = None
-        with BrokerConnection(conf.amqpConnection) as conn:
-            try:
+        try:
+            with BrokerConnection(conf.amqpConnection) as conn:
                 routing_key = conf.environment + '.mon.device.command.' + \
                     str(handler.uid)
                 log.debug('[%s] Check commands queue %s',
@@ -217,10 +216,8 @@ class MessageBroker:
                     else:
                         log.debug('[%s] No commands found', handler.handlerId)
                 conn.release()
-            except Exception as E:
-                if conn and conn.connected:
-                    conn.release()
-                log.debug('[%s] %s', handler.handlerId, E)
+        except Exception as E:
+            log.error('[%s] %s', handler.handlerId, E)
         return content
 
     def onCommand(self, body, message):
@@ -325,8 +322,8 @@ class MessageBrokerThread:
             routing_key = commandRoutingKey
         )
         while True:
-            with BrokerConnection(conf.amqpConnection) as conn:
-                try:
+            try:
+                with BrokerConnection(conf.amqpConnection) as conn:
                     conn.connect()
                     conn.ensure_connection()
                     log.debug('[%s] Connected to %s',
@@ -337,11 +334,9 @@ class MessageBrokerThread:
                             conn.ensure_connection()
                             conn.drain_events()
                     conn.release()
-                except Exception as E:
-                    if conn and conn.connected:
-                        conn.release()
-                    log.debug('[%s] %s', self._protocolAlias, E)
-                    time.sleep(60) # sleep for 60 seconds after exception
+            except Exception as E:
+                log.error('[%s] %s', self._protocolAlias, E)
+                time.sleep(60) # sleep for 60 seconds after exception
 
     def onCommand(self, body, message):
         """

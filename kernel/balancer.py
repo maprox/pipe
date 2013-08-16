@@ -260,7 +260,7 @@ class PacketReceiveManager:
          Returns check file name by identifier uid
          @return: string
         """
-        return './db/flb_' + hashlib.md5(uid.encode()).hexdigest()
+        return 'db/flb_' + hashlib.md5(uid.encode()).hexdigest()
 
     def sendMessage(self, uid, body = None, ignoreFlag = False):
         """

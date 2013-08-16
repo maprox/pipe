@@ -188,4 +188,3 @@ for i, t in enumerate(data):
         name = "t" + str(i),
         args = [t]
     ).start()
-    time.sleep(10)

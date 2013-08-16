@@ -238,7 +238,7 @@ function doInstall()
 	print("Installation complete\n");
 }
 
-print("Pipe-server Starter v2.0\n");
+print("Pipe-server Starter v2.1\n");
 
 // read input arguments
 $command = '';

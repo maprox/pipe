@@ -1,1 +1,1 @@
-python3.2 restore.py -l conf/logs/restore.conf
+python3 restore.py -l conf/logs/restore.conf

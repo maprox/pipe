@@ -169,7 +169,7 @@ function serviceStart($params)
 		}
 
 		// check for opened ports
-		if (!isPortOpen($config['port'])) {
+		if ($config['port'] && !isPortOpen($config['port'])) {
 			print("Port $config[port] are busy by someone else.\n");
 			if (!$silentMode) {
 				print("Free port $config[port] forcefully? [Y/n]");

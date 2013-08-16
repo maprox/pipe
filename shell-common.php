@@ -54,6 +54,7 @@ function getAllTrackers()
 		$name = $key[1];
 		$return[$name] = readTrackerConfig($name);
 	}
+	$return['balancer'] = readTrackerConfig('balancer');
 	return array_filter($return);
 }
 
@@ -76,6 +77,13 @@ function getTrackers($names, $port = false)
  */
 function readTrackerConfig($name, $port = false)
 {
+	if ($name == 'balancer') {
+		return array(
+			'port' => 0,
+			'pipeconf' => getPipeConf('balancer')
+		);
+	}
+
 	$file = WORKING_DIR . "conf/handlers/$name.conf";
 	if (!file_exists($file)) { return false; }
 

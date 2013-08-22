@@ -8,6 +8,7 @@
 import time
 import socket
 import hashlib
+import json
 
 from collections import deque
 
@@ -136,11 +137,16 @@ class PacketReceiveBalancer:
         """
         threadName = 'SignalResponseThread'
         uid = 'unknown uid [!]'
-        if 'uid' in body:
-            uid = body['uid']
-        log.debug('%s:: < Signal for %s', threadName, uid)
-        self._receiveManager.checkListeningForQueue(uid)
-        self._receiveManager.messageReceived(uid)
+        try:
+            if isinstance(body, str):
+                body = json.loads(body)
+            if 'uid' in body:
+                uid = body['uid']
+            log.debug('%s:: < Signal for %s', threadName, uid)
+            self._receiveManager.checkListeningForQueue(uid)
+            self._receiveManager.messageReceived(uid)
+        except Exception as E:
+            log.error('%s::%s', threadName, E)
         message.ack()
 
 
@@ -229,6 +235,7 @@ class PacketReceiveManager:
             self._messages[uid] = deque()
         # immediate send message if message queue is empty
         if not self._messages[uid]:
+            log.debug('Send immediate for %s', uid)
             self.sendMessage(uid, body)
         # store message to the queue
         self._messages[uid].append({
@@ -297,6 +304,9 @@ class PacketReceiveManager:
         if self._messages[uid]:
             next = self._messages[uid][0]
             nextBody = next['body']
+            log.debug('Got next message for %s: %s', uid, nextBody['time'])
+        else:
+            log.debug('Empty queue for %s', uid)
         self.sendMessage(uid, nextBody, True)
         if first:
             first['message'].ack()

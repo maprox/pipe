@@ -32,6 +32,10 @@ from lib.handlers.teltonika.commands import TestCase as tc15b
 from lib.handlers.atrack.abstract import TestCase as tc16
 from lib.handlers.atrack.packets import TestCase as tc17
 from lib.handlers.atrack.ax5 import TestCase as tc18
+from lib.handlers.autolink.abstract import TestCase as tc19
+from lib.handlers.autolink.default import TestCase as tc20
+from lib.handlers.autolink.packets import TestCase as tc21
+from lib.handlers.autolink.commands import TestCase as tc22
 
 if __name__ == '__main__':
     unittest.main()

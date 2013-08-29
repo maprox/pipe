@@ -182,7 +182,10 @@ class TestCase(unittest.TestCase):
     def test_packagePacket(self):
         packet = self.factory.getInstance(
             b'\x5B\x01\x01\x55\x00\xc5\xcf\xc2\x51' +
-            b''
+            b'\x03\x4d\x8b\x5e\x42\x04\x18\xd6\x14\x42' +
+            b'\x05\x05\x16\x0a\x00\x09\x02\xe0\xcc\x64' +
+            b'\x15\xf5\x01\x00\x00\x20\x00\x00\x00\x00' +
+            b'\x24\x00\x00\x00\x00\x2a\x3a\xcd\x00\x00'
         )
         self.assertEqual(isinstance(packet, PacketHead), True)
         self.assertEqual(isinstance(packet, PacketData), False)

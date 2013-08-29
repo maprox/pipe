@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Demo cars client
 @copyright 2009-2013, Maprox LLC
-'''
+"""
 
 import time
 import threading

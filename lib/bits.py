@@ -2,7 +2,7 @@
 '''
 @project   Maprox <http://www.maprox.net>
 @info      Working with bits utility
-@copyright 2012, Maprox LLC
+@copyright 2012-2013, Maprox LLC
 '''
 
 def bitTest(int_type, offset):
@@ -47,3 +47,26 @@ def bitToggle(int_type, offset):
     """
     mask = 1 << offset
     return (int_type ^ mask)
+
+def bitLen(int_type):
+    """
+     Counts length of integer in bits
+     @param int_type: input integer
+     @return: int
+    """
+    length = 0
+    while int_type:
+        int_type >>= 1
+        length += 1
+    return length
+
+def bitRangeValue(int_type, start, end):
+    """
+     Returns a value of bits in range
+     @param int_type: input value
+     @param offset: start position
+     @param length: count of bits
+     @return: int
+    """
+    mask = 2 **(end - start) - 1
+    return (int_type >> start) & mask

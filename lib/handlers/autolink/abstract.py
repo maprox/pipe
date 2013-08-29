@@ -5,15 +5,12 @@
 @copyright 2012-2013, Maprox LLC
 """
 
-from datetime import datetime
 from struct import pack
 
 from kernel.logger import log
 from lib.handler import AbstractHandler
 import lib.handlers.autolink.packets as packets
 import lib.handlers.autolink.commands as commands
-
-from lib.broker import broker
 
 # ---------------------------------------------------------------------------
 
@@ -46,19 +43,19 @@ class AutolinkHandler(AbstractHandler):
         self.isHeadPacket = False
         log.info('[%s] processProtocolPacket... isHead = %s',
             self.handlerId, self.isHeadPacket)
-        if isinstance(protocolPacket, packets.PacketHead):
-            log.info('[%s] HeadPack is stored.', self.handlerId)
+        if isinstance(protocolPacket, packets.Header):
+            log.info('[%s] Header is stored.', self.handlerId)
             self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
             self.isHeadPacket = True
 
-        if isinstance(protocolPacket, packets.PacketAnswer):
-            log.info("[%s] Storing command answer packet: %s",
-                self.handlerId, protocolPacket.__class__)
-            broker.sendAmqpAnswer(self, protocolPacket)
-            return
+        #if isinstance(protocolPacket, packets.PacketAnswer):
+        #    log.info("[%s] Storing command answer packet: %s",
+        #        self.handlerId, protocolPacket.__class__)
+        #    broker.sendAmqpAnswer(self, protocolPacket)
+        #    return
 
-        if not isinstance(protocolPacket, packets.PacketData):
+        if not isinstance(protocolPacket, packets.Package):
             return
 
         if not self.__headPacketRawData:
@@ -88,22 +85,21 @@ class AutolinkHandler(AbstractHandler):
          Translate gps-tracker data to observer pipe format
          @param protocolPacket: Autolink protocol packet
         """
-        list = []
-        if (protocolPacket == None): return list
-        if not isinstance(protocolPacket, packets.PacketData):
-            return list
-        if (len(protocolPacket.items) == 0):
-            return list
-        for item in protocolPacket.items:
+        packetsList = []
+        if (protocolPacket == None): return packetsList
+        if not isinstance(protocolPacket, packets.Package):
+            return packetsList
+        if (len(protocolPacket.packets) == 0):
+            return packetsList
+        for item in protocolPacket.packets:
             packet = {'uid': self.uid}
             packet.update(item.params)
-            packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
+            packet['time'] = item.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
             # sensors
             sensor = packet['sensors'] or {}
-            sensor['sat_count'] = packet['satellitescount']
             self.setPacketSensors(packet, sensor)
-            list.append(packet)
-        return list
+            packetsList.append(packet)
+        return packetsList
 
     def sendAcknowledgement(self, packet):
         """
@@ -120,7 +116,11 @@ class AutolinkHandler(AbstractHandler):
          Returns acknowledgement buffer value
          @param packet: a L{packets.Packet} subclass
         """
-        return b'\x01' + pack('<H', packet.checksum)
+        if isinstance(packet, packets.Header):
+            return b'\x7b\x00\x00\x7d'
+        elif isinstance(packet, packets.Package):
+            return b'\x7b\x00' + pack('<B', packet.sequenceNum) + b'\x7d'
+        return None
 
 # ===========================================================================
 # TESTS

@@ -5,17 +5,12 @@
 @copyright 2013, Maprox LLC
 '''
 
-
-import os
 import binascii
 from struct import pack
 
 from kernel.logger import log
-from kernel.config import conf
 from kernel.dbmanager import db
 from lib.handler import AbstractHandler
-import lib.consts as consts
-import binascii
 import lib.handlers.teltonika.packets as packets
 import lib.handlers.teltonika.commands as commands
 
@@ -102,12 +97,12 @@ class TeltonikaHandler(AbstractHandler):
          Translate gps-tracker data to observer pipe format
          @param protocolPacket: Teltonika protocol packet
         """
-        list = []
-        if (protocolPacket == None): return list
+        packetsList = []
+        if protocolPacket == None: return packetsList
         if not isinstance(protocolPacket, packets.PacketData):
-            return list
+            return packetsList
         if (len(protocolPacket.AvlDataArray.items) == 0):
-            return list
+            return packetsList
         for item in protocolPacket.AvlDataArray.items:
             packet = {'uid': self.uid}
             packet.update(item.params)
@@ -119,8 +114,8 @@ class TeltonikaHandler(AbstractHandler):
                 sensor = packet['sensors']
             sensor['sat_count'] = packet['satellitescount']
             self.setPacketSensors(packet, sensor)
-            list.append(packet)
-        return list
+            packetsList.append(packet)
+        return packetsList
 
     def sendAcknowledgement(self, packet):
         """
@@ -233,7 +228,7 @@ class TestCase(unittest.TestCase):
 
         self.assertEqual(packet['uid'], '012896001609129')
         self.assertEqual(packet['altitude'], 291)
-        self.assertEqual(packet['time'], '2013-02-01T10:15:20.510000')
+        self.assertEqual(packet['time'], '2013-02-01T10:15:20.509999')
 
         self.assertEqual(packet['sensors']['sat_count'], 7)
         self.assertEqual(packet['sensors']['altitude'], 291)

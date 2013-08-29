@@ -40,7 +40,7 @@ class AutolinkPacket(BasePacket):
 
     @packetId.setter
     def packetId(self, value):
-        if (0 <= value <= 0xFF):
+        if 0 <= value <= 0xFF:
             self.__packetId = value
             self._rebuild = True
 
@@ -97,7 +97,7 @@ class Header(AutolinkPacket):
 
     @protocolVersion.setter
     def protocolVersion(self, value):
-        if (0 <= value <= 0xFF):
+        if 0 <= value <= 0xFF:
             self.__protocolVersion = value
             self._rebuild = True
 
@@ -241,10 +241,10 @@ class Packet(BasePacket):
             elif num == 8: pass # GSM signal strength, MCC, MNC
             elif num == 9:
                 status = unpack('<L', val)[0]
-                for i in range(0, 8):
+                for i in range(8):
                     sensors['din%d' % i] = bitValue(status, i)
-                for i in range(0, 5):
-                    sensors['ain%d' % i] = bitValue(status, 8 + i)
+                for j in range(5):
+                    sensors['ain%d' % j] = bitValue(status, 8 + j)
                 sensors['gsm_modem_status'] = bitRangeValue(status, 12, 14)
                 sensors['gps_module_status'] = bitRangeValue(status, 14, 16)
                 sensors['moving'] = bitValue(status, 16)
@@ -289,7 +289,7 @@ class Packet(BasePacket):
 
     @packetType.setter
     def packetType(self, value):
-        if (0 <= value <= 0xFF):
+        if 0 <= value <= 0xFF:
             self._header = value
             self._rebuild = True
 
@@ -334,7 +334,7 @@ class PacketFactory(AbstractPacketFactory):
         """
           Returns a tag instance by its number
         """
-        if data == None: return
+        if data is None: return
 
         # read packetId
         packetPrefix = data[:1]

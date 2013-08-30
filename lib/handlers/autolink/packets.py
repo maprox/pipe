@@ -143,10 +143,12 @@ class Package(AutolinkPacket):
         # of the packet, so let's determine it by parsing packets
         buffer = self._rawData[2:]
         self.__packets = []
+        self._length = 1
         while True:
             packet = Packet(buffer)
             buffer = packet.rawDataTail
             self.__packets.append(packet)
+            self._length += len(packet.rawData) # increase package length
             if not buffer or (buffer[:1] == b'\x5d'): break
 
     @property

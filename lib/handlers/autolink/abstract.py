@@ -133,3 +133,6 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         import kernel.pipe as pipe
         self.handler = AutolinkHandler(pipe.TestManager(), None)
+
+    def inputData(self):
+        self.handler.processProtocolPacket()

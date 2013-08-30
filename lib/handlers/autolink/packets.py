@@ -213,6 +213,7 @@ class Packet(BasePacket):
             num = unpack('<B', self.body[offset:offset + 1])[0]
             #print(num)
             val = self.body[offset+1:offset+5]
+            #print(val)
             if num == 1:
                 ebv, ibv = unpack('<HH', val)
                 sensors['ext_battery_voltage'] = ebv
@@ -226,7 +227,7 @@ class Packet(BasePacket):
                 longitude = unpack('f', val)[0]
                 sensors['longitude'] = longitude
             elif num == 5:
-                speed, sat, altitude, azimuth = unpack('<BBBB', val)
+                azimuth, altitude, sat, speed = unpack('<BBBB', val)
                 speed *= 1.852
                 altitude *= 10
                 azimuth *= 2
@@ -271,16 +272,15 @@ class Packet(BasePacket):
             self.__params['satellitescount'] = sensors['sat_count']
         self.__params['hdop'] = 1 # fake hdop
 
-    def calculateChecksum(self):
+    def calculateChecksum(self, data = None):
         """
          Returns calculated checksum
          @return: int
         """
-        data = pack('<L', self.__timestamp)
-        data += self._body
-        checksum = 0
-        for c in data:
-            checksum = (checksum + int(c)) % 256
+        if not data:
+            data = pack('<L', self.__timestamp)
+            data += self._body
+        checksum = sum(int(c) for c in data) & 0xFF
         return checksum
 
     @property
@@ -456,3 +456,9 @@ class TestCase(unittest.TestCase):
         for p in packet.packets:
             print(p.params)
         #p = packet.packets[1]
+
+    def test_checksum(self):
+        data = b'[\x0b\x01\x1e\x00 D R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x00\x10\x08\x00\t\x00\x90\xc1V\xfa,\x01\x00\x00\xfa7\x01\x00\x00\x04\x01\x14\x00!D R\xfc\x7fN\x00\x00\xfd\xa5\x90\xc8)\xfe\xaa\xfa\x17\x0c\xff.O\x00\x00\x10\x01<\x00BD R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x00\x15\t\x00\t\x02\xd0\xc4V\x15\xf4\x01\x00\x00F\x00\x00\x1d\x00(\x05\xcc\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\t\x01<\x00PE R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x11\x12\x01\x00\t\x02\xf0\xc4V\x15\xf4\x01\x00\x00F\x00\x00\x1d\x00(\x04\xcc\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\x02]'
+        package = Package(data)
+        p = package.packets[0]
+        self.assertEqual(p.calculateChecksum(data), 4)

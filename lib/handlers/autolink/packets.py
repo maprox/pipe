@@ -260,14 +260,13 @@ class Packet(BasePacket):
             elif num == 6:
                 pass
             offset += 5
-        self.__params['sensors'] = sensors
+        self.__params['sensors'] = sensors.copy()
         # old fashioned params
-        self.__params['latitude'] = sensors['latitude']
-        self.__params['longitude'] = sensors['longitude']
-        self.__params['speed'] = sensors['speed']
-        self.__params['satellitescount'] = sensors['sat_count']
-        self.__params['altitude'] = sensors['altitude']
-        self.__params['azimuth'] = sensors['azimuth']
+        for key in ['latitude', 'longitude', 'speed', 'altitude', 'azimuth']:
+            if key in sensors:
+                self.__params[key] = sensors[key]
+        if 'sat_count' in sensors:
+            self.__params['satellitescount'] = sensors['sat_count']
         self.__params['hdop'] = 1 # fake hdop
 
     def calculateChecksum(self):
@@ -426,3 +425,32 @@ class TestCase(unittest.TestCase):
         self.assertEqual(sensors['altitude'], 100)
         self.assertEqual(sensors['azimuth'], 0)
         self.assertEqual(sensors['ext_battery_voltage'], 15000)
+
+    def test_realPacket(self):
+        packet = self.factory.getInstance(
+            b'[\x01\x01\x14\x00F\xbe\x1fR\xfc\x7fN\x00\x00\xfd\xa5' +
+            b'\x90\xc8)\xfe\xaa\xfa\x17\x0c\xff.O\x00\x00\xa2\x01\x1e' +
+            b'\x00P\xbe\x1fR\x03|\x8b^B\x04\x0c\xd6\x14B\x05\x00\x13' +
+            b'\x08\x00\t\x00\x90\xc5V\xfa,\x01\x00\x00\xfa7\x01\x00' +
+            b'\x00\x92\x01-\x00\xe6\xbe\x1fR\x03|\x8b^B\x04\x0c\xd6' +
+            b'\x14B\x05\x00\x15\t\x00\t\x02\xe0\xc4V\x15\xf4\x01\x00' +
+            b'\x00F\x00\x00\x1b\x00(R\xcb\x00\x00\xfa\xf8\x01\x00\x00' +
+            b'\xfa\xf8\x01\x00\x00\xb9\x012\x00|\xbf\x1fR\x03|\x8b^B' +
+            b'\x04\x0c\xd6\x14B\x05\x00\x15\x07\x00\t\x02\xa0\xc4V\x15' +
+            b'\xf4\x01\x00\x00F\x00\x00\x1b\x00(R\xcb\x00\x00\xfa\xf8' +
+            b'\x01\x00\x00\xfa\xf8\x01\x00\x00\xfa\x90\x01\x00\x00\x99' +
+            b'\x01-\x00\x12\xc0\x1fR\x03|\x8b^B\x04\x0c\xd6\x14B\x05' +
+            b'\x00\x15\x08\x00\t\x02\xa0\xc4V\x15\xf4\x01\x00\x00F\xc2' +
+            b'\x00\x1b\x00(R\xcb\x00\x00\xfa\xf8\x01\x00\x00\xfa' +
+            b'\xf8\x01\x00\x00h]'
+        )
+        self.assertEqual(isinstance(packet, Header), False)
+        self.assertEqual(isinstance(packet, Package), True)
+        self.assertEqual(packet.packetId, 91)
+        self.assertEqual(packet.sequenceNum, 1)
+        self.assertEqual(len(packet.packets), 5)
+        p = packet.packets[0]
+        self.assertEqual(p.timestamp, datetime(2013, 8, 30, 1, 33, 58))
+        for p in packet.packets:
+            print(p.params)
+        #p = packet.packets[1]

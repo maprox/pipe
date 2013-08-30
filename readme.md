@@ -7,3 +7,5 @@ Supported protocols:
 * Galileo
 * Naviset (GT-10, GT-20)
 * Teltonika FMXXXX (FM1100, FM3200, FM4200, FM5300)
+* ATrack (AX5)
+* Autolink

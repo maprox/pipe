@@ -100,7 +100,8 @@ class PacketReceiveBalancer:
         if 'uid' in body:
             uid = body['uid']
         log.debug('%s:: > Signal for %s', threadName, uid)
-        self._receiveManager.checkListeningForQueue(uid)
+        if uid:
+            self._receiveManager.checkListeningForQueue(uid)
         message.ack()
 
     def threadSignalResponseHandler(self):
@@ -143,8 +144,9 @@ class PacketReceiveBalancer:
             if 'uid' in body:
                 uid = body['uid']
             log.debug('%s:: < Signal for %s', threadName, uid)
-            self._receiveManager.checkListeningForQueue(uid)
-            self._receiveManager.messageReceived(uid)
+            if uid:
+                self._receiveManager.checkListeningForQueue(uid)
+                self._receiveManager.messageReceived(uid)
         except Exception as E:
             log.error('%s::%s', threadName, E)
         message.ack()

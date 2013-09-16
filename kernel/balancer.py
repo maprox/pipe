@@ -235,10 +235,7 @@ class PacketReceiveManager:
             uid = body['uid']
         if uid not in self._messages:
             self._messages[uid] = deque()
-        # immediate send message if message queue is empty
-        if not self._messages[uid]:
-            log.debug('Send immediate for %s', uid)
-            self.sendMessage(uid, body)
+        sendImmediateFlag = not self._messages[uid]
         # store message to the queue
         self._messages[uid].append({
             "message": message,
@@ -246,6 +243,10 @@ class PacketReceiveManager:
         })
         log.debug('%s::Packet for %s added to the queue: %s',
             threadName, body['time'], uid)
+        # immediate send message if message queue is empty
+        if sendImmediateFlag:
+            log.debug('Send immediate for %s', uid)
+            self.sendMessage(uid, body)
 
     def checkListeningForQueue(self, uid):
         """

@@ -245,7 +245,7 @@ class PacketReceiveManager:
             threadName, body['time'], uid)
         # immediate send message if message queue is empty
         if sendImmediateFlag:
-            log.debug('Send immediate for %s', uid)
+            log.debug('%s::Send immediate for %s', threadName, uid)
             self.sendMessage(uid, body)
 
     def checkListeningForQueue(self, uid):
@@ -287,9 +287,9 @@ class PacketReceiveManager:
                     f.seek(0)
                     flag = f.read()
                     if ignoreFlag or (flag != QUEUE_IN_PROGRESS_MESSAGE):
-                        broker.send([body], 'mon.device.packet.receive')
                         f.truncate(0)
                         f.write(QUEUE_IN_PROGRESS_MESSAGE)
+                        broker.send([body], 'mon.device.packet.receive')
         except IOError as E:
             log.debug(E)
 

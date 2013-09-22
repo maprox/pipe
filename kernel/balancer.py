@@ -277,8 +277,10 @@ class PacketReceiveManager:
          Send message to the broker
          @param uid: Device identifier
          @param body: New packet body
+         @param ignoreFlag: Send message even if the checkFile is in progress
         """
         try:
+            isSending = False
             checkFile = self.getCheckFileName(uid)
             with open(checkFile, 'a+') as f:
                 if not body:
@@ -289,7 +291,11 @@ class PacketReceiveManager:
                     if ignoreFlag or (flag != QUEUE_IN_PROGRESS_MESSAGE):
                         f.truncate(0)
                         f.write(QUEUE_IN_PROGRESS_MESSAGE)
-                        broker.send([body], 'mon.device.packet.receive')
+                        isSending = True
+                    else:
+                        log.debug('"%s" checkFile in progress!', uid)
+            if isSending:
+                broker.send([body], 'mon.device.packet.receive')
         except IOError as E:
             log.debug(E)
 

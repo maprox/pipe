@@ -6,20 +6,15 @@
 """
 
 from datetime import datetime
-import re
 import os
 import binascii
-import json
 import base64
 import socket
-from urllib.parse import urlencode
 from kernel.logger import log
 from kernel.config import conf
-from kernel.dbmanager import db
 from lib.storage import storage
-from urllib.request import urlopen
 from lib.broker import broker
-import http.client
+
 
 class AbstractHandler(object):
     """

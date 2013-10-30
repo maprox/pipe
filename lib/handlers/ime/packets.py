@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 """
 @project   Maprox <http://www.maprox.net>
-@info      Autolink packets
+@info      Ime packets
 @copyright 2013, Maprox LLC
 """
 
@@ -14,9 +14,9 @@ from lib.factory import AbstractPacketFactory
 
 # ---------------------------------------------------------------------------
 
-class AutolinkPacket(BasePacket):
+class ImePacket(BasePacket):
     """
-     Base packet for autolink protocol
+     Base packet for Ime protocol
     """
     _fmtHeader = '<H'   # header format
 
@@ -46,9 +46,9 @@ class AutolinkPacket(BasePacket):
 
 # ---------------------------------------------------------------------------
 
-class Header(AutolinkPacket):
+class Header(ImePacket):
     """
-      Head packet of autolink messaging protocol
+      Head packet of Ime messaging protocol
     """
     # private properties
     __protocolVersion = None
@@ -113,9 +113,9 @@ class Header(AutolinkPacket):
 
 # ---------------------------------------------------------------------------
 
-class Package(AutolinkPacket):
+class Package(ImePacket):
     """
-      Data packet of autolink messaging protocol
+      Data packet of Ime messaging protocol
     """
     # private properties
     __sequenceNum = None
@@ -177,7 +177,7 @@ PACKET_TYPE_PHOTO = 4
 
 class Packet(BasePacket):
     """
-      Data packet of autolink messaging protocol
+      Data packet of Ime messaging protocol
     """
     _fmtHeader = '<B'   # header format
     _fmtLength = '<H'   # packet length format
@@ -420,12 +420,12 @@ class TestCase(unittest.TestCase):
         self.assertAlmostEqual(p.params['latitude'], 55.6360359)
         self.assertAlmostEqual(p.params['longitude'], 37.20907592)
         sensors = p.params['sensors']
-        self.assertEqual(sensors['sat_count'], 10)
-        self.assertEqual(sensors['sat_count_gps'], 10)
-        self.assertEqual(sensors['sat_count_glonass'], 0)
-        self.assertEqual(sensors['speed'], 0.00)
-        self.assertEqual(sensors['altitude'], 220)
-        self.assertEqual(sensors['azimuth'], 10)
+        self.assertEqual(sensors['sat_count'], 7)
+        self.assertEqual(sensors['sat_count_gps'], 6)
+        self.assertEqual(sensors['sat_count_glonass'], 1)
+        self.assertEqual(sensors['speed'], 9.26)
+        self.assertEqual(sensors['altitude'], 100)
+        self.assertEqual(sensors['azimuth'], 0)
         self.assertEqual(sensors['ext_battery_voltage'], 15000)
 
     def test_realPacket(self):
@@ -453,6 +453,12 @@ class TestCase(unittest.TestCase):
         self.assertEqual(len(packet.packets), 5)
         p = packet.packets[0]
         self.assertEqual(p.timestamp, datetime(2013, 8, 30, 1, 33, 58))
-        #for p in packet.packets:
-        #    print(p.params)
+        for p in packet.packets:
+            print(p.params)
         #p = packet.packets[1]
+
+    def test_checksum(self):
+        data = b'[\x0b\x01\x1e\x00 D R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x00\x10\x08\x00\t\x00\x90\xc1V\xfa,\x01\x00\x00\xfa7\x01\x00\x00\x04\x01\x14\x00!D R\xfc\x7fN\x00\x00\xfd\xa5\x90\xc8)\xfe\xaa\xfa\x17\x0c\xff.O\x00\x00\x10\x01<\x00BD R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x00\x15\t\x00\t\x02\xd0\xc4V\x15\xf4\x01\x00\x00F\x00\x00\x1d\x00(\x05\xcc\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\t\x01<\x00PE R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x11\x12\x01\x00\t\x02\xf0\xc4V\x15\xf4\x01\x00\x00F\x00\x00\x1d\x00(\x04\xcc\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\x02]'
+        package = Package(data)
+        p = package.packets[0]
+        self.assertEqual(p.calculateChecksum(data), 4)

@@ -5,12 +5,10 @@
 @copyright 2012-2013, Maprox LLC
 """
 
-from struct import pack
-
 from kernel.logger import log
 from lib.handler import AbstractHandler
-import lib.handlers.Ime.packets as packets
-import lib.handlers.Ime.commands as commands
+import lib.handlers.ime.packets as packets
+import lib.handlers.ime.commands as commands
 
 # ---------------------------------------------------------------------------
 
@@ -41,21 +39,12 @@ class ImeHandler(AbstractHandler):
         self.sendAcknowledgement(protocolPacket)
 
         self.isHeadPacket = False
-        log.info('[%s] processProtocolPacket... isHead = %s',
-            self.handlerId, self.isHeadPacket)
-        if isinstance(protocolPacket, packets.Header):
+        if isinstance(protocolPacket, packets.ImePacketLogin):
             log.info('[%s] Header is stored.', self.handlerId)
-            self.__headPacketRawData = protocolPacket.rawData
             self.uid = protocolPacket.deviceImei
             self.isHeadPacket = True
 
-        #if isinstance(protocolPacket, packets.PacketAnswer):
-        #    log.info("[%s] Storing command answer packet: %s",
-        #        self.handlerId, protocolPacket.__class__)
-        #    broker.sendAmqpAnswer(self, protocolPacket)
-        #    return
-
-        if not isinstance(protocolPacket, packets.Package):
+        if not isinstance(protocolPacket, packets.ImePacketData):
             return
 
         if not self.__headPacketRawData:
@@ -87,40 +76,29 @@ class ImeHandler(AbstractHandler):
         """
         packetsList = []
         if (protocolPacket == None): return packetsList
-        if not isinstance(protocolPacket, packets.Package):
+        if not isinstance(protocolPacket, packets.ImePacketData):
             return packetsList
-        if (len(protocolPacket.packets) == 0):
-            return packetsList
-        for item in protocolPacket.packets:
-            packet = {'uid': self.uid}
-            packet.update(item.params)
-            packet['time'] = item.timestamp.strftime('%Y-%m-%dT%H:%M:%S.%f')
-            # sensors
-            sensor = packet['sensors'] or {}
-            self.setPacketSensors(packet, sensor)
-            packetsList.append(packet)
+        packet = {'uid': self.uid}
+        packet.update(protocolPacket.params)
+        packet['time'] = protocolPacket.params['time'].strftime(
+            '%Y-%m-%dT%H:%M:%S.%f')
+        # sensors
+        sensor = packet['sensors'] or {}
+        self.setPacketSensors(packet, sensor)
+        packetsList.append(packet)
         return packetsList
 
     def sendAcknowledgement(self, packet):
         """
          Sends acknowledgement to the socket
-         @param packet: a L{packets.Packet} subclass
+         @param packet: {packets.ImePacket} subclass
         """
-        buf = self.getAckPacket(packet)
-        log.info("[%s] Send acknowledgement", self.handlerId)
-        return self.send(buf)
-
-    @classmethod
-    def getAckPacket(cls, packet):
-        """
-         Returns acknowledgement buffer value
-         @param packet: a L{packets.Packet} subclass
-        """
-        if isinstance(packet, packets.Header):
-            return b'\x7b\x00\x00\x7d'
-        elif isinstance(packet, packets.Package):
-            return b'\x7b\x00' + pack('<B', packet.sequenceNum) + b'\x7d'
-        return None
+        if not isinstance(packet, packets.ImePacketLogin):
+            return
+        cmd = commands.ImeCommandLoginConfirm({
+            'identifier': packet.deviceImei
+        })
+        self.send(cmd.getData())
 
 # ===========================================================================
 # TESTS

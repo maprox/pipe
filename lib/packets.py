@@ -106,8 +106,8 @@ class SolidBinaryPacket(object):
          @return: self
         """
         self._rebuild = False
-        self._head = self._buildHead()
         self._body = self._buildBody()
+        self._head = self._buildHead()
         self._tail = self._buildTail()
         self._rawData = self._buildRawData()
         return self
@@ -162,8 +162,7 @@ class SolidBinaryPacket(object):
         return result
     
     def to_string(self):
-        #print("Packet string!")
-        return("Packet string!")
+        return "Not Implemented!"
 
 # ---------------------------------------------------------------------------
 
@@ -200,6 +199,7 @@ class BasePacket(BinaryPacket):
 
     # protected properties
     _header = None
+    _footer = None
     _length = 0
     _checksum = None
     _offset = 0
@@ -207,6 +207,7 @@ class BasePacket(BinaryPacket):
     _fmtHeader = None   # header format
     _fmtLength = None   # packet length format
     _fmtChecksum = None # checksum format
+    _fmtFooter = None   # footer format
 
     @property
     def header(self):
@@ -216,6 +217,16 @@ class BasePacket(BinaryPacket):
     @header.setter
     def header(self, value):
         self._header = value
+        self._rebuild = True
+
+    @property
+    def footer(self):
+        if self._rebuild: self._build()
+        return self._footer
+
+    @footer.setter
+    def footer(self, value):
+        self._footer = value
         self._rebuild = True
 
     @property
@@ -232,6 +243,15 @@ class BasePacket(BinaryPacket):
         """
          Parses header data.
          If return None, then offset is shifted to calcsize(self._fmtHeader)
+         otherwise to the returned value
+         @return:
+        """
+        return None
+
+    def _parseFooter(self):
+        """
+         Parses footer data.
+         If return None, then offset is shifted to calcsize(self._fmtFooter)
          otherwise to the returned value
          @return:
         """
@@ -327,6 +347,14 @@ class BasePacket(BinaryPacket):
                     str(self.calculateChecksum()) + ' (must be)')
         self._offset += self._parseChecksum() or fmtSize
 
+        fmt = self._fmtFooter
+        fmtSize = calcsize(fmt or '')
+        shift = self._offset + fmtSize
+        if fmt is not None:
+            self._footer = unpack(fmt, buffer[self._offset:shift])[0]
+            self._tail += buffer[self._offset:shift]
+        self._offset += self._parseFooter() or fmtSize
+
         return super(BasePacket, self)._parseTail()
 
     def _buildHead(self):
@@ -351,7 +379,9 @@ class BasePacket(BinaryPacket):
         data = b''
         if self._fmtChecksum is not None:
             self._checksum = self.calculateChecksum()
-            data = pack(str(self._fmtChecksum), self._checksum)
+            data += pack(str(self._fmtChecksum), self._checksum)
+        if self._footer and self._fmtFooter is not None:
+            data += pack(str(self._fmtFooter), self._footer)
         return data
 
     def _buildCalculateLength(self):

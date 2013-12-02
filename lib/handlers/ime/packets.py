@@ -5,101 +5,90 @@
 @copyright 2013, Maprox LLC
 """
 
-from struct import unpack, pack
-from datetime import datetime
 import binascii
-from lib.bits import *
-from lib.packets import *   
+import re
+import inspect
+import sys
+from lib.crc16 import Crc16
+from lib.packets import *
+from lib.geo import Geo
 from lib.factory import AbstractPacketFactory
 
 # ---------------------------------------------------------------------------
 
-class ImePacket(BasePacket):
+class ImeBase(BasePacket):
     """
      Base packet for Ime protocol
+     From server to tracker:
+       @@<L(2b)><ID(7b)><command(2b)><parameter><checksum(2b)>\r\n
+     From tracker to server:
+       $$<L(2b)><ID(7b)><command(2b)><data><checksum(2b)>\r\n
     """
-    _fmtHeader = '<H'   # header format
+    _fmtHeader = '>H'   # header format
+    _fmtFooter = '>H'   # header format
+    _fmtLength = '>H'   # length format
+    _fmtChecksum = '>H' # checksum format
+    _header = None      # prefix of the packet (can be $$ or @@)
+    _footer = 0x0D0A    # $$ - prefix of the packet (can be $$ or @@)
+    _data = None        # packet internal data
 
     # private properties
-    __packetId = None
-
-    def _parseHeader(self):
-        """
-         Parses header data.
-         If return None, then offset is shifted to calcsize(self._fmtHeader)
-         otherwise to the returned value
-         @return:
-        """
-        self.__packetId = unpack("<B", self._head[:1])[0]
-        return None
-
-    @property
-    def packetId(self):
-        if self._rebuild: self._build()
-        return self.__packetId
-
-    @packetId.setter
-    def packetId(self, value):
-        if 0 <= value <= 0xFF:
-            self.__packetId = value
-            self._rebuild = True
-
-# ---------------------------------------------------------------------------
-
-class Header(ImePacket):
-    """
-      Head packet of Ime messaging protocol
-    """
-    # private properties
-    __protocolVersion = None
-    __deviceImei = None
-
-    def _parseHeader(self):
-        """
-         Parses header data.
-         If return None, then offset is shifted to calcsize(self._fmtHeader)
-         otherwise to the returned value
-         @return:
-        """
-        super(Header, self)._parseHeader()
-        self.__protocolVersion = unpack("<B", self._head[1:2])[0]
-        return None
+    __deviceImei = 0
+    _command = 0        # expected command number
 
     def _parseLength(self):
         """
-         Parses length of the packet
-         @protected
+         Parses packet length data.
+         If return None, then offset is shifted to calcsize(self._fmtLength)
+         otherwise to the returned value
+         @return:
         """
-        # read header and length
-        self._length = 8
+        # we need to subtract 8 bytes, because protocol
+        # also counts header, length bytes, prefix length and checksum
+        self._length -= 8
 
     def _parseBody(self):
         """
-         Parses body of the packet
-         @protected
+         Parses header data.
+         If return None, then offset is shifted to calcsize(self._fmtHeader)
+         otherwise to the returned value
+         @return:
         """
-        super(Header, self)._parseBody()
-        self.__deviceImei = str(unpack('<Q', self._body)[0])
+        imeiChunk = binascii.hexlify(self._body[:7]).decode()
+        self.__deviceImei = re.sub('[^\d]', '', imeiChunk)
+        self._command = unpack('>H', self._body[7:9])[0]
+        self._data = self._body[9:]
+        return None
+
+    def calculateChecksum(self):
+        """
+         Calculates CRC (CRC-16 CCITT 0xFFFF)
+         @return: True if buffer crc equals to supplied crc value, else False
+        """
+        data = (self._head or b'') + (self._body or b'')
+        return Crc16.calcCCITT(data)
 
     def _buildBody(self):
         """
-         Builds rawData from object variables
-         @protected
+         Builds body of the packet
+         @return: body binstring
         """
-        result = super(Header, self)._buildBody()
-        result += pack('<Q', int(self.__deviceImei))
-        return result
+        data = b''
+        deviceId = self.__deviceImei.encode()
+        while len(deviceId) < 14: deviceId += b'F'
+        data += binascii.unhexlify(deviceId)
+        data += pack('>H', self._command)
+        return data
 
-    @property
-    def protocolVersion(self):
-        if self._rebuild: self._build()
-        return self.__protocolVersion
-
-    @protocolVersion.setter
-    def protocolVersion(self, value):
-        if 0 <= value <= 0xFF:
-            self.__protocolVersion = value
-            self._rebuild = True
+    def _buildCalculateLength(self):
+        """
+         Calculates length of the packet
+         @return: int
+        """
+        self._length = 0
+        if self._body is not None:
+            self._length = len(self._body)
+        return self._length + 8
 
     @property
     def deviceImei(self):
@@ -108,161 +97,115 @@ class Header(ImePacket):
 
     @deviceImei.setter
     def deviceImei(self, value):
-        self.__deviceImei = value
-        self._rebuild = True
-
-# ---------------------------------------------------------------------------
-
-class Package(ImePacket):
-    """
-      Data packet of Ime messaging protocol
-    """
-    # private properties
-    __sequenceNum = None
-    __packets = None
-    
-    def _parseHeader(self):
-        """
-         Parses header data.
-         If return None, then offset is shifted to calcsize(self._fmtHeader)
-         otherwise to the returned value
-         @return:
-        """
-        super(Package, self)._parseHeader()
-        self.__sequenceNum = unpack("<B", self._head[1:2])[0]
-        return None
-
-    def _parseLength(self):
-        """
-         Parses packet length data.
-         If return None, then offset is shifted to calcsize(self._fmtLength)
-         otherwise to the returned value
-         @return:
-        """
-        # It is sad that we don't know the length
-        # of the packet, so let's determine it by parsing packets
-        buffer = self._rawData[2:]
-        self.__packets = []
-        self._length = 1
-        while True:
-            packet = Packet(buffer)
-            buffer = packet.rawDataTail
-            self.__packets.append(packet)
-            self._length += len(packet.rawData) # increase package length
-            if not buffer or (buffer[:1] == b'\x5d'): break
-
-    @property
-    def sequenceNum(self):
-        if self._rebuild: self._build()
-        return self.__sequenceNum
-
-    @sequenceNum.setter
-    def sequenceNum(self, value):
-        self.__sequenceNum = value
+        self.__deviceImei = str(value)
         self._rebuild = True
 
     @property
-    def packets(self):
+    def command(self):
         if self._rebuild: self._build()
-        return self.__packets
+        return self._command
+
+    @command.setter
+    def command(self, value):
+        self._command = value
+        self._rebuild = True
+
+    @property
+    def data(self):
+        if self._rebuild: self._build()
+        return self._data
+
+# ---------------------------------------------------------------------------
+# COMMANDS LIST
+
+CMD_LOGIN = 0x5000
+CMD_LOGIN_CONFIRMATION = 0x4000
+CMD_TRACK_ON_DEMAND = 0x4101
+CMD_TRACK_BY_INTERVAL = 0x4102
+CMD_AUTHORIZATION = 0x4103
+CMD_SPEEDING_ALARM = 0x4105
+CMD_MOVEMENT_ALARM = 0x4106
+CMD_EXTENDED_SETTINGS = 0x4108
+CMD_INITIALIZATION = 0x4110
+CMD_SLEEP_MODE = 0x4113
+CMD_OUTPUT_CONTROL_CONDITIONAL = 0x4114 # OR 0x5114
+CMD_OUTPUT_CONTROL_IMMEDIATE = 0x4115
+CMD_TRIGGERED_ALARMS = 0x4116
+CMD_POWER_DOWN = 0x4126
+CMD_LISTEN_IN_VOICE_MONITORING = 0x4130
+CMD_LOG_BY_INTERVAL = 0x4131
+CMD_TIME_ZONE = 0x4132
+CMD_SET_SENSITIVITY_OF_TREMBLE_SENSOR = 0x4135
+CMD_HEADING_CHANGE_REPORT = 0x4136
+CMD_SET_GPS_ANTENNA_CUT_ALARM = 0x4150 # FOR VT400 ONLY
+CMD_SET_GPRS_PARAMETERS = 0x4155
+CMD_SET_GEOFENCE_ALARM = 0x4302
+CMD_TRACK_BY_DISTANCE = 0x4303
+CMD_DELETE_MILEAGE = 0x4351
+CMD_REBOOT_GPS = 0x4902
+CMD_HEARTBEAT = 0x5199
+CMD_CLEAR_MESSAGE_QUEUE = 0x5503
+CMD_GET_SN_AND_IMEI = 0x9001
+CMD_READ_INTERVAL = 0x9002
+CMD_READ_AUTHORIZATION = 0x9003
+CMD_READ_LOGGED_DATA = 0x9016
+CMD_ALARMS = 0x9999
+
+# ---------------------------------------------------------------------------
+# ANSWERS LIST
+
+ANSWER_DATA = 0x9955
 
 # ---------------------------------------------------------------------------
 
-PACKET_TYPE_PING = 0
-PACKET_TYPE_DATA = 1
-PACKET_TYPE_TEXT = 3
-PACKET_TYPE_PHOTO = 4
+class ImePacket(ImeBase):
+    """
+     Base packet for Ime protocol
+    """
+    _header = 0x2424    # $$ - prefix of the packet (can be $$ or @@)
 
 # ---------------------------------------------------------------------------
 
-class Packet(BasePacket):
+class ImePacketLogin(ImePacket):
     """
-      Data packet of Ime messaging protocol
+     Data packet for Ime protocol (coordinates from device)
     """
-    _fmtHeader = '<B'   # header format
-    _fmtLength = '<H'   # packet length format
-    _fmtChecksum = '<B' # checksum format
+    _command = CMD_LOGIN
+
+# ---------------------------------------------------------------------------
+
+class ImePacketData(ImePacket):
+    """
+     Data packet for Ime protocol (coordinates from device)
+    """
+    _command = ANSWER_DATA
 
     # private properties
-    __timestamp = None
     __params = None
-
-    def _parseLength(self):
-        """
-         Parses packet length data.
-         If return None, then offset is shifted to calcsize(self._fmtLength)
-         otherwise to the returned value
-         @return:
-        """
-        # It is sad that we don't know the length
-        # of the packet, so let's determine it by parsing packets
-        self.__timestamp = unpack('<L', self._rawData[3:7])[0]
-        return 2 + 4 # length size + timestamp size
 
     def _parseBody(self):
         """
          Parses body of the packet
          @protected
         """
-        super(Packet, self)._parseBody()
+        super(ImePacketData, self)._parseBody()
         self.__params = {}
         sensors = {}
-        bodyLength = len(self._body)
-        offset = 0
-        while offset < bodyLength:
-            num = unpack('<B', self.body[offset:offset + 1])[0]
-            #print(num)
-            val = self.body[offset+1:offset+5]
-            #print(val)
-            if num == 1:
-                ebv, ibv = unpack('<HH', val)
-                sensors['ext_battery_voltage'] = ebv
-                sensors['int_battery_voltage'] = ibv
-            elif num == 2:
-                sensors['ibutton'] = unpack('<L', val)[0]
-            elif num == 3:
-                latitude = unpack('f', val)[0]
-                sensors['latitude'] = latitude
-            elif num == 4:
-                longitude = unpack('f', val)[0]
-                sensors['longitude'] = longitude
-            elif num == 5:
-                azimuth, altitude, sat, speed = unpack('<BBBB', val)
-                speed *= 1.852
-                altitude *= 10
-                azimuth *= 2
-                sat_gps = bitRangeValue(sat, 0, 4)
-                sat_glonass = bitRangeValue(sat, 4, 8)
-                sensors['sat_count'] = sat_glonass + sat_gps
-                sensors['sat_count_gps'] = sat_gps
-                sensors['sat_count_glonass'] = sat_glonass
-                sensors['speed'] = speed
-                sensors['altitude'] = altitude
-                sensors['azimuth'] = azimuth
-            elif num == 6: pass
-            elif num == 7: pass # LAC, CID
-            elif num == 8: pass # GSM signal strength, MCC, MNC
-            elif num == 9:
-                status = unpack('<L', val)[0]
-                for i in range(8):
-                    sensors['din%d' % i] = bitValue(status, i)
-                for j in range(5):
-                    sensors['ain%d' % j] = bitValue(status, 8 + j)
-                sensors['gsm_modem_status'] = bitRangeValue(status, 12, 14)
-                sensors['gps_module_status'] = bitRangeValue(status, 14, 16)
-                sensors['moving'] = bitValue(status, 16)
-                #sensors['sos'] = bitValue(status, 20) # what can i do???
-                sensors['armed'] = bitValue(status, 20)
-                sensors['acc'] = bitValue(status, 21)
-                sensors['ext_battery_voltage'] =\
-                    bitRangeValue(status, 24, 32) * 150
-            elif num == 6:
-                pass
-            elif num == 6:
-                pass
-            elif num == 6:
-                pass
-            offset += 5
+        parts = self._data.decode().split("|")
+        gprmc = parts[0].split(',')
+        # lets get packet time
+        self.__params['time'] = datetime.strptime(
+            gprmc[8] + ',' + gprmc[0], '%d%m%y,%H%M%S.%f')
+        # and coordinates
+        sensors['latitude'] = Geo.getLatitude(gprmc[2] + gprmc[3])
+        sensors['longitude'] = Geo.getLongitude(gprmc[4] + gprmc[5])
+        # and other params
+        sensors['speed'] = float(gprmc[6] or 0) * 1.85200
+        sensors['azimuth'] = int(float(gprmc[7] or 0))
+        sensors['sat_count'] = 10 # fake sat_count
+        sensors['hdop'] = float(parts[1] or 0)
+        sensors['altitude'] = int(float(parts[2] or 0))
+
         self.__params['sensors'] = sensors.copy()
         # old fashioned params
         for key in ['latitude', 'longitude', 'speed', 'altitude', 'azimuth']:
@@ -270,67 +213,19 @@ class Packet(BasePacket):
                 self.__params[key] = sensors[key]
         if 'sat_count' in sensors:
             self.__params['satellitescount'] = sensors['sat_count']
-        self.__params['hdop'] = 1 # fake hdop
 
-    def calculateChecksum(self, data = None):
-        """
-         Returns calculated checksum
-         @return: int
-        """
-        if not data:
-            data = pack('<L', self.__timestamp)
-            data += self._body
-        checksum = sum(int(c) for c in data) & 0xFF
-        return checksum
-
-    @property
-    def packetType(self):
-        if self._rebuild: self._build()
-        return self._header
-
-    @packetType.setter
-    def packetType(self, value):
-        if 0 <= value <= 0xFF:
-            self._header = value
-            self._rebuild = True
-
-    @property
-    def timestamp(self):
-        if self._rebuild: self._build()
-        return datetime.fromtimestamp(self.__timestamp)
-
-    @timestamp.setter
-    def timestamp(self, value):
-        if isinstance(value, datetime):
-            self.__timestamp = value.timestamp()
-            self._rebuild = True
     @property
     def params(self):
         if self._rebuild: self._build()
         return self.__params
 
 # ---------------------------------------------------------------------------
- 
 
+# noinspection PyCallingNonCallable
 class PacketFactory(AbstractPacketFactory):
     """
      Packet factory
     """
-
-    @classmethod
-    def getClass(cls, packetPrefix):
-        """
-         Returns a tag class by number
-         @param packetPrefix: one byte buffer
-        """
-        classes = {
-            b'\xff': Header,
-            b'\x5b': Package
-        }
-        if not (packetPrefix in classes):
-            return None
-        return classes[packetPrefix]
-
     def getInstance(self, data = None):
         """
           Returns a tag instance by its number
@@ -338,127 +233,64 @@ class PacketFactory(AbstractPacketFactory):
         if data is None: return
 
         # read packetId
-        packetPrefix = data[:1]
-
-        CLASS = self.getClass(packetPrefix)
-        if not CLASS:
+        packetPrefix = data[:2]
+        if packetPrefix != b'$$':
             raise Exception('Packet %s is not found' %
                 binascii.hexlify(packetPrefix).decode())
-        return CLASS(data)
+
+        packet = ImePacket(data)
+        for name, cls in inspect.getmembers(sys.modules[__name__]):
+            if inspect.isclass(cls) and issubclass(cls, ImePacket):
+                if cls._command == packet.command:
+                    return cls(data)
+
+        return None
 
 # ===========================================================================
 # TESTS
 # ===========================================================================
 
 import unittest
+from datetime import datetime
 class TestCase(unittest.TestCase):
 
     def setUp(self):
-        self.maxDiff = None
         self.factory = PacketFactory()
         pass
 
-    def test_headPacket(self):
-        packet = self.factory.getInstance(
-          b'\xff\x22\xf3\x0c\x45\xf5\xc9\x0f\x03\x00')
-        self.assertEqual(isinstance(packet, Header), True)
-        self.assertEqual(isinstance(packet, Package), False)
-        self.assertEqual(packet.packetId, 255)
-        self.assertEqual(packet.protocolVersion, 34)
-        self.assertEqual(packet.deviceImei, '861785007918323')
-
-    def test_packet(self):
-        data = (
-            b'\x01\x55\x00\xc5\xcf\xc2\x51' +
-            b'\x03\x4d\x8b\x5e\x42\x04\x18\xd6\x14\x42' +
-            b'\x05\x05\x16\x0a\x00\x09\x02\xe0\xcc\x64' +
-            b'\x15\xf5\x01\x00\x00\x20\x00\x00\x00\x00' +
-            b'\x24\x00\x00\x00\x00\x2a\x3a\xcd\x00\x00' +
-            b'\x2C\x71\xCD\x00\x00\x2D\x2E\xCD\x00\x00' +
-            b'\x2E\x6C\xCD\x00\x00\x2F\x3F\xCD\x00\x00' +
-            b'\x30\x4D\xCD\x00\x00\x31\x46\xCD\x00\x00' +
-            b'\xFA\xF8\x01\x00\x00\xFA\xF8\x01\x00\x00' +
-            b'\xFA\x90\x01\x00\x00\x62'
+    def test_checkLoginPacket(self):
+        packets = self.factory.getPacketsFromBuffer(
+            b'\x24\x24\x00\x11\x13\x61\x23\x45\x67\x8f'
+            b'\xff\x50\x00\x05\xd8\x0d\x0a'
         )
-        packet = Packet(data)
-        self.assertEqual(packet.packetType, PACKET_TYPE_DATA)
-        self.assertEqual(packet.length, 85)
-        self.assertEqual(packet.timestamp, datetime(2013, 6, 20, 13, 47, 49))
-        sensors = packet.params['sensors']
-        self.assertEqual(sensors['ext_battery_voltage'], 15000)
+        packet = packets[0]
+        self.assertEqual(packet.deviceImei, '13612345678')
+        self.assertEqual(packet.command, CMD_LOGIN)
 
-    def test_packagePacket(self):
-        packet = self.factory.getInstance(
-            b'\x5B\x01\x01\x55\x00\xc5\xcf\xc2\x51' +
-            b'\x03\x4d\x8b\x5e\x42\x04\x18\xd6\x14\x42' +
-            b'\x05\x05\x16\x0a\x00\x09\x02\xe0\xcc\x64' +
-            b'\x15\xf5\x01\x00\x00\x20\x00\x00\x00\x00' +
-            b'\x24\x00\x00\x00\x00\x2a\x3a\xcd\x00\x00' +
-            b'\x2C\x71\xCD\x00\x00\x2D\x2E\xCD\x00\x00' +
-            b'\x2E\x6C\xCD\x00\x00\x2F\x3F\xCD\x00\x00' +
-            b'\x30\x4D\xCD\x00\x00\x31\x46\xCD\x00\x00' +
-            b'\xFA\xF8\x01\x00\x00\xFA\xF8\x01\x00\x00' +
-            b'\xFA\x90\x01\x00\x00\x62\x01\x50\x00\x5B\xD0\xC2\x51' +
-            b'\x03\x4D\x8B\x5E\x42\x04\x18\xD6\x14\x42' +
-            b'\x05\x05\x16\x0A\x00\x09\x02\xE0\xCC\x64' +
-            b'\x15\xF5\x01\x00\x00\x20\x00\x00\x00\x00' +
-            b'\x24\x00\x00\x00\x00\x2A\x3A\xCD\x00\x00' +
-            b'\x2C\x71\xCD\x00\x00\x2D\x2E\xCD\x00\x00' +
-            b'\x2E\x6C\xCD\x00\x00\x2F\x3F\xCD\x00\x00' +
-            b'\x30\x4D\xCD\x00\x00\x31\x46\xCD\x00\x00' +
-            b'\xFA\xF8\x01\x00\x00\xFA\xF8\x01\x00\x00' +
-            b'\x6E\x5d'
+    def test_checkDataPacket(self):
+        packets = self.factory.getPacketsFromBuffer(
+            b'\x24\x24\x00\x60\x12\x34\x56\xFF\xFF\xFF\xFF\x99'
+            b'\x55\x30\x33\x35\x36\x34\x34\x2E\x30\x30\x30\x2C'
+            b'\x41\x2C\x32\x32\x33\x32\x2E\x36\x30\x38\x33\x2C'
+            b'\x4E\x2C\x31\x31\x34\x30\x34\x2E\x38\x31\x33\x37'
+            b'\x2C\x45\x2C\x30\x2E\x30\x30\x2C\x2C\x30\x31\x30'
+            b'\x38\x30\x39\x2C\x2C\x2A\x31\x43\x7C\x31\x31\x2E'
+            b'\x35\x7C\x31\x39\x34\x7C\x30\x30\x30\x30\x7C\x30'
+            b'\x30\x30\x30\x2C\x30\x30\x30\x30\x69\x62\x0D\x0A'
         )
-        self.assertEqual(isinstance(packet, Header), False)
-        self.assertEqual(isinstance(packet, Package), True)
-        self.assertEqual(packet.packetId, 91)
-        self.assertEqual(packet.sequenceNum, 1)
-        self.assertEqual(len(packet.packets), 2)
-        p = packet.packets[1]
-        self.assertIsInstance(p, Packet)
-        self.assertEqual(p.timestamp, datetime(2013, 6, 20, 13, 50, 19))
-        self.assertAlmostEqual(p.params['latitude'], 55.6360359)
-        self.assertAlmostEqual(p.params['longitude'], 37.20907592)
+        p = packets[0]
+        self.assertEqual(p.deviceImei, '123456')
+        self.assertEqual(p.command, ANSWER_DATA)
+        self.assertIsInstance(p, ImePacketData)
+
+        self.assertEqual(p.params['time'], datetime(2009, 8, 1, 3, 56, 44))
+        self.assertAlmostEqual(p.params['latitude'], 22.54347166)
+        self.assertAlmostEqual(p.params['longitude'], 114.080228333)
         sensors = p.params['sensors']
-        self.assertEqual(sensors['sat_count'], 7)
-        self.assertEqual(sensors['sat_count_gps'], 6)
-        self.assertEqual(sensors['sat_count_glonass'], 1)
-        self.assertEqual(sensors['speed'], 9.26)
-        self.assertEqual(sensors['altitude'], 100)
+        self.assertEqual(sensors['sat_count'], 10)
+        self.assertEqual(sensors['speed'], 0.00)
+        self.assertEqual(sensors['altitude'], 194)
         self.assertEqual(sensors['azimuth'], 0)
-        self.assertEqual(sensors['ext_battery_voltage'], 15000)
 
-    def test_realPacket(self):
-        packet = self.factory.getInstance(
-            b'[\x01\x01\x14\x00F\xbe\x1fR\xfc\x7fN\x00\x00\xfd\xa5' +
-            b'\x90\xc8)\xfe\xaa\xfa\x17\x0c\xff.O\x00\x00\xa2\x01\x1e' +
-            b'\x00P\xbe\x1fR\x03|\x8b^B\x04\x0c\xd6\x14B\x05\x00\x13' +
-            b'\x08\x00\t\x00\x90\xc5V\xfa,\x01\x00\x00\xfa7\x01\x00' +
-            b'\x00\x92\x01-\x00\xe6\xbe\x1fR\x03|\x8b^B\x04\x0c\xd6' +
-            b'\x14B\x05\x00\x15\t\x00\t\x02\xe0\xc4V\x15\xf4\x01\x00' +
-            b'\x00F\x00\x00\x1b\x00(R\xcb\x00\x00\xfa\xf8\x01\x00\x00' +
-            b'\xfa\xf8\x01\x00\x00\xb9\x012\x00|\xbf\x1fR\x03|\x8b^B' +
-            b'\x04\x0c\xd6\x14B\x05\x00\x15\x07\x00\t\x02\xa0\xc4V\x15' +
-            b'\xf4\x01\x00\x00F\x00\x00\x1b\x00(R\xcb\x00\x00\xfa\xf8' +
-            b'\x01\x00\x00\xfa\xf8\x01\x00\x00\xfa\x90\x01\x00\x00\x99' +
-            b'\x01-\x00\x12\xc0\x1fR\x03|\x8b^B\x04\x0c\xd6\x14B\x05' +
-            b'\x00\x15\x08\x00\t\x02\xa0\xc4V\x15\xf4\x01\x00\x00F\xc2' +
-            b'\x00\x1b\x00(R\xcb\x00\x00\xfa\xf8\x01\x00\x00\xfa' +
-            b'\xf8\x01\x00\x00h]'
-        )
-        self.assertEqual(isinstance(packet, Header), False)
-        self.assertEqual(isinstance(packet, Package), True)
-        self.assertEqual(packet.packetId, 91)
-        self.assertEqual(packet.sequenceNum, 1)
-        self.assertEqual(len(packet.packets), 5)
-        p = packet.packets[0]
-        self.assertEqual(p.timestamp, datetime(2013, 8, 30, 1, 33, 58))
-        for p in packet.packets:
-            print(p.params)
-        #p = packet.packets[1]
-
-    def test_checksum(self):
-        data = b'[\x0b\x01\x1e\x00 D R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x00\x10\x08\x00\t\x00\x90\xc1V\xfa,\x01\x00\x00\xfa7\x01\x00\x00\x04\x01\x14\x00!D R\xfc\x7fN\x00\x00\xfd\xa5\x90\xc8)\xfe\xaa\xfa\x17\x0c\xff.O\x00\x00\x10\x01<\x00BD R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x00\x15\t\x00\t\x02\xd0\xc4V\x15\xf4\x01\x00\x00F\x00\x00\x1d\x00(\x05\xcc\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\t\x01<\x00PE R\x03\t\x8b^B\x04\x81\xd5\x14B\x05\x11\x12\x01\x00\t\x02\xf0\xc4V\x15\xf4\x01\x00\x00F\x00\x00\x1d\x00(\x04\xcc\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\xfa\xf5\x01\x00\x00\xfa\xf4\x01\x00\x00\x02]'
-        package = Package(data)
-        p = package.packets[0]
-        self.assertEqual(p.calculateChecksum(data), 4)
+if __name__ == '__main__':
+    unittest.main()

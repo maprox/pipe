@@ -36,6 +36,9 @@ from lib.handlers.autolink.abstract import TestCase as tc19
 from lib.handlers.autolink.default import TestCase as tc20
 from lib.handlers.autolink.packets import TestCase as tc21
 from lib.handlers.autolink.commands import TestCase as tc22
+from lib.handlers.ime.abstract import TestCase as tc23
+from lib.handlers.ime.packets import TestCase as tc25
+from lib.handlers.ime.commands import TestCase as tc26
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Finds your external IP address
 @copyright 2009-2013, Maprox LLC
-'''
+"""
 
 import json
 from urllib.request import urlopen

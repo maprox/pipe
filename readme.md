@@ -9,3 +9,4 @@ Supported protocols:
 * Teltonika FMXXXX (FM1100, FM3200, FM4200, FM5300)
 * ATrack (AX5)
 * Autolink
+* GlobusGPS (TR1-mini)

@@ -152,12 +152,12 @@ class NavisetHandler(AbstractHandler):
          Translate gps-tracker data to observer pipe format
          @param protocolPacket: Naviset protocol packet
         """
-        list = []
-        if (protocolPacket == None): return list
+        packetsList = []
+        if (protocolPacket == None): return packetsList
         if not isinstance(protocolPacket, packets.PacketData):
-            return list
+            return packetsList
         if (len(protocolPacket.items) == 0):
-            return list
+            return packetsList
         for item in protocolPacket.items:
             packet = {'uid': self.uid}
             packet.update(item.params)
@@ -166,8 +166,8 @@ class NavisetHandler(AbstractHandler):
             sensor = packet['sensors'] or {}
             sensor['sat_count'] = packet['satellitescount']
             self.setPacketSensors(packet, sensor)
-            list.append(packet)
-        return list
+            packetsList.append(packet)
+        return packetsList
 
     def sendAcknowledgement(self, packet):
         """

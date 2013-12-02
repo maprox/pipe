@@ -22,7 +22,7 @@ class AutolinkCommandConfigure(AutolinkCommand, AbstractCommandConfigure):
     alias = 'configure'
 
     hostNameNotSupported = False
-    """ False if protocol doesn't support dns hostname (only ip-address) """
+    """ True if protocol doesn't support dns hostname (only ip-address) """
 
     def getData(self, transport = "tcp"):
         """

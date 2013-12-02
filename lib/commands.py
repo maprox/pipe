@@ -6,6 +6,7 @@
 '''
 
 import json
+import re
 from kernel.config import conf
 from kernel.utils import *
 
@@ -55,7 +56,7 @@ class AbstractCommandConfigure(AbstractCommand):
     """
 
     hostNameNotSupported = False
-    """ False if protocol doesn't support dns hostname (only ip-address) """
+    """ True if protocol doesn't support dns hostname (only ip-address) """
 
     _initiationConfig = None
 
@@ -66,6 +67,7 @@ class AbstractCommandConfigure(AbstractCommand):
          @return:
         """
         self._initiationConfig = self.getInitiationConfig(params)
+        return super(AbstractCommandConfigure, self).setParams(params)
 
     def getInitiationConfig(self, rawConfig):
         """
@@ -80,6 +82,10 @@ class AbstractCommandConfigure(AbstractCommand):
         dictSetItemIfNotSet(data, 'port', str(conf.port))
         dictSetItemIfNotSet(data, 'host', conf.hostIp\
             if self.hostNameNotSupported else conf.hostName)
+        # check if supplied host, but protocol does not support host
+        if self.hostNameNotSupported:
+            if re.compile('\w').match(data['host']):
+                data['host'] = conf.hostIp
         # device part of input
         dictSetItemIfNotSet(data, 'device', {})
         dictSetItemIfNotSet(data['device'], 'login', '')

@@ -304,6 +304,7 @@ class Packet(BasePacket):
         if isinstance(value, datetime):
             self.__timestamp = value.timestamp()
             self._rebuild = True
+
     @property
     def params(self):
         if self._rebuild: self._build()

@@ -5,9 +5,7 @@
 @copyright 2012, Maprox LLC
 '''
 
-import time
-from datetime import datetime
-from struct import unpack, pack, calcsize
+from struct import unpack, pack
 import lib.bits as bits
 import lib.crc16 as crc16
 import lib.handlers.galileo.tags as tags
@@ -43,7 +41,7 @@ class BasePacket(object):
             packet = cls(data)
             data = packet.rawDataTail
             packets.append(packet)
-            if (len(data) == 0): break
+            if len(data) == 0: break
         return packets
 
     def __init__(self, data = None):

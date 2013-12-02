@@ -825,23 +825,23 @@ class PacketAnswerCommandGetTrackParams(PacketAnswer):
 
     def get_parameters_string(self):
         s = ''
-        s = s + ("fiter coordinates: %d; "\
-                 "filter straight path: %d; "\
-                 "filter restructuring: %d; "\
-                 "filter (write on event): %d; "\
-                 "accelerometer sensitivity: %d;"\
-                 "time to standby: %d; "\
-                 "standby recording time: %d; "\
-                 "moving recording time: %d; "\
-                 "distance recording time: %d; "\
-                 "drawing on angles: %d; "\
-                 "minSpeed: %d; "\
-                 "HDOP: %d; "\
-                 "minspeed: %d; "\
-                 "maxspeed: %d; "\
-                 "acceleration: %d; "\
-                 "jump: %d; "\
-                 "idle: %d; "\
+        s = s + ("fiter coordinates: %d; "
+                 "filter straight path: %d; "
+                 "filter restructuring: %d; "
+                 "filter (write on event): %d; "
+                 "accelerometer sensitivity: %d;"
+                 "time to standby: %d; "
+                 "standby recording time: %d; "
+                 "moving recording time: %d; "
+                 "distance recording time: %d; "
+                 "drawing on angles: %d; "
+                 "minSpeed: %d; "
+                 "HDOP: %d; "
+                 "minspeed: %d; "
+                 "maxspeed: %d; "
+                 "acceleration: %d; "
+                 "jump: %d; "
+                 "idle: %d; "
                  "course deviation: %d; " % 
                  (self.__filterCoordinates,
                   self.__filterStraightPath,

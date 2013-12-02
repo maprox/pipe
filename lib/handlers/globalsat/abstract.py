@@ -6,7 +6,6 @@
 """
 
 import re
-import json
 from datetime import datetime
 
 from kernel.logger import log
@@ -247,8 +246,7 @@ class GlobalsatHandler(AbstractHandler):
          Translate gps-tracker config data to observer format
          @param data: {string[]} data from gps-tracker
         """
-        send = {}
-        send['raw'] = data
+        send = {'raw': data}
 
         tmp_options = send['raw'].split(',')
         options = {}

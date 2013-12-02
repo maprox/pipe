@@ -28,7 +28,7 @@ class TeltonkaCommandConfigure(TeltonkaCommand, AbstractCommandConfigure):
     alias = 'configure'
 
     hostNameNotSupported = True
-    """ False if protocol doesn't support dns hostname (only ip-address) """
+    """ True if protocol doesn't support dns hostname (only ip-address) """
 
     def getConfigurationPacket(self, config):
         """
@@ -203,6 +203,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(cmd.getData('sms'), [{
             'bin': 2,
             'push': True,
-            'message': '06050407d1000000000e7472782e6' + \
-                       'd6170726f782e6e657452d2000000'
+            'message': '06050407d1000000000f3231322e3' + \
+                       '130302e3135392e31343252d2000000'
         }])

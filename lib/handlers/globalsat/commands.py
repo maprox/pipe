@@ -15,7 +15,7 @@ class GloblasatCommandConfigure(AbstractCommandConfigure):
     alias = 'configure'
 
     hostNameNotSupported = False
-    """ False if protocol doesn't support dns hostname (only ip-address) """
+    """ True if protocol doesn't support dns hostname (only ip-address) """
 
     def getSmsData(self, config):
         """

@@ -62,7 +62,7 @@ class NavisetCommandConfigure(NavisetCommand, AbstractCommandConfigure):
     alias = 'configure'
 
     hostNameNotSupported = True
-    """ False if protocol doesn't support dns hostname (only ip-address) """
+    """ True if protocol doesn't support dns hostname (only ip-address) """
 
     def getData(self, transport = "tcp"):
         """
@@ -1372,7 +1372,7 @@ class NavisetCommandSoftwareUpgrade(NavisetCommand):
 
     @port.setter
     def port(self, value):
-        if (0 <= value <= 0xFFFF):
+        if 0 <= value <= 0xFFFF:
             self.__port = value
             self._rebuild = True
 
@@ -1496,7 +1496,7 @@ class NavisetCommandWriteConfiguration(NavisetCommand):
 
     @configurationNumber.setter
     def configurationNumber(self, value):
-        if (0 <= value <= 0xFF):
+        if 0 <= value <= 0xFF:
             self.__configurationNumber = value
             self._rebuild = True
 
@@ -1507,7 +1507,7 @@ class NavisetCommandWriteConfiguration(NavisetCommand):
 
     @configurationSize.setter
     def  configurationSize(self, value):
-        if (0 <= value <= 512):
+        if 0 <= value <= 512:
             self.__configurationSize = value
             self._rebuild = True
 
@@ -1624,7 +1624,7 @@ class NavisetCommandSwitchToConfigurationServer(NavisetCommand):
 
     @port.setter
     def port(self, value):
-        if (0 <= value <= 0xFFFF):
+        if 0 <= value <= 0xFFFF:
             self.__port = value
             self._rebuild = True
 
@@ -1743,7 +1743,7 @@ class TestCase(unittest.TestCase):
             }
         })
         self.assertEqual(cmd.getData('sms'), [
-            {'message': 'COM3 1234,trx.maprox.net,21200'},
+            {'message': 'COM3 1234,' + conf.hostIp + ',21200'},
             {'message': 'COM13 1234,1,,,#'}
         ])
 

@@ -60,13 +60,16 @@ class ImeBase(BasePacket):
         self._data = self._body[9:]
         return None
 
+    # public link to checksum calculation function
+    # (CRC-16 CCITT 0xFFFF by default)
+    fnChecksum = Crc16.calcCCITT
     def calculateChecksum(self):
         """
-         Calculates CRC (CRC-16 CCITT 0xFFFF)
+         Calculates CRC
          @return: True if buffer crc equals to supplied crc value, else False
         """
         data = (self._head or b'') + (self._body or b'')
-        return Crc16.calcCCITT(data)
+        return self.fnChecksum(data)
 
     def _buildBody(self):
         """
@@ -255,6 +258,8 @@ from datetime import datetime
 class TestCase(unittest.TestCase):
 
     def setUp(self):
+        ImeBase.fnChecksum = Crc16.calcCCITT
+        ImeBase._fmtChecksum = '>H'
         self.factory = PacketFactory()
         pass
 

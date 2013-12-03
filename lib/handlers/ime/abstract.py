@@ -16,9 +16,7 @@ class ImeHandler(AbstractHandler):
     """
      Base handler for Ime protocol
     """
-    __headPacketRawData = None # private buffer for headPacket data
-    __imageReceivingConfig = None
-    __packNum = 0
+    __headPacketRawData = None  # private buffer for headPacket data
 
     def initialization(self):
         """
@@ -75,7 +73,7 @@ class ImeHandler(AbstractHandler):
          @param protocolPacket: Ime protocol packet
         """
         packetsList = []
-        if protocolPacket == None: return packetsList
+        if protocolPacket is None: return packetsList
         if not isinstance(protocolPacket, packets.ImePacketData):
             return packetsList
         packet = {'uid': self.uid}
@@ -105,9 +103,13 @@ class ImeHandler(AbstractHandler):
 # ===========================================================================
 
 import unittest
-#import time
+from lib.crc16 import Crc16
+
+
 class TestCase(unittest.TestCase):
     def setUp(self):
+        packets.ImeBase.fnChecksum = Crc16.calcCCITT_Kermit
+        packets.ImeBase._fmtChecksum = '<H'
         import kernel.pipe as pipe
 
         self.handler = ImeHandler(pipe.TestManager(), None)

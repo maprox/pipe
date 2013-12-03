@@ -39,6 +39,7 @@ from lib.handlers.autolink.commands import TestCase as tc22
 from lib.handlers.ime.abstract import TestCase as tc23
 from lib.handlers.ime.packets import TestCase as tc25
 from lib.handlers.ime.commands import TestCase as tc26
+from lib.handlers.globusgps.gltr1mini import TestCase as tc27
 
 if __name__ == '__main__':
     unittest.main()

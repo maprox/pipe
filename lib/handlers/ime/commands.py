@@ -119,9 +119,12 @@ class CommandFactory(AbstractCommandFactory):
 # ===========================================================================
 
 import unittest
+from lib.crc16 import Crc16
 class TestCase(unittest.TestCase):
 
     def setUp(self):
+        packets.ImeBase.fnChecksum = Crc16.calcCCITT
+        packets.ImeBase._fmtChecksum = '>H'
         self.factory = CommandFactory()
 
     def test_packetData(self):
@@ -138,7 +141,7 @@ class TestCase(unittest.TestCase):
         })
         self.assertIsInstance(cmd, ImeCommandConfigure)
         self.assertEqual(cmd.getData('sms'), [
-            {'message': 'W000000,012,trx.maprox.net,21001'},
+            {'message': 'W000000,012,1,trx.maprox.net,21001'},
             {'message': 'W000000,011,tele237.msk,,'}
         ])
 

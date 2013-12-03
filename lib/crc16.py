@@ -17,6 +17,8 @@ Stolen from:
      answers to greatly reduce the system load.
 '''
 
+from ctypes import c_ushort
+
 INITIAL_MODBUS = 0xFFFF
 INITIAL_DF1 = 0x0000
 
@@ -151,6 +153,39 @@ class Crc16(object):
 
         return crcHi * 256 + crcLo
 
+    crc16kermit_tab = []
+
+    # The CRC's are computed using polynomials.
+    # Here is the most used coefficient for CRC16 SICK
+    crc16Kermit_constant = 0x8408
+
+    @classmethod
+    def calcCCITT_Kermit(cls, data):
+        if not len(cls.crc16kermit_tab):
+            for i in range(0, 256):
+                crc = c_ushort(i).value
+                for j in range(0, 8):
+                    if (crc & 0x0001):
+                        crc = c_ushort(crc >> 1).value ^\
+                              cls.crc16Kermit_constant
+                    else:
+                        crc = c_ushort(crc >> 1).value
+                cls.crc16kermit_tab.append(hex(crc))
+
+        crcValue = 0x0000
+        for c in data:
+            tmp = crcValue ^ c
+            crcValue = c_ushort(crcValue >> 8).value ^\
+                int(cls.crc16kermit_tab[(tmp & 0x00ff)], 0)
+
+        # After processing, the one's complement of the CRC is
+        # calcluated and the two bytes of the CRC are swapped.
+        low_byte   = (crcValue & 0xff00) >> 8
+        high_byte  = (crcValue & 0x00ff) << 8
+        crcValue   = low_byte | high_byte
+
+        return crcValue
+
 # ===========================================================================
 # TESTS
 # ===========================================================================
@@ -192,6 +227,11 @@ class TestCase(unittest.TestCase):
         self.assertEqual(Crc16.calcCCITT(
             b'\x24\x24\x00\x11\x13\x61\x23\x45\x67\x8f\xff\x50\x00'
         ), 0x05D8)
+
+    def test_CCITT_Kermit(self):
+        self.assertEqual(Crc16.calcCCITT_Kermit(
+            b'\x24\x24\x00\x11\x35\x96\x28\x01\x76\x31\x68\x50\x00'
+        ), 0x2753)
 
 if __name__ == '__main__':
     unittest.main()

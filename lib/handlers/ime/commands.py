@@ -53,7 +53,7 @@ class ImeCommandConfigure(ImeCommand, AbstractCommandConfigure):
         config = self._initiationConfig
         password = '000000'
         if transport == "sms":
-            command0 = 'W' + password + ',012,' + \
+            command0 = 'W' + password + ',012,1,' + \
                        config['host'] + ',' + str(config['port'])
             command1 = 'W' + password + ',011,' + \
                        config['gprs']['apn'] \

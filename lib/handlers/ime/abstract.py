@@ -53,7 +53,7 @@ class ImeHandler(AbstractHandler):
         observerPackets = self.translate(protocolPacket)
         if len(observerPackets) == 0:
             log.info('[%s] Location packet not found. Exiting...',
-                self.handlerId)
+                     self.handlerId)
             return
 
         log.info(observerPackets)
@@ -66,7 +66,7 @@ class ImeHandler(AbstractHandler):
          @return: boolean
         """
         log.debug('[%s] needProcessCommands??? %s %s',
-            self.handlerId, self.uid, self.isHeadPacket)
+                  self.handlerId, self.uid, self.isHeadPacket)
         return self.uid and not self.isHeadPacket
 
     def translate(self, protocolPacket):
@@ -75,7 +75,7 @@ class ImeHandler(AbstractHandler):
          @param protocolPacket: Ime protocol packet
         """
         packetsList = []
-        if (protocolPacket == None): return packetsList
+        if protocolPacket == None: return packetsList
         if not isinstance(protocolPacket, packets.ImePacketData):
             return packetsList
         packet = {'uid': self.uid}
@@ -107,10 +107,7 @@ class ImeHandler(AbstractHandler):
 import unittest
 #import time
 class TestCase(unittest.TestCase):
-
     def setUp(self):
         import kernel.pipe as pipe
-        self.handler = ImeHandler(pipe.TestManager(), None)
 
-    def inputData(self):
-        self.handler.processProtocolPacket()
+        self.handler = ImeHandler(pipe.TestManager(), None)

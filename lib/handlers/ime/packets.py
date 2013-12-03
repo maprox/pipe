@@ -57,8 +57,15 @@ class ImeBase(BasePacket):
         imeiChunk = binascii.hexlify(self._body[:7]).decode()
         self.__deviceImei = re.sub('[^\d]', '', imeiChunk)
         self._command = unpack('>H', self._body[7:9])[0]
-        self._data = self._body[9:]
+        self._data = self._getData()
         return None
+
+    def _getData(self):
+        """
+         Returns data to parse
+         @rtype: bytes
+        """
+        return self._body[9:]
 
     # public link to checksum calculation function
     # (CRC-16 CCITT 0xFFFF by default)
@@ -152,12 +159,12 @@ CMD_GET_SN_AND_IMEI = 0x9001
 CMD_READ_INTERVAL = 0x9002
 CMD_READ_AUTHORIZATION = 0x9003
 CMD_READ_LOGGED_DATA = 0x9016
-CMD_ALARMS = 0x9999
 
 # ---------------------------------------------------------------------------
 # ANSWERS LIST
 
 ANSWER_DATA = 0x9955
+ANSWER_DATA_WITH_ALARM = 0x9999
 
 # ---------------------------------------------------------------------------
 
@@ -182,9 +189,7 @@ class ImePacketData(ImePacket):
      Data packet for Ime protocol (coordinates from device)
     """
     _command = ANSWER_DATA
-
-    # private properties
-    __params = None
+    _params = None
 
     def _parseBody(self):
         """
@@ -192,12 +197,12 @@ class ImePacketData(ImePacket):
          @protected
         """
         super(ImePacketData, self)._parseBody()
-        self.__params = {}
+        self._params = {}
         sensors = {}
         parts = self._data.decode().split("|")
         gprmc = parts[0].split(',')
         # lets get packet time
-        self.__params['time'] = datetime.strptime(
+        self._params['time'] = datetime.strptime(
             gprmc[8] + ',' + gprmc[0], '%d%m%y,%H%M%S.%f')
         # and coordinates
         sensors['latitude'] = Geo.getLatitude(gprmc[2] + gprmc[3])
@@ -209,19 +214,66 @@ class ImePacketData(ImePacket):
         sensors['hdop'] = float(parts[1] or 0)
         sensors['altitude'] = int(float(parts[2] or 0))
 
-        self.__params['sensors'] = sensors.copy()
+        self._params['sensors'] = sensors.copy()
         # old fashioned params
         for key in ['latitude', 'longitude', 'speed',
                     'altitude', 'azimuth', 'hdop']:
             if key in sensors:
-                self.__params[key] = sensors[key]
+                self._params[key] = sensors[key]
         if 'sat_count' in sensors:
-            self.__params['satellitescount'] = sensors['sat_count']
+            self._params['satellitescount'] = sensors['sat_count']
 
     @property
     def params(self):
         if self._rebuild: self._build()
-        return self.__params
+        return self._params
+
+# ---------------------------------------------------------------------------
+
+ALARM_SOS = 0x01
+ALARM_CALL_B_BUTTON_IS_PRESSED = 0x02
+ALARM_CALL_C_BUTTON_IS_PRESSED = 0x03
+ALARM_INPUT1_ACTIVE = 0x01
+ALARM_INPUT2_ACTIVE = 0x02
+ALARM_INPUT3_ACTIVE = 0x03
+ALARM_LOW_BATTERY = 0x10
+
+class ImePacketDataWithAlarm(ImePacketData):
+    """
+     Data packet for Ime protocol (coordinates from device)
+    """
+    _command = ANSWER_DATA_WITH_ALARM
+
+    # private fields
+    __alarmCode = None
+
+    def _getData(self):
+        """
+         Returns data to parse
+         @return:
+        """
+        return self._body[10:]
+
+    def _parseBody(self):
+        """
+         Parses body of the packet
+         @protected
+        """
+        super(ImePacketDataWithAlarm, self)._parseBody()
+        self.__alarmCode = unpack('>B', self._body[9:10])[0]
+        self._params['sensors']['alarm_code'] = self.alarmCode
+        if self.alarmCode == ALARM_SOS:
+            self._params['sensors']['sos'] = 1
+
+    @property
+    def alarmCode(self):
+        if self._rebuild: self._build()
+        return self.__alarmCode
+
+    @alarmCode.setter
+    def alarmCode(self, value):
+        self.__alarmCode = value
+        self._rebuild = True
 
 # ---------------------------------------------------------------------------
 
@@ -297,6 +349,24 @@ class TestCase(unittest.TestCase):
         self.assertEqual(sensors['speed'], 0.00)
         self.assertEqual(sensors['altitude'], 194)
         self.assertEqual(sensors['azimuth'], 0)
+
+    def test_alarmPacket(self):
+        packets = self.factory.getPacketsFromBuffer(
+            b'\x24\x24\x00\x61\x12\x34\x56\xFF\xFF\xFF\xFF\x99\x99'
+            b'\x03\x30\x33\x35\x39\x30\x31\x2E\x30\x30\x30\x2C\x41'
+            b'\x2C\x32\x32\x33\x32\x2E\x36\x30\x38\x33\x2C\x4E\x2C'
+            b'\x31\x31\x34\x30\x34\x2E\x38\x31\x33\x37\x2C\x45\x2C'
+            b'\x30\x2E\x30\x30\x2C\x2C\x30\x31\x30\x38\x30\x39\x2C'
+            b'\x2C\x2A\x31\x32\x7C\x31\x32\x2E\x32\x7C\x31\x39\x34'
+            b'\x7C\x30\x34\x30\x30\x7C\x30\x30\x30\x30\x2C\x30\x30'
+            b'\x30\x30\x83\x4B\x0D\x0A'
+        )
+        p = packets[0]
+        self.assertEqual(p.deviceImei, '123456')
+        self.assertIsInstance(p, ImePacketData)
+        self.assertIsInstance(p, ImePacketDataWithAlarm)
+        self.assertEqual(p.alarmCode, ALARM_INPUT3_ACTIVE)
+        self.assertEqual(p.params['sensors']['alarm_code'], ALARM_INPUT3_ACTIVE)
 
 if __name__ == '__main__':
     unittest.main()

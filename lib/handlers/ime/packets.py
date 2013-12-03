@@ -211,7 +211,8 @@ class ImePacketData(ImePacket):
 
         self.__params['sensors'] = sensors.copy()
         # old fashioned params
-        for key in ['latitude', 'longitude', 'speed', 'altitude', 'azimuth']:
+        for key in ['latitude', 'longitude', 'speed',
+                    'altitude', 'azimuth', 'hdop']:
             if key in sensors:
                 self.__params[key] = sensors[key]
         if 'sat_count' in sensors:

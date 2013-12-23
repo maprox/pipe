@@ -201,19 +201,23 @@ class ImePacketData(ImePacket):
         sensors = {}
         parts = self._data.decode().split("|")
         gprmc = parts[0].split(',')
-        # lets get packet time
-        self._params['time'] = datetime.strptime(
-            gprmc[8] + ',' + gprmc[0], '%d%m%y,%H%M%S.%f')
-        # and coordinates
-        sensors['latitude'] = Geo.getLatitude(gprmc[2] + gprmc[3])
-        sensors['longitude'] = Geo.getLongitude(gprmc[4] + gprmc[5])
-        # and other params
-        sensors['speed'] = float(gprmc[6] or 0) * 1.85200
-        sensors['azimuth'] = int(float(gprmc[7] or 0))
-        sensors['sat_count'] = 10 # fake sat_count
-        sensors['hdop'] = float(parts[1] or 0)
-        sensors['altitude'] = int(float(parts[2] or 0))
+        if len(gprmc) > 8:
+            # lets get packet time
+            self._params['time'] = datetime.strptime(
+                gprmc[8] + ',' + gprmc[0], '%d%m%y,%H%M%S.%f')
+            # and coordinates
+            sensors['latitude'] = Geo.getLatitude(gprmc[2] + gprmc[3])
+            sensors['longitude'] = Geo.getLongitude(gprmc[4] + gprmc[5])
+            # and other params
+            sensors['speed'] = float(gprmc[6] or 0) * 1.85200
+            sensors['azimuth'] = int(float(gprmc[7] or 0))
+            sensors['hdop'] = float(parts[1] or 0)
+            sensors['altitude'] = int(float(parts[2] or 0))
+        else:
+            self._params['time'] = datetime.now()
+            sensors['hdop'] = 1 # fake hdop
 
+        sensors['sat_count'] = 10 # fake sat_count
         self._params['sensors'] = sensors.copy()
         # old fashioned params
         for key in ['latitude', 'longitude', 'speed',
@@ -367,6 +371,3 @@ class TestCase(unittest.TestCase):
         self.assertIsInstance(p, ImePacketDataWithAlarm)
         self.assertEqual(p.alarmCode, ALARM_INPUT3_ACTIVE)
         self.assertEqual(p.params['sensors']['alarm_code'], ALARM_INPUT3_ACTIVE)
-
-if __name__ == '__main__':
-    unittest.main()

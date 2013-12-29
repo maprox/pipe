@@ -10,9 +10,9 @@ import os
 import binascii
 import base64
 import socket
+from kernel.utils import NeedMoreDataException
 from kernel.logger import log
 from kernel.config import conf
-from lib.storage import storage
 from lib.broker import broker
 
 
@@ -109,11 +109,18 @@ class AbstractHandler(object):
         """
         if self._packetsFactory:
             try:
+                if self._buffer is None:
+                    self._buffer = b''
+                self._buffer += data
                 protocolPackets = (
-                    self._packetsFactory.getPacketsFromBuffer(data)
+                    self._packetsFactory.getPacketsFromBuffer(self._buffer)
                 )
                 for protocolPacket in protocolPackets:
                     self.processProtocolPacket(protocolPacket)
+                self._buffer = None
+            except NeedMoreDataException as E:
+                log.info('[%s] Need more data...', self.handlerId)
+                return
             except Exception as E:
                 log.error("[%s] processData error: %s", self.handlerId, E)
 
@@ -192,17 +199,6 @@ class AbstractHandler(object):
         else:
             errorsList = result.getErrorsList()
             log.error('[%s] store():\n %s', self.handlerId, errorsList)
-            savePackets = True
-            if len(errorsList) > 0:
-                e = errorsList[0]
-                if 'params' in e:
-                    params = e['params']
-                    if len(params) > 1:
-                        savePackets = (params[1] != 404)
-            if savePackets:
-                # send data to storage on error to save packets
-                storage.save(self.uid if self.uid else 'unknown',
-                    self._buffer)
         return result
 
     def translate(self, data):

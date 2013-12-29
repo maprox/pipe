@@ -332,7 +332,6 @@ class GlobalsatHandler(AbstractHandler):
                 packetObserver = self.translate(data_device)
                 log.info(packetObserver)
                 self.uid = packetObserver['uid']
-                self._buffer = m.group(0).encode()
                 self.store([packetObserver])
                 if packetObserver['sensors']['sos'] == 1:
                     self.stopSosSignal()

@@ -126,7 +126,6 @@ class Handler(AbstractHandler):
             packetObserver = self.translate(data_device)
             log.info(packetObserver)
             self.uid = packetObserver['uid']
-            self._buffer = m.group(0).encode()
             self.store([packetObserver])
             position += len(m.group(0))
             m = rc.search(data, position)

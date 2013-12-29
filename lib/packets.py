@@ -6,6 +6,7 @@
 '''
 
 from struct import *
+from kernel.utils import NeedMoreDataException
 
 # ---------------------------------------------------------------------------
 
@@ -314,6 +315,9 @@ class BasePacket(BinaryPacket):
             self._length = unpack(fmt, buffer[self._offset:shift])[0]
             self._head = buffer[:shift]
         self._offset += self._parseLength() or fmtSize
+
+        if self._length > len(buffer):
+            raise NeedMoreDataException('Not enough data in buffer')
 
         self._body = b''
         if self._length > 0:

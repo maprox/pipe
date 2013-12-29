@@ -57,7 +57,6 @@ class AtrackHandler(AbstractHandler):
             return
 
         log.info(observerPackets)
-        self._buffer = protocolPacket.rawData
         self.store(observerPackets)
 
     def sendCommand(self, command):

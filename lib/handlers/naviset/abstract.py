@@ -72,7 +72,6 @@ class NavisetHandler(AbstractHandler):
             return
 
         log.info(observerPackets)
-        self._buffer = self.__headPacketRawData + protocolPacket.rawData
         self.store(observerPackets)
 
     def needProcessCommands(self):

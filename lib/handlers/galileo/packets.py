@@ -10,6 +10,7 @@ import lib.bits as bits
 import lib.crc16 as crc16
 import lib.handlers.galileo.tags as tags
 
+from kernel.utils import NeedMoreDataException
 from lib.factory import AbstractPacketFactory
 
 # ---------------------------------------------------------------------------
@@ -132,6 +133,9 @@ class BasePacket(object):
         if self.isHalved(header):
             archive = bits.bitTest(length, 15)
             length = bits.bitClear(length, 15)
+
+        if length > len(buffer) + 5:
+            raise NeedMoreDataException('Not enough data in buffer')
 
         crc = unpack("<H", buffer[length + 3:length + 5])[0]
         crc_data = buffer[:length + 3]

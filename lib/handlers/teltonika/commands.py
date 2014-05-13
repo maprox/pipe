@@ -79,7 +79,7 @@ class TeltonkaCommandConfigure(TeltonkaCommand, AbstractCommandConfigure):
         buffer += packString(data['device']['login'])
         buffer += packString(data['device']['password'])
         buffer += packString(data['host'])
-        buffer += pack('>H', data['port'])
+        buffer += pack('>H', int(data['port']))
         buffer += packString(data['gprs']['apn'])
         buffer += packString(data['gprs']['username'])
         buffer += packString(data['gprs']['password'])

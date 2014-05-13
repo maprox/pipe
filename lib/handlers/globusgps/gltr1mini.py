@@ -47,3 +47,13 @@ class TestCase(unittest.TestCase):
         self.assertEqual(p.alarmCode, packets.ALARM_SOS)
         self.assertEqual(p.params['sensors']['alarm_code'], packets.ALARM_SOS)
         self.assertEqual(p.params['sensors']['sos'], 1)
+
+
+    def test_nullPacket(self):
+        packetsList = self.factory.getPacketsFromBuffer(
+            b'\x00\x00$$\x00cE%0\x00@\x00p\x99U081724.000,A,5306.4757,N,04955.5630'
+            b',E,5.386,255.48,130514,,|1.15|49.6|0080|060|100\xa6|\r\n'
+        )
+        p = packetsList[0]
+        self.assertEqual(p.deviceImei, '45253000400070')
+        self.assertIsInstance(p, packets.ImePacketData)

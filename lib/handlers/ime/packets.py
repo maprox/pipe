@@ -293,10 +293,10 @@ class PacketFactory(AbstractPacketFactory):
         if data is None: return
 
         # read packetId
-        packetPrefix = data[:2]
-        if packetPrefix != b'$$':
-            raise Exception('Packet %s is not found' %
-                binascii.hexlify(packetPrefix).decode())
+        data = data[data.find(b'$$'):]
+
+        if not data:
+            raise Exception('Packet is not found')
 
         packet = ImePacket(data)
         for name, cls in inspect.getmembers(sys.modules[__name__]):

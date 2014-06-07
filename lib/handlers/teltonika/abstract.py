@@ -106,12 +106,14 @@ class TeltonikaHandler(AbstractHandler):
             packet = {'uid': self.uid}
             packet.update(item.params)
             packet['time'] = packet['time'].strftime('%Y-%m-%dT%H:%M:%S.%f')
-            packet['hdop'] = 1 # temporarily manual value of hdop
+            if not 'hdop' in packet:
+                packet['hdop'] = 1 # temporarily manual value of hdop
             # sensors
             sensor = {}
             if 'sensors' in packet:
                 sensor = packet['sensors']
-            sensor['sat_count'] = packet['satellitescount']
+            if 'satellitescount' in packet:
+                sensor['sat_count'] = packet['satellitescount']
             self.setPacketSensors(packet, sensor)
             packetsList.append(packet)
         return packetsList

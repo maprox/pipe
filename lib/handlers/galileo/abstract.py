@@ -161,7 +161,6 @@ class GalileoHandler(AbstractHandler):
 
             prevNum = num
             value = tag.getValue()
-            #print(num, value)
             if num == 3: # IMEI
                 packet['uid'] = value
             elif num == 4: # CODE

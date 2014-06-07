@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 """
 @project   Maprox <http://www.maprox.net>
 @info      Entry point

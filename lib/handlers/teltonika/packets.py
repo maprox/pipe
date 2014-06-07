@@ -1,13 +1,13 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Teltonika packets
 @copyright 2012-2013, Maprox LLC
-'''
+"""
 
-from datetime import datetime
-from struct import *
+from datetime import datetime, timedelta
 import lib.crc16 as crc16
+import lib.bits as bits
 from lib.packets import *
 from lib.factory import AbstractPacketFactory
 
@@ -99,7 +99,6 @@ class PacketData(BasePacket):
     def calculateChecksum(self):
         """
          Calculates CRC (CRC-16 Modbus)
-         @param buffer: binary string
          @return: True if buffer crc equals to supplied crc value, else False
         """
         return crc16.Crc16.calcBinaryString(self._body, crc16.INITIAL_DF1)
@@ -148,7 +147,8 @@ class AvlDataArray(SolidBinaryPacket):
         # body
         self._body = self._rawData[self._offset:-1]
         # retrieving Avl data items
-        self._items = AvlData.getAvlDataListFromBuffer(self._body)
+        self._items = AvlData.getAvlDataListFromBuffer(
+            self._body, self._codecId)
         self._tail = self._rawData[-1:]
         # last byte must be equal to self._itemsCount
         lastByte = unpack(fmt, self._tail)[0]
@@ -198,7 +198,38 @@ class AvlData(BinaryPacket):
          Parses packet's head
          @return: self
         """
-        super(AvlData, self)._parseBody()
+        return super(AvlData, self)._parseBody()
+
+    @classmethod
+    def getAvlDataListFromBuffer(cls, data, codecId):
+        """
+         Returns an array of AvlData instances from data
+         @param data: Input binary data
+         @param codecId: AvlData codec identifier
+         @return: array of AvlData instances (empty array if no AvlData found)
+        """
+        AvlClass = AvlDataCodec7 if codecId == 7 else AvlDataCodec8
+        items = []
+        while True:
+            item = AvlClass(data)
+            data = item.rawDataTail
+            items.append(item)
+            if len(data) == 0: break
+        return items
+
+# ---------------------------------------------------------------------------
+
+class AvlDataCodec8(AvlData):
+    """
+      Item of data packet of naviset messaging protocol with codec \x08
+    """
+
+    def _parseBody(self):
+        """
+         Parses packet's head
+         @return: self
+        """
+        super(AvlDataCodec8, self)._parseBody()
         self._body = self._rawData
 
         self._params = {}
@@ -258,21 +289,126 @@ class AvlData(BinaryPacket):
             'items': items
         }
         return self
+# ---------------------------------------------------------------------------
 
-    @classmethod
-    def getAvlDataListFromBuffer(cls, data = None):
+class AvlDataCodec7(AvlData):
+    """
+      Item of data packet of naviset messaging protocol with codec \x08
+    """
+
+    def _parseBody(self):
         """
-         Returns an array of AvlData instances from data
-         @param data: Input binary data
-         @return: array of AvlData instances (empty array if no AvlData found)
+         Parses packet's head
+         @return: self
         """
+        super(AvlDataCodec7, self)._parseBody()
+        self._body = self._rawData
+        self._params = {}
+        self._sensors = {}
+
+        time = self.readFrom('>L')
+        priority = bits.bitRangeValue(time, 30, 32)
+        if priority == 2:
+            self._sensors['sos'] = 1
+        time = bits.bitClear(time, 30)
+        time = bits.bitClear(time, 31)
+        self._params['time'] = datetime(2007, 1, 1) + timedelta(seconds=time)
+        globalMask = self.readFrom('>B')
+
+        hasGpsElement = bits.bitTest(globalMask, 0)
+        ioElements = []
+        ioElementsFormats = ['>B', '>H', '>L']
+        for index in range(len(ioElementsFormats)):
+            if bits.bitTest(globalMask, index + 1):
+                ioElements.append(ioElementsFormats[index])
+
+        if hasGpsElement:
+            mask = self.readFrom('>B')
+            # Latitude and longitude
+            if bits.bitTest(mask, 0):
+                self._params['longitude'] = self.readFrom('>f')
+                self._params['latitude'] = self.readFrom('>f')
+            # Altitude
+            if bits.bitTest(mask, 1):
+                self._params['altitude'] = self.readFrom('>h')
+            # Angle
+            if bits.bitTest(mask, 2):
+                self._params['azimuth'] = self.readFrom('>B') * 360 / 256
+            # Speed
+            if bits.bitTest(mask, 3):
+                self._params['speed'] = self.readFrom('>B')
+            # Satellites
+            if bits.bitTest(mask, 4):
+                self._params['satellitescount'] = self.readFrom('>B')
+            # CellID
+            if bits.bitTest(mask, 5):
+                self._params['gsm_cell_lac'] = self.readFrom('>H')
+                self._params['gsm_cell_id'] = self.readFrom('>H')
+            # Signal quality
+            if bits.bitTest(mask, 6):
+                self._params['gsm_signal_quality'] = self.readFrom('>B')
+            # Operator code
+            if bits.bitTest(mask, 7):
+                self._params['gsm_operator_code'] = self.readFrom('>L')
+
         items = []
-        while True:
-            item = AvlData(data)
-            data = item.rawDataTail
-            items.append(item)
-            if (len(data) == 0): break
-        return items
+        for fmt in ioElements:
+            cnt = self.readFrom('>B')
+            for i in range(cnt):
+                items.append({
+                    'id': self.readFrom('>B'),
+                    'value': self.readFrom(fmt)
+                })
+
+        self._parseElements(items)
+        self._params['sensors'] = self._sensors
+        self._ioElement = {
+            # Event IO ID – if data is acquired on event – this field
+            # defines which IO property has changed and generated an event.
+            # If data cause is not event – the value is 0.
+            'eventIoId': 0,
+            # List of IO elements
+            'items': items
+        }
+        return self
+
+    def _parseElements(self, items):
+        """
+         Parse IOElements into sensors
+         @param items: dict
+         @return self
+        """
+        for item in items:
+            itemId = item['id']
+            itemValue = item['value']
+            if itemId == 1: # Battery level
+                self._sensors['int_battery_level'] = itemValue
+            elif itemId == 2: # USB connected
+                self._sensors['usb_connected'] = itemValue
+            elif itemId == 5: # Live time from last reboot [sec]
+                self._sensors['uptime'] = itemValue
+            elif itemId == 20: # HDOP
+                self._params['hdop'] = itemValue / 10 # legacy code
+                self._sensors['hdop'] = itemValue / 10
+            elif itemId == 21: # VDOP
+                self._sensors['vdop'] = itemValue / 10
+            elif itemId == 22: # PDOP
+                self._sensors['pdop'] = itemValue / 10
+            elif itemId == 67: # Battery voltage [mV]
+                self._sensors['int_battery_voltage'] = itemValue
+            elif itemId == 220: # GPS time to first FIX [sec]
+                self._sensors['gps_time_to_fix'] = itemValue
+            elif itemId == 221: # Pressed button [0-4]
+                self._sensors['button_pressed_id'] = itemValue
+            elif itemId == 222: # Alarm activation cause [
+                # none:0, button:1, SMS:2, AOC:3, ManDown: 5,
+                # Parking:6, Restore after reset:7]
+                self._sensors['alarm_cause'] = itemValue
+            elif itemId == 240: # Movement
+                self._sensors['moving'] = itemValue
+            elif itemId == 241: # Roaming
+                self._sensors['roaming'] = itemValue
+        return self
 
 # ---------------------------------------------------------------------------
 

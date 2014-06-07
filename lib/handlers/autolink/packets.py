@@ -211,9 +211,7 @@ class Packet(BasePacket):
         offset = 0
         while offset < bodyLength:
             num = unpack('<B', self.body[offset:offset + 1])[0]
-            #print(num)
             val = self.body[offset+1:offset+5]
-            #print(val)
             if num == 1:
                 ebv, ibv = unpack('<HH', val)
                 sensors['ext_battery_voltage'] = ebv
@@ -454,6 +452,3 @@ class TestCase(unittest.TestCase):
         self.assertEqual(len(packet.packets), 5)
         p = packet.packets[0]
         self.assertEqual(p.timestamp, datetime(2013, 8, 30, 1, 33, 58))
-        #for p in packet.packets:
-        #    print(p.params)
-        #p = packet.packets[1]

@@ -64,8 +64,8 @@ def bitRangeValue(int_type, start, end):
     """
      Returns a value of bits in range
      @param int_type: input value
-     @param offset: start position
-     @param length: count of bits
+     @param start: start position
+     @param end: end position
      @return: int
     """
     mask = 2 **(end - start) - 1

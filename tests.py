@@ -26,6 +26,7 @@ from lib.handlers.globalsat.tr600 import TestCase as tc12
 from lib.handlers.globalsat.gtr128 import TestCase as tc12a
 from lib.handlers.teltonika.abstract import TestCase as tc13
 from lib.handlers.teltonika.fmxxxx import TestCase as tc14
+from lib.handlers.teltonika.gh3000 import TestCase as tc14b
 from lib.handlers.teltonika.packets import TestCase as tc15
 from lib.handlers.teltonika.commands import TestCase as tc15b
 from lib.handlers.atrack.abstract import TestCase as tc16

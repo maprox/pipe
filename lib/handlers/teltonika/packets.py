@@ -326,8 +326,8 @@ class AvlDataCodec7(AvlData):
             mask = self.readFrom('>B')
             # Latitude and longitude
             if bits.bitTest(mask, 0):
-                self._params['longitude'] = self.readFrom('>f')
                 self._params['latitude'] = self.readFrom('>f')
+                self._params['longitude'] = self.readFrom('>f')
             # Altitude
             if bits.bitTest(mask, 1):
                 self._params['altitude'] = self.readFrom('>h')

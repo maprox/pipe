@@ -41,7 +41,7 @@ class ImeCommand(AbstractCommand, packets.ImePacket):
 class ImeCommandConfigure(ImeCommand, AbstractCommandConfigure):
     alias = 'configure'
 
-    hostNameNotSupported = False
+    hostNameNotSupported = True
     """ True if protocol doesn't support dns hostname (only ip-address) """
 
     def getData(self, transport = "tcp"):
@@ -53,17 +53,20 @@ class ImeCommandConfigure(ImeCommand, AbstractCommandConfigure):
         config = self._initiationConfig
         password = '000000'
         if transport == "sms":
-            command0 = 'W' + password + ',012,1,' + \
-                       config['host'] + ',' + str(config['port'])
+            command0 = 'W' + password + ',010,' + config['identifier']
             command1 = 'W' + password + ',011,' + \
                        config['gprs']['apn'] \
                        + ',' + config['gprs']['username'] \
                        + ',' + config['gprs']['password']
-            return [{
-                "message": command0
-            }, {
-                "message": command1
-            }]
+            command2 = 'W' + password + ',013,1'
+            command3 = 'W' + password + ',012,1,' + \
+                       config['host'] + ',' + str(config['port'])
+            return [
+                {"message": command0},
+                {"message": command1},
+                {"message": command2},
+                {"message": command3}
+            ]
         else:
             return super(ImeCommandConfigure, self).getData(transport)
 

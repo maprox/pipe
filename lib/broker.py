@@ -12,6 +12,7 @@ from kernel.logger import log
 
 from kombu import BrokerConnection, Exchange, Queue
 
+import re
 import json
 import time
 #import hashlib
@@ -45,13 +46,6 @@ class MessageBroker:
          @param imei: device identifier
         """
         return 'mon.device.packet.create.%s' % imei
-        #workerNum = '0'
-        #if imei and len(imei) > 0:
-        #    workerNum = hashlib.md5(imei.encode()).hexdigest()[-1:].upper()
-        #if workerNum not in '0123456789ABCDEF':
-        #    workerNum = '0'
-        #routingKey = 'mon.device.packet.create.worker%s' % workerNum
-        #return routingKey
 
     def send(self, packets, routing_key = None, exchangeName = None):
         """
@@ -75,8 +69,11 @@ class MessageBroker:
                 timePrev = None
                 # spike-nail END
 
+                reUid = re.compile('[\w-]+')
                 for packet in packets:
                     uid = None if 'uid' not in packet else packet['uid']
+                    # we should check uid for correctness
+                    if not reUid.match(uid): continue
 
                     timeCurr = None
                     if 'time' in packet:

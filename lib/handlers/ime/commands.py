@@ -144,8 +144,10 @@ class TestCase(unittest.TestCase):
         })
         self.assertIsInstance(cmd, ImeCommandConfigure)
         self.assertEqual(cmd.getData('sms'), [
-            {'message': 'W000000,012,1,trx.maprox.net,21001'},
-            {'message': 'W000000,011,tele237.msk,,'}
+            {'message': 'W000000,010,0123456789012345'},
+            {'message': 'W000000,011,tele237.msk,,'},
+            {'message': 'W000000,013,1'},
+            {'message': 'W000000,012,1,212.100.159.142,21001'}
         ])
 
 

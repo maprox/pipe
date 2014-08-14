@@ -73,7 +73,9 @@ class MessageBroker:
                 for packet in packets:
                     uid = None if 'uid' not in packet else packet['uid']
                     # we should check uid for correctness
-                    if uid is None or not reUid.match(uid): continue
+                    if uid is None or not reUid.match(uid):
+                        log.error('Incorrect UID: %s' % uid)
+                        continue
 
                     timeCurr = None
                     if 'time' in packet:

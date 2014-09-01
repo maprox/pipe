@@ -14,10 +14,6 @@ host = '10.233.2.31'
 url = 'amqp://{0}:{1}@{2}//'.format(username, password, host)
 
 with Connection(url) as conn:
-    #rkey = 'production.mon.device.command.0,\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-    #rkey = 'production.mon.device.packet.create.0,\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-    #rkey = 'production.mon.packet.create.0,\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-    #rkey = 'production.mon.device.packet.create.8682040046074\x00\x0A'
     rkey = 'production.mon.device.command.8682040046074\x00\x0a'
     command_queue = Queue(
         rkey,

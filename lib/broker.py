@@ -72,22 +72,24 @@ class MessageBroker:
                 reUid = re.compile('[\w-]+')
                 for packet in packets:
                     uid = None if 'uid' not in packet else packet['uid']
+
                     # we should check uid for correctness
-                    if uid is None or not reUid.match(uid):
-                        log.error('Incorrect UID: %s' % uid)
-                        continue
+                    uidIsCorrect = uid is not None and reUid.match(uid)
 
                     timeCurr = None
                     if 'time' in packet:
                         timeCurr = packet['time']
 
-                    if not uid in queuesConfig:
+                    if uidIsCorrect and uid in queuesConfig:
+                        config = queuesConfig[uid]
+                    else:
                         routingKey = routing_key
                         if not routing_key:
+                            if not uidIsCorrect: continue # skip incorrect uid
                             routingKey = self.getRoutingKey(uid)
 
                         routingKey = conf.environment + '.' + routingKey
-                        queuesConfig[uid] = {
+                        config = {
                             'routingKey': routingKey,
                             'queue': Queue(
                                 routingKey,
@@ -95,6 +97,8 @@ class MessageBroker:
                                 routing_key = routingKey
                             )
                         }
+                        if uidIsCorrect:
+                            queuesConfig[uid] = config
 
                     # spike-nail START
                     if timePrev and timeCurr:
@@ -110,7 +114,6 @@ class MessageBroker:
                             continue # skip this packet if it's too close
                     # spike-nail END
 
-                    config = queuesConfig[uid]
                     with conn.Producer(channel = connChannel) as producer:
                         conn.ensure_connection()
                         producer.publish(

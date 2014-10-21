@@ -194,6 +194,10 @@ class GalileoHandler(AbstractHandler):
                 sensor.update(value)
             elif num in range(80, 84): # Analog input 0 - 4
                 sensor['ain%d' % (num - 80)] = value
+            elif num == 88:
+                sensor['rs232_0'] = value
+            elif num == 89:
+                sensor['rs232_1'] = value
             elif num in range(112, 120):
                 sensor['ext_temperature_%d' % (num - 112)] = value
             elif num == 144:

@@ -302,9 +302,13 @@ class PacketReceiveManager:
                     f.truncate(0)
                 else:
                     f.seek(0)
-                    ts = f.read()
+                    content = f.read()
+                    try:
+                        ts = float(content)
+                    except ValueError:
+                        ts = 0
                     tc = time.time()
-                    if ignoreFlag or (tc - float(ts) > QUEUE_MAX_TIMEOUT):
+                    if ignoreFlag or (tc - ts > QUEUE_MAX_TIMEOUT):
                         f.truncate(0)
                         f.write(str(tc))
                         isSending = True

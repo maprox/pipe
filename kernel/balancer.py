@@ -21,7 +21,7 @@ from kombu import BrokerConnection, Queue
 # --------------------------------------------------------------------
 
 QUEUE_PREFIX = conf.environment + '.mon.device.packet'
-QUEUE_IN_PROGRESS_MESSAGE = 'Waiting...'
+QUEUE_MAX_TIMEOUT = 60 * 5 # 5 minutes
 
 # --------------------------------------------------------------------
 
@@ -79,12 +79,16 @@ class PacketReceiveBalancer:
                     conn.ensure_connection()
                     log.debug('%s::Connected to %s',
                         threadName, conf.amqpConnection)
-                    with conn.Consumer([signalQueue],
-                           callbacks = [self.threadSignalRequestOnMessage]):
-                        while True:
-                            conn.ensure_connection()
-                            conn.drain_events()
+                    try:
+                        with conn.Consumer([signalQueue],
+                               callbacks = [self.threadSignalRequestOnMessage]):
+                            while True:
+                                conn.ensure_connection()
+                                conn.drain_events()
+                    except Exception as E:
+                        log.error('%s::%s', threadName, E)
                     conn.release()
+                    log.debug('%s::Disconnected', threadName)
             except Exception as E:
                 log.error('%s::%s', threadName, E)
                 time.sleep(10) # sleep for 10 seconds after exception
@@ -97,11 +101,14 @@ class PacketReceiveBalancer:
         """
         threadName = 'SignalRequestThread'
         uid = 'unknown uid [!]'
-        if 'uid' in body:
-            uid = body['uid']
-        log.debug('%s:: > Signal for %s', threadName, uid)
-        if uid:
-            self._receiveManager.checkListeningForQueue(uid)
+        try:
+            if 'uid' in body:
+                uid = body['uid']
+            log.debug('%s:: > Signal for %s', threadName, uid)
+            if uid:
+                self._receiveManager.checkListeningForQueue(uid)
+        except Exception as E:
+            log.error('%s::%s', threadName, E)
         message.ack()
 
     def threadSignalResponseHandler(self):
@@ -120,12 +127,16 @@ class PacketReceiveBalancer:
                     conn.ensure_connection()
                     log.debug('%s::Connected to %s',
                         threadName, conf.amqpConnection)
-                    with conn.Consumer([signalQueue],
-                        callbacks = [self.threadSignalResponseOnMessage]):
-                        while True:
-                            conn.ensure_connection()
-                            conn.drain_events()
+                    try:
+                        with conn.Consumer([signalQueue],
+                            callbacks = [self.threadSignalResponseOnMessage]):
+                            while True:
+                                conn.ensure_connection()
+                                conn.drain_events()
+                    except Exception as E:
+                        log.error('%s::%s', threadName, E)
                     conn.release()
+                    log.debug('%s::Disconnected', threadName)
             except Exception as E:
                 log.error('%s::%s', threadName, E)
                 time.sleep(10) # sleep for 10 seconds after exception
@@ -197,17 +208,21 @@ class PacketReceiveManager:
                     conn.ensure_connection()
                     log.debug('%s::Connected to %s',
                         threadName, conf.amqpConnection)
-                    with conn.Consumer(queues, callbacks = [
-                        self.threadReceiverOnMessage
-                    ]) as consumer:
-                        while True:
-                            conn.ensure_connection()
-                            try:
-                                conn.drain_events(timeout = 5) # 5 seconds
-                            except socket.timeout:
-                                pass
-                            self.appendNewQueues(consumer)
+                    try:
+                        with conn.Consumer(queues, callbacks = [
+                            self.threadReceiverOnMessage
+                        ]) as consumer:
+                            while True:
+                                conn.ensure_connection()
+                                try:
+                                    conn.drain_events(timeout = 5) # 5 seconds
+                                except socket.timeout:
+                                    pass
+                                self.appendNewQueues(consumer)
+                    except Exception as E:
+                        log.error('%s::%s', threadName, E)
                     conn.release()
+                    log.debug('%s::Disconnected', threadName)
             except Exception as E:
                 log.error('%s::%s', threadName, E)
                 time.sleep(30) # sleep for 30 seconds after exception
@@ -287,10 +302,11 @@ class PacketReceiveManager:
                     f.truncate(0)
                 else:
                     f.seek(0)
-                    flag = f.read()
-                    if ignoreFlag or (flag != QUEUE_IN_PROGRESS_MESSAGE):
+                    ts = f.read()
+                    tc = time.time()
+                    if ignoreFlag or (tc - float(ts) > QUEUE_MAX_TIMEOUT):
                         f.truncate(0)
-                        f.write(QUEUE_IN_PROGRESS_MESSAGE)
+                        f.write(str(tc))
                         isSending = True
                     else:
                         log.debug('"%s" checkFile in progress!', uid)

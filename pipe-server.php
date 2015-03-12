@@ -95,16 +95,6 @@ function isProcessRunning($mask)
 }
 
 /**
- * Clear after stop
- */
-function clearDatabase()
-{
-	print("Clearing balancer's database...");
-    array_map('unlink', glob(dirname(__FILENAME__) + "/db/*"));
-	print("[OK] Database is cleared in `" . dirname(__FILENAME__) . "`.");
-}
-
-/**
  * Kills process by mask
  * @param string $mask
  */
@@ -117,7 +107,6 @@ function killProcess($mask)
 	$output = shell_exec($command);
 	print_r($output);
 
-    clearDatabase();
 	print("[OK] All is Done\n");
 }
 
@@ -133,7 +122,6 @@ function killAll()
 	$output = shell_exec($command);
 	print_r($output);
 
-    clearDatabase();
 	print("[OK] All is Done\n");
 }
 

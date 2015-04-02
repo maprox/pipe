@@ -179,6 +179,7 @@ class PacketReceiveManager:
         """
         self._queues = {}
         self._messages = {}
+        self._messagesLocks = {}
         self._queuesListNew = []
         self.initReceiverThread()
 
@@ -250,18 +251,13 @@ class PacketReceiveManager:
             uid = body['uid']
         if uid not in self._messages:
             self._messages[uid] = deque()
-        sendImmediateFlag = not self._messages[uid]
         # store message to the queue
         self._messages[uid].append({
             "message": message,
             "body": body
         })
-        log.debug('%s::Packet for %s added to the queue: %s',
-            threadName, body['time'], uid)
-        # immediate send message if message queue is empty
-        if sendImmediateFlag:
-            log.debug('%s::Send immediate for %s', threadName, uid)
-            self.sendMessage(uid, body)
+        log.debug('%s::Packet %s added %s', threadName, body['time'], uid)
+        self.sendMessage(uid, body)
 
     def checkListeningForQueue(self, uid):
         """
@@ -280,13 +276,6 @@ class PacketReceiveManager:
         )
         self._queuesListNew.append(self._queues[uid])
 
-    def getCheckFileName(self, uid):
-        """
-         Returns check file name by identifier uid
-         @return: string
-        """
-        return 'db/flb_' + hashlib.md5(uid.encode()).hexdigest()
-
     def sendMessage(self, uid, body = None, ignoreFlag = False):
         """
          Send message to the broker
@@ -294,30 +283,26 @@ class PacketReceiveManager:
          @param body: New packet body
          @param ignoreFlag: Send message even if the checkFile is in progress
         """
-        try:
-            isSending = False
-            checkFile = self.getCheckFileName(uid)
-            with open(checkFile, 'a+') as f:
-                if not body:
-                    f.truncate(0)
-                else:
-                    f.seek(0)
-                    content = f.read()
-                    try:
-                        ts = float(content)
-                    except ValueError:
-                        ts = 0
-                    tc = time.time()
-                    if ignoreFlag or (tc - ts > QUEUE_MAX_TIMEOUT):
-                        f.truncate(0)
-                        f.write(str(tc))
-                        isSending = True
-                    else:
-                        log.debug('"%s" checkFile in progress!', uid)
-            if isSending:
-                broker.send([body], 'mon.device.packet.receive')
-        except IOError as E:
-            log.debug(E)
+        threadName = 'ReceiverThread'
+        if not body:
+            self._messagesLocks.pop(uid, None)
+            log.debug('%s::%s lock file cleared', threadName, uid)
+            return
+
+        currentTime = time.time()
+        isLocked = uid in self._messagesLocks and not ignoreFlag
+        if isLocked:
+            lockTime = self._messagesLocks[uid]
+            isLocked = currentTime - lockTime < QUEUE_MAX_TIMEOUT
+            if not isLocked:
+                log.debug('%s::%s is unlocked by timeout!', threadName, uid)
+                body = self._messages[uid][0]['body']
+        if not isLocked:
+            self._messagesLocks[uid] = currentTime
+            broker.send([body], 'mon.device.packet.receive')
+            log.debug('%s::%s packet has been sent', threadName, uid)
+        else:
+            log.debug('%s::%s is locked!', threadName, uid)
 
     def messageReceived(self, uid):
         """

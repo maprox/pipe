@@ -1,3 +1,6 @@
+Overview
+========
+
 Pipe-server for Maprox Observer project.
 Listen for incoming packets from devices.
 
@@ -10,3 +13,36 @@ Supported protocols:
 * ATrack (AX5)
 * Autolink
 * GlobusGPS (TR1-mini)
+
+Installation
+============
+
+Install git
+-----------
+
+    sudo apt-get update
+    sudo apt-get install git
+
+Install pip for python 3
+------------------------
+
+    sudo apt-get install python3-pip
+
+Clone repository
+----------------
+
+    git clone https://github.com/maprox/Pipe.git
+    cd Pipe
+
+Install requirements
+--------------------
+
+    pip3 install -r requirements.txt --upgrade
+
+Install redis
+-------------
+We can additionally install redis-server to this instance if we don't have
+external server for it.
+
+    sudo apt-get install redis-server
+

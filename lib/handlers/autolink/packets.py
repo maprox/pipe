@@ -295,7 +295,7 @@ class Packet(BasePacket):
     @property
     def timestamp(self):
         if self._rebuild: self._build()
-        return datetime.fromtimestamp(self.__timestamp)
+        return datetime.utcfromtimestamp(self.__timestamp)
 
     @timestamp.setter
     def timestamp(self, value):
@@ -382,7 +382,7 @@ class TestCase(unittest.TestCase):
         packet = Packet(data)
         self.assertEqual(packet.packetType, PACKET_TYPE_DATA)
         self.assertEqual(packet.length, 85)
-        self.assertEqual(packet.timestamp, datetime(2013, 6, 20, 13, 47, 49))
+        self.assertEqual(packet.timestamp, datetime(2013, 6, 20, 9, 47, 49))
         sensors = packet.params['sensors']
         self.assertEqual(sensors['ext_battery_voltage'], 15000)
 
@@ -415,7 +415,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(len(packet.packets), 2)
         p = packet.packets[1]
         self.assertIsInstance(p, Packet)
-        self.assertEqual(p.timestamp, datetime(2013, 6, 20, 13, 50, 19))
+        self.assertEqual(p.timestamp, datetime(2013, 6, 20, 9, 50, 19))
         self.assertAlmostEqual(p.params['latitude'], 55.6360359)
         self.assertAlmostEqual(p.params['longitude'], 37.20907592)
         sensors = p.params['sensors']
@@ -451,4 +451,4 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.sequenceNum, 1)
         self.assertEqual(len(packet.packets), 5)
         p = packet.packets[0]
-        self.assertEqual(p.timestamp, datetime(2013, 8, 30, 1, 33, 58))
+        self.assertEqual(p.timestamp, datetime(2013, 8, 29, 21, 33, 58))

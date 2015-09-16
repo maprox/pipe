@@ -1,3 +1,5 @@
+![Travis CI Status](https://travis-ci.org/maprox/Pipe.svg?branch=master)
+
 Overview
 ========
 
@@ -17,32 +19,28 @@ Supported protocols:
 Installation
 ============
 
-Install git
------------
+1. Install git
 
-    sudo apt-get update
-    sudo apt-get install git
+        sudo apt-get update
+        sudo apt-get install git
 
-Install pip for python 3
-------------------------
+2. Install pip for python 3
 
-    sudo apt-get install python3-pip
+        sudo apt-get install python3-pip
 
-Clone repository
-----------------
+3. Clone repository
 
-    git clone https://github.com/maprox/Pipe.git
-    cd Pipe
+        git clone https://github.com/maprox/Pipe.git
+        cd Pipe
 
-Install requirements
---------------------
+4. Install requirements
 
-    pip3 install -r requirements.txt --upgrade
+        pip3 install -r requirements.txt --upgrade
 
-Install redis
--------------
-We can additionally install redis-server to this instance if we don't have
-external server for it.
+5. Install redis
 
-    sudo apt-get install redis-server
+    _We can additionally install redis-server to this instance if we don't have
+    external server for it._
+
+        sudo apt-get install redis-server
 

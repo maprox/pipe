@@ -171,6 +171,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(h.getAckPacket(packet), b'\x01')
 
     def test_processData(self):
+        self.skipTest('Need mock for redis server')
         h = self.handler
         data = b'\x00\x0f012896001609129' +\
                b'\x00\x00\x00\x00\x00\x00\x02\xf1\x08\x19\x00\x00\x01<' +\
@@ -233,4 +234,3 @@ class TestCase(unittest.TestCase):
 
         self.assertEqual(packet['sensors']['sat_count'], 7)
         self.assertEqual(packet['sensors']['altitude'], 291)
-        

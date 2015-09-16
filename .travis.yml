@@ -1,12 +1,8 @@
 language: python
+sudo: false
 python:
   - "3.4"
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install -y redis-server
-# command to install dependencies
 install:
   - pip install -r requirements.txt
-# command to run tests
 script:
   - python tests.py

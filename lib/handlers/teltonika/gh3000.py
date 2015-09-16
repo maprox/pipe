@@ -26,6 +26,7 @@ class TestCase(unittest.TestCase):
         pass
 
     def test_processData(self):
+        self.skipTest('Need mock for redis server')
         h = self.handler
         data = (
             b'\x00\x0f352848022288472'

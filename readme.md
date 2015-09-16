@@ -3,6 +3,8 @@
 Overview
 ========
 
+[![Join the chat at https://gitter.im/maprox/Pipe](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/maprox/Pipe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Pipe-server for Maprox Observer project.
 Listen for incoming packets from devices.
 

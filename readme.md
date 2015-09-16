@@ -1,3 +1,8 @@
+![Travis CI Status](https://travis-ci.org/maprox/Pipe.svg?branch=master)
+
+Overview
+========
+
 Pipe-server for Maprox Observer project.
 Listen for incoming packets from devices.
 
@@ -10,3 +15,32 @@ Supported protocols:
 * ATrack (AX5)
 * Autolink
 * GlobusGPS (TR1-mini)
+
+Installation
+============
+
+1. Install git
+
+        sudo apt-get update
+        sudo apt-get install git
+
+2. Install pip for python 3
+
+        sudo apt-get install python3-pip
+
+3. Clone repository
+
+        git clone https://github.com/maprox/Pipe.git
+        cd Pipe
+
+4. Install requirements
+
+        pip3 install -r requirements.txt --upgrade
+
+5. Install redis
+
+    _We can additionally install redis-server to this instance if we don't have
+    external server for it._
+
+        sudo apt-get install redis-server
+

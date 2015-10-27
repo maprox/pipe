@@ -49,8 +49,6 @@ try:
     else:
         conf.port = conf.getint("general", "port")
     conf.socketPacketLength = conf.getint("general", "socketPacketLength")
-    conf.pathStorage = conf.get("general", "pathStorage")
-    conf.pathTrash = conf.get("general", "pathTrash")
 
 except Exception as E:
     log.critical("Error reading " + options.handlerconf + ": %s", E)

@@ -1,13 +1,7 @@
 *__pycache__*
 
-db/*
-!db/.gitignore
-
 logs/*
 !logs/.gitignore
-
-trash/*
-!trash/.gitignore
 
 kernel/version.txt
 

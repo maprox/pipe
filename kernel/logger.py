@@ -15,4 +15,4 @@ logging.Formatter.converter = time.gmtime
 
 # read logging configuration
 logging.config.fileConfig(options.logconf)
-log = logging.getLogger();
+log = logging.getLogger()

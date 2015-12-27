@@ -10,6 +10,7 @@ from urllib.request import urlopen
 
 __CachedIP__ = None
 
+
 def get_ip():
     global __CachedIP__
     if __CachedIP__ is None:

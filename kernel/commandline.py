@@ -38,7 +38,7 @@ options.add_option(
     "-m",
     "--pipe_process_mask",
     dest="mask",
-    help="Pipe process identifier",
+    help="Pipe process identifier (deprecated)",
     metavar="ProcessId",
     default="000"
 )

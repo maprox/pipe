@@ -7,7 +7,6 @@
 
 import time
 import socket
-import hashlib
 import json
 
 from collections import deque

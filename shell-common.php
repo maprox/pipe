@@ -54,7 +54,6 @@ function getAllTrackers()
 		$name = $key[1];
 		$return[$name] = readTrackerConfig($name);
 	}
-	$return['balancer'] = readTrackerConfig('balancer');
 	return array_filter($return);
 }
 

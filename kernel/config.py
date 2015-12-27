@@ -27,6 +27,7 @@ try:
     conf.amqpConnection = conf.get("amqp", "connection")
     conf.hostName = conf.get("pipe", "hostname")
     conf.hostIp = conf.get("pipe", "hostip")
+    conf.socketPacketLength = conf.getint("pipe", "socketPacketLength")
     if not conf.hostIp:
         from lib.ip import get_ip
         conf.hostIp = get_ip()
@@ -48,7 +49,6 @@ try:
         conf.port = int(options.port)
     else:
         conf.port = conf.getint("general", "port")
-    conf.socketPacketLength = conf.getint("general", "socketPacketLength")
 
 except Exception as E:
     log.critical("Error reading " + options.handlerconf + ": %s", E)

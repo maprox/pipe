@@ -1,17 +1,18 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Command line reading module
 @copyright 2009-2012, Maprox LLC
-'''
+"""
 
 from optparse import OptionParser
 options = OptionParser()
 options.add_option(
     "-l",
-    "--logconf",
-    dest="logconf",
-    help="Path to the log config file",
+    "--logs",
+    dest="logs",
+    help="Path to the log config file. " +
+         "You can write 'stdout' instead of log config",
     metavar="PathToLogConf",
     default="conf/logs.conf"
 )

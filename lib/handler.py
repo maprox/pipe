@@ -104,7 +104,7 @@ class AbstractHandler(object):
     def processData(self, data):
         """
          Processing of data from socket / storage.
-         Must be overridden in child classes
+         Might be overridden in child classes
          @param data: Data from socket
         """
         if self._packetsFactory:

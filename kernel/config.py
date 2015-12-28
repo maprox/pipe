@@ -14,7 +14,7 @@ else:
     from configparser import ConfigParser
 
 from kernel.logger import log
-from kernel.commandline import options
+from kernel.options import options
 
 conf = ConfigParser()
 conf.optionxform = str
@@ -60,9 +60,6 @@ try:
     if options.handler:
         options.handlerconf = 'conf/handlers/' + options.handler + '.conf'
 
-    if not options.handlerconf or not os.path.exists(options.handlerconf):
-        log.error('Handler is not specified or not found!')
-
 except Exception as E:
     log.critical("Error reading " + options.pipeconf + ": %s", E)
     exit(1)
@@ -83,6 +80,10 @@ try:
 
     if not conf.port and options.handlerconf:
         conf.port = conf.getint("general", "port")
+
+    if not conf.port:
+        log.critical("Please specify correct port number! (use --port)")
+        exit(1)
 
 except Exception as E:
     log.critical("Error reading " + options.handlerconf + ": %s", E)

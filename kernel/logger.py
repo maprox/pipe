@@ -9,13 +9,13 @@ import os
 import time
 import logging
 import logging.config
-from kernel.commandline import options
+from kernel.options import options
 
 # set UTC timezone for logging time
 logging.Formatter.converter = time.gmtime
 
 # read logging configuration
-if options.logconf == 'stdout':
+if options.logs == 'stdout':
     logging.config.dictConfig({
         'version': 1,
         'formatters': {
@@ -39,9 +39,9 @@ if options.logconf == 'stdout':
         }
     })
 else:
-    if not os.path.exists(options.logconf):
-        options.logconf = 'conf/logs.conf'
-    logging.config.fileConfig(options.logconf)
+    if not os.path.exists(options.logs):
+        options.logs = 'conf/logs.conf'
+    logging.config.fileConfig(options.logs)
 
 # expose logger instance
 log = logging.getLogger()

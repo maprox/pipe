@@ -14,6 +14,7 @@ from socketserver import BaseRequestHandler
 from kernel.logger import log
 import kernel.pipe as pipe
 from lib.handlers.list import HandlerClass
+from lib.handler import AbstractHandler
 
 
 # ===========================================================================
@@ -25,17 +26,9 @@ class ClientThread(BaseRequestHandler):
     """
     __handler = None
 
-    def setup(self):
-        pass
-
     def handle(self):
         try:
-            if HandlerClass:
-                log.debug('Protocol handler: %s', HandlerClass.__doc__)
-                self.__handler = HandlerClass(pipe.Manager(), self)
-                self.__handler.dispatch()
-            else:
-                log.error('No protocol handlers found!')
+            self.handler.dispatch()
         except Exception:
             log.error("Dispatch error: %s", traceback.format_exc())
 
@@ -44,6 +37,12 @@ class ClientThread(BaseRequestHandler):
         if self.__handler:
             log.debug('Delete handler: %s', self.__handler.__class__)
             del self.__handler
+
+    @property
+    def handler(self) -> AbstractHandler:
+        if not self.__handler:
+            self.__handler = HandlerClass(pipe.Manager(), self)
+        return self.__handler
 
 
 # ===========================================================================
@@ -75,6 +74,9 @@ class Server:
          Method which starts TCP-server
         """
         log.debug("Server::run()")
+        if not HandlerClass:
+            log.critical('No protocol handlers specified! (use --handler)')
+            return
         server_thread = Thread(target=self.server.serve_forever)
         server_thread.setDaemon(False)
         server_thread.start()

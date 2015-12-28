@@ -22,6 +22,9 @@ class Starter:
         """
         log.debug('Starter::run()')
         try:
+            # check specified port
+            if not conf.port:
+                raise Exception("Please specify port number! (use --port)")
             Server(conf.port).run()
         except Exception as E:
             log.critical(E)

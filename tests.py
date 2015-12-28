@@ -1,8 +1,8 @@
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Project tests
-@copyright 2009-2013, Maprox LLC
-'''
+@copyright 2009-2016, Maprox LLC
+"""
 
 import unittest
 

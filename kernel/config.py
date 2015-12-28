@@ -81,10 +81,6 @@ try:
     if not conf.port and options.handlerconf:
         conf.port = conf.getint("general", "port")
 
-    if not conf.port:
-        log.critical("Please specify correct port number! (use --port)")
-        exit(1)
-
 except Exception as E:
     log.critical("Error reading " + options.handlerconf + ": %s", E)
     exit(1)

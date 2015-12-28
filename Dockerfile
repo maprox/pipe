@@ -1,8 +1,10 @@
-FROM maprox/python3
+FROM maprox/base
 
 RUN git clone https://github.com/maprox/Pipe.git /pipe
 
 WORKDIR /pipe
+
+RUN pip3 install -r requirements.txt --upgrade
 
 ENV PIPE_ENVIRONMENT="production" \
     PIPE_HOSTNAME="trx.maprox.net" \
@@ -15,6 +17,6 @@ ENV PIPE_ENVIRONMENT="production" \
     REDIS_PASSWORD="" \
     AMQP_CONNECTION="amqp://guest:guest@127.0.0.1//"
 
-ENTRYPOINT ["main.py"]
+ENTRYPOINT ["python3", "main.py"]
 
 CMD ["-l", "stdout"]

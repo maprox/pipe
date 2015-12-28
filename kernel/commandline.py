@@ -13,7 +13,7 @@ options.add_option(
     dest="logconf",
     help="Path to the log config file",
     metavar="PathToLogConf",
-    default="conf/logs/default.conf"
+    default="conf/logs.conf"
 )
 
 options.add_option(
@@ -22,7 +22,7 @@ options.add_option(
     dest="handlerconf",
     help="Path to the protocol handler configuration file",
     metavar="PathToHandlerConf",
-    default="conf/handlers/default.conf"
+    default=None
 )
 
 options.add_option(
@@ -40,7 +40,7 @@ options.add_option(
     dest="mask",
     help="Pipe process identifier (deprecated)",
     metavar="ProcessId",
-    default="000"
+    default=None
 )
 
 options.add_option(
@@ -49,7 +49,16 @@ options.add_option(
     dest="port",
     help="Pipe handler port",
     metavar="Port",
-    default=False
+    default=None
+)
+
+options.add_option(
+    "-d",
+    "--handler",
+    dest="handler",
+    help="Pipe handler protocol name",
+    metavar="HandlerProtocolName",
+    default=None
 )
 
 (options, args) = options.parse_args()

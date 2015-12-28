@@ -1,2 +1,2 @@
-kombu>=1.0
-redis>=1.0
+kombu>=2.0
+redis>=2.0

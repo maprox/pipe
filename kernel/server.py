@@ -1,9 +1,9 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      TCP-server
-@copyright 2009-2013, Maprox LLC
-'''
+@copyright 2009-2016, Maprox LLC
+"""
 
 import traceback
 from threading import Thread
@@ -12,9 +12,9 @@ from socketserver import ThreadingMixIn
 from socketserver import BaseRequestHandler
 
 from kernel.logger import log
-from kernel.config import conf
 import kernel.pipe as pipe
 from lib.handlers.list import HandlerClass
+
 
 # ===========================================================================
 class ClientThread(BaseRequestHandler):
@@ -36,7 +36,7 @@ class ClientThread(BaseRequestHandler):
                 self.__handler.dispatch()
             else:
                 log.error('No protocol handlers found!')
-        except Exception as E:
+        except Exception:
             log.error("Dispatch error: %s", traceback.format_exc())
 
     def finish(self):
@@ -45,23 +45,25 @@ class ClientThread(BaseRequestHandler):
             log.debug('Delete handler: %s', self.__handler.__class__)
             del self.__handler
 
+
 # ===========================================================================
 class ThreadingServer(ThreadingMixIn, TCPServer):
     """
-     Base class for tcp-server multithreading
+     Base class for tcp-server multi-threading
     """
     allow_reuse_address = True
 
+
 # ===========================================================================
-class Server():
+class Server:
     """
-     Multithreaded TCP-server
+     Multi-threaded TCP-server
     """
 
-    def __init__(self, port = 30003):
+    def __init__(self, port):
         """
          Server class constructor
-         @param port: Listening port. Optional, default is 30003.
+         @param port: Listening port
         """
         log.debug("Server::__init__(%s)", port)
         self.host = ""
@@ -70,10 +72,10 @@ class Server():
 
     def run(self):
         """
-         Method wich starts TCP-server
+         Method which starts TCP-server
         """
         log.debug("Server::run()")
-        self.server_thread = Thread(target = self.server.serve_forever)
-        self.server_thread.setDaemon(False)
-        self.server_thread.start()
+        server_thread = Thread(target=self.server.serve_forever)
+        server_thread.setDaemon(False)
+        server_thread.start()
         log.info("Server is started on port %s", self.port)

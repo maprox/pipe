@@ -1,11 +1,13 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @project   Maprox <http://www.maprox.net>
 @info      Server configuration module
-@copyright 2009-2013, Maprox LLC
-'''
+@copyright 2009-2016, Maprox LLC
+"""
 
+import os
 import sys
+
 if sys.version_info < (3, 0):
     from ConfigParser import ConfigParser
 else:
@@ -21,33 +23,65 @@ try:
     conf.read(options.pipeconf)
 
     # pipe settings
-    conf.redisHost = conf.get("redis", "host")
-    conf.redisPort = int(conf.get("redis", "port"))
-    conf.redisPassword = conf.get("redis", "password")
-    conf.amqpConnection = conf.get("amqp", "connection")
-    conf.hostName = conf.get("pipe", "hostname")
-    conf.hostIp = conf.get("pipe", "hostip")
     conf.socketPacketLength = conf.getint("pipe", "socketPacketLength")
+    conf.environment = os.getenv(
+        "PIPE_ENVIRONMENT", conf.get("pipe", "environment"))
+    conf.hostName = os.getenv(
+        "PIPE_HOSTNAME", conf.get("pipe", "hostname"))
+    conf.hostIp = os.getenv(
+        "PIPE_HOSTIP", conf.get("pipe", "hostip"))
+
+    # redis settings
+    conf.redisHost = os.getenv(
+        "REDIS_HOST", conf.get("redis", "host"))
+    conf.redisPort = int(os.getenv(
+        "REDIS_PORT", conf.get("redis", "port")))
+    conf.redisPassword = os.getenv(
+        "REDIS_PASSWORD", conf.get("redis", "password"))
+
+    # amqp settings
+    conf.amqpConnection = os.getenv(
+        "AMQP_CONNECTION", conf.get("amqp", "connection"))
+
+    # default settings if not set up previously
     if not conf.hostIp:
         from lib.ip import get_ip
         conf.hostIp = get_ip()
+
     if not conf.hostName:
         conf.hostName = conf.hostIp
-    conf.environment = conf.get("pipe", "environment")
+
     if not conf.environment:
         conf.environment = 'production'
+
+    if not options.handler:
+        options.handler = os.getenv('PIPE_HANDLER')
+
+    if options.handler:
+        options.handlerconf = 'conf/handlers/' + options.handler + '.conf'
+
+    if not options.handlerconf or not os.path.exists(options.handlerconf):
+        log.error('Handler is not specified or not found!')
 
 except Exception as E:
     log.critical("Error reading " + options.pipeconf + ": %s", E)
     exit(1)
 
 try:
-    conf.read(options.handlerconf)
+    conf.handler = options.handler
+    if options.handlerconf:
+        conf.read(options.handlerconf)
+        if not conf.handler:
+            # deprecated loading of handler alias
+            conf.handler = conf.get('settings', 'handler')
 
     # server's base settings
-    if options.port and (options.port != '0'):
+    if options.port:
         conf.port = int(options.port)
     else:
+        conf.port = int(os.getenv('PIPE_PORT', 0))
+
+    if not conf.port and options.handlerconf:
         conf.port = conf.getint("general", "port")
 
 except Exception as E:

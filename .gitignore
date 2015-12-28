@@ -3,8 +3,6 @@
 logs/*
 !logs/.gitignore
 
-kernel/version.txt
-
 .idea
 .project
 .pydevproject

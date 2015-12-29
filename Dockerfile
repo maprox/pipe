@@ -14,7 +14,7 @@ ENV PIPE_ENVIRONMENT="production" \
     PIPE_LOGSPATH="/pipe/logs" \
     REDIS_PORT="6379" \
     REDIS_HOST="127.0.0.1" \
-    REDIS_PASSWORD="" \
+    REDIS_PASS="" \
     AMQP_CONNECTION="amqp://guest:guest@127.0.0.1//"
 
 ENTRYPOINT ["python3", "main.py"]

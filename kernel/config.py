@@ -37,7 +37,7 @@ try:
     conf.redisPort = int(os.getenv(
         "REDIS_PORT", conf.get("redis", "port")))
     conf.redisPassword = os.getenv(
-        "REDIS_PASSWORD", conf.get("redis", "password"))
+        "REDIS_PASS", conf.get("redis", "password"))
 
     # amqp settings
     conf.amqpConnection = os.getenv(

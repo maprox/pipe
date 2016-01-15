@@ -101,6 +101,8 @@ class PacketReceiveBalancer:
         threadName = 'SignalRequestThread'
         uid = 'unknown uid [!]'
         try:
+            if isinstance(body, str):
+                body = json.loads(body)
             if 'uid' in body:
                 uid = body['uid']
             log.debug('%s:: > Signal for %s', threadName, uid)
@@ -246,17 +248,25 @@ class PacketReceiveManager:
         """
         threadName = 'ReceiverThread'
         uid = 'unknown uid [!]'
-        if 'uid' in body:
-            uid = body['uid']
-        if uid not in self._messages:
-            self._messages[uid] = deque()
-        # store message to the queue
-        self._messages[uid].append({
-            "message": message,
-            "body": body
-        })
-        log.debug('%s::Packet %s added %s', threadName, body['time'], uid)
-        self.sendMessage(uid, body)
+        try:
+            if isinstance(body, str):
+                body = json.loads(body)
+            if 'uid' in body:
+                uid = body['uid']
+            if 'time' not in body:
+                raise Exception('Incorrect packet structure')
+            if uid not in self._messages:
+                self._messages[uid] = deque()
+            # store message to the queue
+            self._messages[uid].append({
+                "message": message,
+                "body": body
+            })
+            log.debug('%s::Packet %s added %s', threadName, body['time'], uid)
+            self.sendMessage(uid, body)
+        except Exception as E:
+            log.error('%s::%s', threadName, E)
+            message.ack()
 
     def checkListeningForQueue(self, uid):
         """

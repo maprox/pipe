@@ -3,8 +3,8 @@
 Overview
 ========
 
-[![Build Status](https://travis-ci.org/maprox/Pipe.svg?branch=master)](https://travis-ci.org/maprox/Pipe)
-[![Join the chat at https://gitter.im/maprox/Pipe](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/maprox/Pipe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/maprox/pipe.svg?branch=master)](https://travis-ci.org/maprox/pipe)
+[![Join the chat at https://gitter.im/maprox/pipe](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/maprox/pipe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Pipe-server for Maprox Observer project.
 Listen for incoming packets from devices.
@@ -33,8 +33,8 @@ Installation
 
 3. Clone repository
 
-        git clone https://github.com/maprox/Pipe.git
-        cd Pipe
+        git clone https://github.com/maprox/pipe.git
+        cd pipe
 
 4. Install requirements
 

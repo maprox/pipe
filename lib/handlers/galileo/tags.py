@@ -10,6 +10,7 @@ from datetime import datetime
 from struct import unpack, pack, calcsize
 import lib.bits as bits
 
+
 # ---------------------------------------------------------------------------
 
 class Tag(object):
@@ -127,6 +128,7 @@ class Tag(object):
     def __str__(self):
         return str(self.getValue())
 
+
 # ---------------------------------------------------------------------------
 
 class TagNumber(Tag):
@@ -161,6 +163,7 @@ class TagNumber(Tag):
         if (value == None): return None
         return pack(self._packfmt, value)
 
+
 # ---------------------------------------------------------------------------
 
 class TagNumberByte(TagNumber):
@@ -168,6 +171,7 @@ class TagNumberByte(TagNumber):
      Tag with one byte of data
     """
     _packfmt = "<B"
+
 
 # ---------------------------------------------------------------------------
 
@@ -177,6 +181,7 @@ class TagNumberShort(TagNumber):
     """
     _packfmt = "<H"
 
+
 # ---------------------------------------------------------------------------
 
 class TagNumberLong(TagNumber):
@@ -184,6 +189,7 @@ class TagNumberLong(TagNumber):
      Tag with 4 bytes integer
     """
     _packfmt = "<L"
+
 
 # ---------------------------------------------------------------------------
 
@@ -208,6 +214,7 @@ class TagDateTime(TagNumberLong):
         timestamp = time.mktime(value.timetuple())
         return super(TagDateTime, self).getRawDataFromValue(timestamp)
 
+
 # ---------------------------------------------------------------------------
 
 class TagString(Tag):
@@ -229,20 +236,24 @@ class TagString(Tag):
         if (value == None): return None
         return value.encode()
 
+
 # ---------------------------------------------------------------------------
 
 class Tag0(Tag):
     """ 0x00: ByteString (for example JPG photo from camera)"""
+
 
 # ---------------------------------------------------------------------------
 
 class Tag1(TagNumberByte):
     """ 0x01: Firmware """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag2(TagNumberByte):
     """ 0x02: Software """
+
 
 # ---------------------------------------------------------------------------
 
@@ -250,20 +261,24 @@ class Tag3(TagString):
     """ 0x03: IMEI """
     _rawdatalength = 15
 
+
 # ---------------------------------------------------------------------------
 
 class Tag4(TagNumberShort):
     """ 0x04: Code """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag16(TagNumberShort):
     """ 0x10: Archive number """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag32(TagDateTime):
     """ 0x20: Timestamp """
+
 
 # ---------------------------------------------------------------------------
 
@@ -326,10 +341,12 @@ class Tag51(TagNumber):
         azimuth = value['azimuth'] if 'azimuth' in value else 0
         return pack(self._packfmt, int(speed * 10), int(azimuth * 10))
 
+
 # ---------------------------------------------------------------------------
 
 class Tag52(TagNumberShort):
     """ 0x34: Altitude """
+
 
 # ---------------------------------------------------------------------------
 
@@ -351,6 +368,7 @@ class Tag53(TagNumberByte):
         if (value == None): return None
         result = int(value * 10)
         return super(Tag53, self).getRawDataFromValue(result)
+
 
 # ---------------------------------------------------------------------------
 
@@ -414,21 +432,25 @@ class Tag64(TagNumberShort):
         r = self.bitSet(r, 15, value, 'sos')
         return super(Tag64, self).getRawDataFromValue(r)
 
+
 # ---------------------------------------------------------------------------
 
 class Tag65(TagNumberShort):
     """ 0x41: Voltage """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag66(TagNumberShort):
     """ 0x42: Accumulator voltage """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag67(TagNumber):
     """ 0x43: Terminal temperature """
     _packfmt = "<b"
+
 
 # ---------------------------------------------------------------------------
 
@@ -459,6 +481,7 @@ class Tag68(TagNumberLong):
         r += value['X'] if 'X' in value else 0
         return super(Tag68, self).getRawDataFromValue(r)
 
+
 # ---------------------------------------------------------------------------
 
 class Tag69(TagNumberShort):
@@ -487,6 +510,7 @@ class Tag69(TagNumberShort):
             bits.bitSetValue(r, idx, value[varname] \
               if varname in value else 0)
         return super(Tag69, self).getRawDataFromValue(r)
+
 
 # ---------------------------------------------------------------------------
 
@@ -517,35 +541,49 @@ class Tag70(TagNumberShort):
               if varname in value else 0)
         return super(Tag70, self).getRawDataFromValue(r)
 
+
+# ---------------------------------------------------------------------------
+
+class Tag71(TagNumberLong):
+    """ 0x47: Undocumented tag """
+
+
 # ---------------------------------------------------------------------------
 
 class Tag80(TagNumberShort):
     """ 0x50: Analog input 0"""
+
 
 # ---------------------------------------------------------------------------
 
 class Tag81(TagNumberShort):
     """ 0x51: Analog input 1"""
 
+
 # ---------------------------------------------------------------------------
 
 class Tag82(TagNumberShort):
     """ 0x52: Analog input 2"""
 
+
 # ---------------------------------------------------------------------------
+
 
 class Tag83(TagNumberShort):
     """ 0x53: Analog input 3"""
+
 
 # ---------------------------------------------------------------------------
 
 class Tag88(TagNumberShort):
     """ 0x58: RS232 0 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag89(TagNumberShort):
     """ 0x59: RS232 1 """
+
 
 # ---------------------------------------------------------------------------
 
@@ -573,50 +611,218 @@ class TagThermometer(TagNumberShort):
         temperature = value['temperature'] if 'temperature' in value else 0
         return pack(self._packfmt, identifier, temperature)
 
+
 # ---------------------------------------------------------------------------
 
 class Tag112(TagThermometer):
     """ 0x70: Thermometer 0 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag113(TagThermometer):
     """ 0x71: Thermometer 1 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag114(TagThermometer):
     """ 0x72: Thermometer 2 """
 
+
 # ---------------------------------------------------------------------------
+
 
 class Tag115(TagThermometer):
     """ 0x73: Thermometer 3 """
 
+
 # ---------------------------------------------------------------------------
+
 
 class Tag116(TagThermometer):
     """ 0x74: Thermometer 4 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag117(TagThermometer):
     """ 0x75: Thermometer 5 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag118(TagThermometer):
     """ 0x76: Thermometer 6 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag119(TagThermometer):
     """ 0x77: Thermometer 7 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag144(TagNumberLong):
     """ 0x90: iButton 0 """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag160(TagNumberByte):
+    """ 0x‭A0: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag161(TagNumberByte):
+    """ 0xA1: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag162(TagNumberByte):
+    """ 0xA2: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag163(TagNumberByte):
+    """ 0xA3: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag164(TagNumberByte):
+    """ 0xA4: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag165(TagNumberByte):
+    """ 0xA5: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag166(TagNumberByte):
+    """ 0xA6: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag167(TagNumberByte):
+    """ 0xA7: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag168(TagNumberByte):
+    """ 0xA8: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag169(TagNumberByte):
+    """ 0xA9: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag170(TagNumberByte):
+    """ 0xAA: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag171(TagNumberByte):
+    """ 0xAB: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag172(TagNumberByte):
+    """ 0xAC: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag173(TagNumberByte):
+    """ 0xAD: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag174(TagNumberByte):
+    """ 0xAE: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag175(TagNumberByte):
+    """ 0xAF: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag176(TagNumberShort):
+    """ 0xB0: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag177(TagNumberShort):
+    """ 0xB1: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag178(TagNumberShort):
+    """ 0xB2: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag179(TagNumberShort):
+    """ 0xB3: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag180(TagNumberShort):
+    """ 0xB4: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag181(TagNumberShort):
+    """ 0xB5: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag182(TagNumberShort):
+    """ 0xB6: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag183(TagNumberShort):
+    """ 0xB7: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag184(TagNumberShort):
+    """ 0xB8: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag185(TagNumberShort):
+    """ 0xB9: Undocumented tag """
+
 
 # ---------------------------------------------------------------------------
 
@@ -637,6 +843,7 @@ class Tag192(TagNumberLong):
         if (value == None): return None
         return super(Tag192, self).getRawDataFromValue(int(value * 2))
 
+
 # ---------------------------------------------------------------------------
 
 class Tag193(TagNumberLong):
@@ -652,7 +859,7 @@ class Tag193(TagNumberLong):
         fuelPercent, coolantTemp, rpm = unpack(self._packfmt, rawdata)
         return {
           'can_fuel_percent': int(fuelPercent * 0.4),
-          'can_coolant_temperature': int(coolantTemp - 40),
+          'can_coolant_temperature': int(coolantTemp - 40) if coolantTemp else 0,
           'can_rpm': int(rpm * 0.125)
         }
 
@@ -670,6 +877,7 @@ class Tag193(TagNumberLong):
             int(fuelPercent / 0.4),
             int(coolantTemp + 40),
             int(rpm / 0.125))
+
 
 # ---------------------------------------------------------------------------
 
@@ -690,95 +898,114 @@ class Tag194(TagNumberLong):
         if (value == None): return None
         return super(Tag194, self).getRawDataFromValue(int(value / 5))
 
+
 # ---------------------------------------------------------------------------
 
 class Tag195(TagNumberLong):
     """ 0xc3: CAN_B1 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag196(TagNumberByte):
     """ 0xc4: CAN8BITR0 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag197(TagNumberByte):
     """ 0xc5: CAN8BITR1 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag198(TagNumberByte):
     """ 0xc6: CAN8BITR2 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag199(TagNumberByte):
     """ 0xc7: CAN8BITR3 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag200(TagNumberByte):
     """ 0xc8: CAN8BITR4 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag201(TagNumberByte):
     """ 0xc9: CAN8BITR5 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag202(TagNumberByte):
     """ 0xca: CAN8BITR6 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag203(TagNumberByte):
     """ 0xcb: CAN8BITR7 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag204(TagNumberByte):
     """ 0xcc: CAN8BITR8 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag205(TagNumberByte):
     """ 0xcd: CAN8BITR9 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag206(TagNumberByte):
     """ 0xce: CAN8BITR10 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag207(TagNumberByte):
     """ 0xcf: CAN8BITR11 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag208(TagNumberByte):
     """ 0xd0: CAN8BITR12 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag209(TagNumberByte):
     """ 0xd1: CAN8BITR13 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag210(TagNumberByte):
     """ 0xd2: CAN8BITR14 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag211(TagNumberLong):
     """ 0xd3: iButton 2 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag212(TagNumberLong):
     """ 0xd4: Total odometer """
+
 
 # ---------------------------------------------------------------------------
 
@@ -809,60 +1036,132 @@ class Tag213(TagNumberByte):
               if varname in value else 0)
         return super(Tag213, self).getRawDataFromValue(r)
 
+
 # ---------------------------------------------------------------------------
 
 class Tag214(TagNumberShort):
     """ 0xd6: CAN16BITR0 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag215(TagNumberShort):
     """ 0xd7: CAN16BITR1 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag216(TagNumberShort):
     """ 0xd8: CAN16BITR2 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag217(TagNumberShort):
     """ 0xd9: CAN16BITR3 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag218(TagNumberShort):
     """ 0xda: CAN16BITR4 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag219(TagNumberLong):
     """ 0xdb: CAN32BITR0 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag220(TagNumberLong):
     """ 0xdc: CAN32BITR1 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag221(TagNumberLong):
     """ 0xdd: CAN32BITR2 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag222(TagNumberLong):
     """ 0xde: CAN32BITR3 """
+
 
 # ---------------------------------------------------------------------------
 
 class Tag223(TagNumberLong):
     """ 0xdf: CAN32BITR4 """
 
+
 # ---------------------------------------------------------------------------
 
 class Tag224(TagNumberLong):
     """ 0xE0: Server command number """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag240(TagNumberLong):
+    """ 0xF0: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag241(TagNumberLong):
+    """ 0xF1: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag242(TagNumberLong):
+    """ 0xF2: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag243(TagNumberLong):
+    """ 0xF3: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag244(TagNumberLong):
+    """ 0xF4: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag245(TagNumberLong):
+    """ 0xF5: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag246(TagNumberLong):
+    """ 0xF6: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag247(TagNumberLong):
+    """ 0xF7: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag248(TagNumberLong):
+    """ 0xF8: Undocumented tag """
+
+
+# ---------------------------------------------------------------------------
+
+class Tag249(TagNumberLong):
+    """ 0xF9: Undocumented tag """
+
 
 # ---------------------------------------------------------------------------
 
@@ -892,15 +1191,18 @@ class TagCompound(Tag):
         data = self.getRawData()
         return pack('<B', num) + pack(self.lengthfmt, len(data)) + data
 
+
 # ---------------------------------------------------------------------------
 
 class TagCompoundString(TagCompound, TagString):
     pass
 
+
 # ---------------------------------------------------------------------------
 
 class Tag225(TagCompoundString):
     """ 0xE1: Server command """
+
 
 # ---------------------------------------------------------------------------
 

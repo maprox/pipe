@@ -137,7 +137,7 @@ class MessageBroker:
                         log.debug('Message is sent via message broker')
                 conn.release()
         except Exception as E:
-            log.error('Error during packet send: %s', E)
+            log.exception('Error during packet send: %s', E)
         log.debug('BROKER: Disconnected')
 
     def amqpCommandUpdate(self, handler, status, data):
@@ -219,7 +219,7 @@ class MessageBroker:
                         log.debug('[%s] No commands found', handler.handlerId)
                 conn.release()
         except Exception as E:
-            log.error('[%s] %s', handler.handlerId, E)
+            log.exception('[%s] %s', handler.handlerId, E)
         return content
 
     def onCommand(self, body, message):
@@ -337,7 +337,7 @@ class MessageBrokerThread:
                             conn.drain_events()
                     conn.release()
             except Exception as E:
-                log.error('[%s] %s', self._protocolAlias, E)
+                log.exception('[%s] %s', self._protocolAlias, E)
                 time.sleep(60) # sleep for 60 seconds after exception
 
     def onCommand(self, body, message):

@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
-'''
+"""
 @auth: Maprox LLC © sunsay
 @date: 2012.06.25
-'''
+"""
 
 import re
 import socket

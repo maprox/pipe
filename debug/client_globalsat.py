@@ -1,4 +1,3 @@
-# -*- coding: utf8 -*-
 '''
 @auth: Maprox Ltd © sunsay
 @date: 2009.07.06
@@ -26,7 +25,7 @@ data = data + "*" + getChecksum(data) + "!"
 #SPRXYAB27GHKLMmnaefghio*U!
 
 # Connect to server and send data
-host, port = "localhost", 20100
+host, port = "trx.maprox.org", 20100
 
 try:
     # Create a socket (SOCK_STREAM means a TCP socket)

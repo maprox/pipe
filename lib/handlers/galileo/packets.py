@@ -346,6 +346,15 @@ class TestCase(unittest.TestCase):
         self.assertEqual(packet.rawData, b'\x0F\x02\x00\x00\x00q\xb9')
         self.assertEqual(packet.length, 2)
 
+    def test_newProtocolPacket(self):
+        packet = Packet(b'\x01$\x80\x01\x0f\x02\xe6' +
+          b'\x03868204008110347\x042\x00`\x00\x00a\x00\x00b\x00\x00\x8b\x00\x8c\x00?;')
+        self.assertEqual(packet.header, 1)
+        self.assertEqual(packet.length, 36)
+        self.assertEqual(packet.body,
+          b'\x01\x0f\x02\xe6\x03868204008110347\x042\x00`\x00\x00a\x00\x00b\x00\x00\x8b\x00\x8c\x00')
+        self.assertEqual(packet.crc, 15167)
+
     def test_defaultPacket(self):
         packet = Packet(b'\x0F\x02\x00\x00\x00\x71\xB9')
         self.assertEqual(packet.header, 15)

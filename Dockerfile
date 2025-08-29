@@ -13,8 +13,6 @@ WORKDIR /pipe
 # Установка Python зависимостей
 RUN pip3 install -r requirements.txt --upgrade
 
-# Переменные окружения будут передаваться через Kubernetes или Docker run
-
 ENTRYPOINT ["python3", "main.py"]
 
 CMD ["-l", "stdout"]

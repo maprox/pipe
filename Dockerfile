@@ -1,12 +1,7 @@
 FROM python:3.9-slim
+LABEL maintainer="Alexander Y Lyapko z@sunsay.ru"
 
-# Установка системных зависимостей
-RUN apt-get update && apt-get install -y \
-    git \
-    && rm -rf /var/lib/apt/lists/*
-
-# Клонирование репозитория
-RUN git clone https://github.com/maprox/Pipe.git /pipe
+COPY . /pipe/
 
 WORKDIR /pipe
 

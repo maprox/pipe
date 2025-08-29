@@ -2,7 +2,7 @@
 """
 @project   Maprox <http://www.maprox.net>
 @info      Server configuration module
-@copyright 2009-2016, Maprox LLC
+@copyright 2009-2025, Maprox LLC
 """
 
 import os
@@ -24,30 +24,32 @@ try:
 
     # pipe settings
     conf.socketPacketLength = conf.getint("pipe", "socketPacketLength")
-    conf.environment = os.getenv(
-        "PIPE_ENVIRONMENT", conf.get("pipe", "environment"))
-    conf.hostName = os.getenv(
-        "PIPE_HOSTNAME", conf.get("pipe", "hostname"))
-    conf.hostIp = os.getenv(
-        "PIPE_HOSTIP", conf.get("pipe", "hostip"))
+    conf.environment = os.getenv("PIPE_ENVIRONMENT", conf.get("pipe", "environment"))
+    conf.hostName = os.getenv("PIPE_HOSTNAME", conf.get("pipe", "hostname"))
+    conf.hostIp = os.getenv("PIPE_HOSTIP", conf.get("pipe", "hostip"))
 
     # redis settings
-    conf.redisHost = os.getenv(
-        "REDIS_HOST", conf.get("redis", "host"))
-    conf.redisPort = int(os.getenv(
-        "REDIS_PORT", conf.get("redis", "port")))
-    conf.redisPassword = os.getenv(
-        "REDIS_PASS", conf.get("redis", "password"))
+    conf.redisHost = os.getenv("REDIS_HOST", conf.get("redis", "host"))
+    conf.redisPort = int(os.getenv("REDIS_PORT", conf.get("redis", "port")))
+    conf.redisPassword = os.getenv("REDIS_PASS", conf.get("redis", "password"))
 
     # amqp settings
     # Формируем строку подключения из отдельных переменных
-    amqp_username = os.getenv("AMQP_USERNAME", "guest")
-    amqp_password = os.getenv("AMQP_PASSWORD", "guest")
-    amqp_host = os.getenv("AMQP_HOST", "rabbitmq")
-    amqp_port = os.getenv("AMQP_PORT", "5672")
-    amqp_vhost = os.getenv("AMQP_VHOST", "/")
-    
+    amqp_username = os.getenv("AMQP_USERNAME", conf.get("amqp", "username"))
+    amqp_password = os.getenv("AMQP_PASSWORD", conf.get("amqp", "password"))
+    amqp_host = os.getenv("AMQP_HOST", conf.get("amqp", "host"))
+    amqp_port = os.getenv("AMQP_PORT", conf.get("amqp", "port"))
+    amqp_vhost = os.getenv("AMQP_VHOST", conf.get("amqp", "vhost"))
+
     conf.amqpConnection = f"amqp://{amqp_username}:{amqp_password}@{amqp_host}:{amqp_port}/{amqp_vhost}"
+
+    # Отладочная информация
+    log.debug("AMQP Configuration:")
+    log.debug("  Username: %s", amqp_username)
+    log.debug("  Host: %s", amqp_host)
+    log.debug("  Port: %s", amqp_port)
+    log.debug("  Vhost: %s", amqp_vhost)
+    log.debug("  Connection string: %s", conf.amqpConnection)
 
     # default settings if not set up previously
     if not conf.hostIp:

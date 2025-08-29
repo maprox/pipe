@@ -16,7 +16,7 @@ spec:
       containers:
       - name: balancer
         image: maprox/pipe
-        command: ["python3", "balancer.py"]
+        command: ["python3", "balancer.py", "-l", "stdout"]
         env:
         - name: PIPE_ENVIRONMENT
           valueFrom:

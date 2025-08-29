@@ -43,14 +43,6 @@ try:
 
     conf.amqpConnection = f"amqp://{amqp_username}:{amqp_password}@{amqp_host}:{amqp_port}/{amqp_vhost}"
 
-    # Отладочная информация
-    log.debug("AMQP Configuration:")
-    log.debug("  Username: %s", amqp_username)
-    log.debug("  Host: %s", amqp_host)
-    log.debug("  Port: %s", amqp_port)
-    log.debug("  Vhost: %s", amqp_vhost)
-    log.debug("  Connection string: %s", conf.amqpConnection)
-
     # default settings if not set up previously
     if not conf.hostIp:
         from lib.ip import get_ip

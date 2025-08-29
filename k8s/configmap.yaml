@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pipe-config
+  namespace: o2
+data:
+  PIPE_ENVIRONMENT: "production"
+  PIPE_HOSTNAME: "trx.maprox.net"
+  PIPE_HOSTIP: "85.236.191.94"

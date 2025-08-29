@@ -4,5 +4,6 @@ logs/*
 !logs/.gitignore
 
 .idea
+.history
 .project
 .pydevproject

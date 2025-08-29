@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pipe-balancer
+  namespace: o2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pipe-balancer
+  template:
+    metadata:
+      labels:
+        app: pipe-balancer
+    spec:
+      containers:
+      - name: balancer
+        image: maprox/pipe
+        command: ["python3", "balancer.py"]
+        env:
+        - name: PIPE_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: pipe-config
+              key: PIPE_ENVIRONMENT
+        - name: PIPE_HOSTNAME
+          valueFrom:
+            configMapKeyRef:
+              name: pipe-config
+              key: PIPE_HOSTNAME
+        - name: PIPE_HOSTIP
+          valueFrom:
+            configMapKeyRef:
+              name: pipe-config
+              key: PIPE_HOSTIP
+        - name: AMQP_CONNECTION
+          value: "amqp://$(AMQP_USERNAME):$(AMQP_PASSWORD)@rabbitmq:5672//"
+        - name: AMQP_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq
+              key: rabbitmq-user
+        - name: AMQP_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: rabbitmq
+              key: rabbitmq-password
+        - name: REDIS_HOST
+          value: "redis"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_PASS
+          value: ""
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"

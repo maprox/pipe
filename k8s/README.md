@@ -33,7 +33,8 @@ kubectl apply -f galileo.yaml
 - `rabbitmq-password` - пароль RabbitMQ (например: your-secure-password)
 
 **Переменные окружения:**
-- `AMQP_CONNECTION` - строка подключения к RabbitMQ в формате `amqp://username:password@host:port//`
+- `AMQP_USERNAME` - имя пользователя RabbitMQ (из секрета)
+- `AMQP_PASSWORD` - пароль RabbitMQ (из секрета)
 - `REDIS_HOST` - хост Redis сервера (например: redis)
 - `REDIS_PORT` - порт Redis сервера (обычно 6379)
 - `REDIS_PASS` - пароль Redis (пустой по умолчанию)
@@ -161,7 +162,7 @@ kubectl exec -it <pod-name> -n o2 -- nc -zv redis 6379
 kubectl exec -it <pod-name> -n o2 -- nc -zv rabbitmq 5672
 
 # Проверить переменные окружения
-kubectl exec -it <pod-name> -n o2 -- env | grep -E "(REDIS_HOST|REDIS_PORT|REDIS_PASS|AMQP_CONNECTION)"
+kubectl exec -it <pod-name> -n o2 -- env | grep -E "(REDIS_HOST|REDIS_PORT|REDIS_PASS|AMQP_HOST|AMQP_PORT|AMQP_USERNAME|AMQP_PASSWORD)"
 ```
 
 ## 📚 Дополнительные ресурсы

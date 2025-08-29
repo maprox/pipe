@@ -40,8 +40,14 @@ try:
         "REDIS_PASS", conf.get("redis", "password"))
 
     # amqp settings
-    conf.amqpConnection = os.getenv(
-        "AMQP_CONNECTION", conf.get("amqp", "connection"))
+    # Формируем строку подключения из отдельных переменных
+    amqp_username = os.getenv("AMQP_USERNAME", "guest")
+    amqp_password = os.getenv("AMQP_PASSWORD", "guest")
+    amqp_host = os.getenv("AMQP_HOST", "rabbitmq")
+    amqp_port = os.getenv("AMQP_PORT", "5672")
+    amqp_vhost = os.getenv("AMQP_VHOST", "/")
+    
+    conf.amqpConnection = f"amqp://{amqp_username}:{amqp_password}@{amqp_host}:{amqp_port}/{amqp_vhost}"
 
     # default settings if not set up previously
     if not conf.hostIp:

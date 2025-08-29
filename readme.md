@@ -181,7 +181,8 @@ handler=galileo.default
 - `REDIS_HOST` - хост Redis сервера (например: redis или 127.0.0.1)
 - `REDIS_PORT` - порт Redis сервера (обычно 6379)
 - `REDIS_PASS` - пароль Redis (например: your-redis-password)
-- `AMQP_CONNECTION` - строка подключения к RabbitMQ в формате `amqp://username:password@host:port//`
+- `AMQP_USERNAME` - имя пользователя RabbitMQ
+- `AMQP_PASSWORD` - пароль RabbitMQ
 
 ## 📊 Мониторинг
 

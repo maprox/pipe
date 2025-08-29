@@ -36,8 +36,10 @@ spec:
           value: "galileo.default"
         - name: PIPE_PORT
           value: "21001"
-        - name: AMQP_CONNECTION
-          value: "amqp://$(AMQP_USERNAME):$(AMQP_PASSWORD)@rabbitmq:5672//"
+        - name: AMQP_HOST
+          value: "rabbitmq"
+        - name: AMQP_PORT
+          value: "5672"
         - name: AMQP_USERNAME
           valueFrom:
             secretKeyRef:
